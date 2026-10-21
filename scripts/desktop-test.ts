@@ -106,6 +106,10 @@ async function capture(page: Page, options: { path: string }) {
       (w) => w.webContents.getURL() === url,
     );
     if (!w) throw new Error("No window to capture");
+    w.webContents.setBackgroundThrottling(false);
+    await w.webContents.executeJavaScript(
+      "new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))",
+    );
     const image = await w.capturePage(undefined, {
       stayHidden: true,
       stayAwake: true,
@@ -116,6 +120,9 @@ async function capture(page: Page, options: { path: string }) {
 }
 try {
   const page = await desktop.firstWindow();
+  await desktop.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].webContents.setBackgroundThrottling(false),
+  );
   await page.context().setOffline(true);
   page.on("pageerror", (e) => errors.push(e.message));
   await page.waitForFunction(() => !!window.codelines);
@@ -139,6 +146,20 @@ try {
     nodeIntegration: false,
     sandbox: true,
   });
+  const titlebar = page.getByRole("banner", { name: "Application title bar" });
+  await expect(titlebar).toBeVisible();
+  expect(
+    await titlebar.evaluate((el) =>
+      getComputedStyle(el).getPropertyValue("-webkit-app-region"),
+    ),
+  ).toBe("drag");
+  expect(
+    await page
+      .getByRole("group", { name: "Window controls" })
+      .evaluate((el) =>
+        getComputedStyle(el).getPropertyValue("-webkit-app-region"),
+      ),
+  ).toBe("no-drag");
   for (const kind of ["scan", "history", "ai"] as const) {
     const result = await page.evaluate(async (kind) => {
       const state = await window.codelines.load();
@@ -212,7 +233,11 @@ try {
   const duplicate = await page.evaluate(() => window.codelines.addProject());
   expect(duplicate.settings.projects).toHaveLength(1);
   for (const theme of ["Light", "Dark"]) {
+    console.log(`Desktop UI: ${theme} theme`);
     await page.getByLabel("Appearance", { exact: true }).selectOption(theme);
+    expect(
+      await titlebar.evaluate((el) => getComputedStyle(el).backgroundColor),
+    ).toBe(theme === "Light" ? "rgb(247, 249, 253)" : "rgb(21, 33, 54)");
     await capture(page, {
       path: path.join(
         out,
@@ -240,17 +265,20 @@ try {
           .first()
           .textContent();
         await page
-          .getByLabel("Report range", { exact: true })
-          .selectOption("7");
+          .getByRole("group", { name: "Report range", exact: true })
+          .getByRole("button", { name: "7d", exact: true })
+          .click();
         await expect(
           page.locator(".reports .tile strong").first(),
         ).not.toHaveText(before ?? "");
         await page
-          .getByLabel("Report range", { exact: true })
-          .selectOption("0");
+          .getByRole("group", { name: "Report range", exact: true })
+          .getByRole("button", { name: "All", exact: true })
+          .click();
         await page
-          .getByLabel("Group usage", { exact: true })
-          .selectOption("model");
+          .getByRole("group", { name: "Group usage", exact: true })
+          .getByRole("button", { name: "By model", exact: true })
+          .click();
         for (const tab of [
           "Overview",
           "Models",
@@ -275,7 +303,14 @@ try {
         expect(await longCell.getAttribute("title")).toBe(
           longPath.replace(/\\+$/, ""),
         );
-        await page.getByLabel("AI agent report").selectOption("claude");
+        await page.getByRole("tab", { name: /^Claude Code/ }).click();
+        await expect(
+          page.getByRole("tab", { name: "Overview", exact: true }),
+        ).toHaveAttribute("aria-selected", "true");
+        await page
+          .getByRole("group", { name: "Report range", exact: true })
+          .getByRole("button", { name: "30d", exact: true })
+          .click();
         await page.getByRole("tab", { name: "Tables", exact: true }).click();
         await expect(
           page.getByRole("heading", { name: "App card vs reality" }),
@@ -289,6 +324,110 @@ try {
         expect(
           await region.locator(".project-path").first().getAttribute("title"),
         ).toBeTruthy();
+        await page.getByRole("tab", { name: /^All agents/ }).click();
+        await expect(
+          page.getByRole("tab", { name: "Projects", exact: true }),
+        ).toHaveAttribute("aria-selected", "true");
+        await expect(
+          page.getByRole("button", { name: "By model", exact: true }),
+        ).toHaveAttribute("aria-pressed", "true");
+        await page.getByRole("tab", { name: /^Claude Code/ }).click();
+        await expect(
+          page.getByRole("button", { name: "30d", exact: true }),
+        ).toHaveAttribute("aria-pressed", "true");
+        await page.getByLabel("Report start date").fill("2099-01-02");
+        await page.getByLabel("Report end date").fill("2099-01-01");
+        await expect(page.getByRole("alert")).toContainText(
+          "Start date must be on or before end date",
+        );
+        await page.getByLabel("Report end date").fill("2099-01-03");
+        await expect(
+          page.getByText("No usage in this range", { exact: true }),
+        ).toBeVisible();
+        await page.getByRole("button", { name: "7d", exact: true }).click();
+        await expect(page.getByLabel("Report start date")).toHaveValue("");
+        await expect(page.getByLabel("Report end date")).toHaveValue("");
+        await page.getByRole("button", { name: "All", exact: true }).click();
+        await page.getByRole("tab", { name: "Overview", exact: true }).click();
+        const cell = page.locator(".heat-cell").first();
+        await cell.focus();
+        await expect(page.getByRole("tooltip")).toBeVisible();
+        await expect(page.getByRole("tooltip")).toContainText("Real tokens");
+        await cell.press("Escape");
+        await expect(page.getByRole("tooltip")).toHaveCount(0);
+        await cell.hover();
+        await expect(page.getByRole("tooltip")).toBeVisible();
+        await page
+          .getByRole("heading", { name: "Activity", exact: true })
+          .hover();
+        const overviewTab = page.getByRole("tab", {
+          name: "Overview",
+          exact: true,
+        });
+        await overviewTab.focus();
+        await overviewTab.press("ArrowRight");
+        await expect(
+          page.getByRole("tab", { name: "Models", exact: true }),
+        ).toBeFocused();
+        await expect(
+          page.getByRole("tab", { name: "Models", exact: true }),
+        ).toHaveAttribute("aria-selected", "true");
+        const legendColors = () =>
+          page
+            .locator(".recharts-legend-item")
+            .evaluateAll((items) =>
+              Object.fromEntries(
+                items.map((item) => [
+                  item.textContent ?? "",
+                  item.querySelector("path")?.getAttribute("fill"),
+                ]),
+              ),
+            );
+        await expect(
+          page.locator(".recharts-legend-item").first(),
+        ).toBeVisible();
+        const modelColors = await legendColors();
+        console.log(`AI report interactions and colors: ${theme}`);
+        await page.getByRole("button", { name: "7d", exact: true }).click();
+        for (const [key, color] of Object.entries(await legendColors())) {
+          expect(color).toBeTruthy();
+          expect(color).toBe(modelColors[key]);
+        }
+        await page.getByRole("button", { name: "All", exact: true }).click();
+        await page.getByRole("tab", { name: /^All agents/ }).click();
+        await page.getByRole("tab", { name: "Time", exact: true }).click();
+        await page
+          .getByRole("button", { name: "Refresh", exact: true })
+          .click();
+        await expect(page.locator(".statusbar")).toContainText(
+          "AI usage complete",
+          { timeout: 30000 },
+        );
+        await expect(
+          page.getByRole("tab", { name: "Time", exact: true }),
+        ).toHaveAttribute("aria-selected", "true");
+        await expect(
+          page.getByRole("button", { name: "By model", exact: true }),
+        ).toHaveAttribute("aria-pressed", "true");
+        await page.locator(".ai-sources summary").click();
+        await expect(
+          page.getByRole("region", { name: "AI adapter status", exact: true }),
+        ).toBeVisible();
+        await page.locator(".ai-sources summary").click();
+        for (const screenshotTab of ["Overview", "Time", "Projects"]) {
+          await page
+            .getByRole("tab", { name: screenshotTab, exact: true })
+            .click();
+          await page
+            .getByRole("heading", { name: "AI usage", exact: true })
+            .scrollIntoViewIfNeeded();
+          await capture(page, {
+            path: path.join(
+              out,
+              `${packaged ? "packaged" : "built"}-ai-${screenshotTab.toLowerCase()}-${theme.toLowerCase()}.png`,
+            ),
+          });
+        }
         await capture(page, {
           path: path.join(
             out,
@@ -305,6 +444,35 @@ try {
   await desktop.evaluate(({ BrowserWindow }) =>
     BrowserWindow.getAllWindows()[0].setSize(950, 700),
   );
+  await page
+    .getByRole("navigation", { name: "Main navigation" })
+    .getByRole("button", { name: "AI usage", exact: true })
+    .click();
+  for (const smallTheme of ["Light", "Dark"]) {
+    console.log(`Desktop UI: 950×700 ${smallTheme}`);
+    await page
+      .getByLabel("Appearance", { exact: true })
+      .selectOption(smallTheme);
+    for (const smallTab of ["Overview", "Time", "Projects"]) {
+      await page.getByRole("tab", { name: smallTab, exact: true }).click();
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth,
+        ),
+      ).toBe(true);
+      const reportBox = await page.locator(".reports").boundingBox();
+      expect(reportBox!.x + reportBox!.width).toBeLessThanOrEqual(950);
+      await page
+        .getByRole("heading", { name: "AI usage", exact: true })
+        .scrollIntoViewIfNeeded();
+      await capture(page, {
+        path: path.join(
+          out,
+          `${packaged ? "packaged" : "built"}-ai-small-${smallTab.toLowerCase()}-${smallTheme.toLowerCase()}.png`,
+        ),
+      });
+    }
+  }
   await page.getByLabel("Appearance", { exact: true }).selectOption("Dark");
   const save = page.getByRole("button", { name: "Save changes", exact: true });
   if (await save.isVisible()) await save.click();
@@ -386,6 +554,13 @@ try {
     await w.loadFile(file);
   }, exportFile);
   const report = await newWindow;
+  await desktop.evaluate(
+    ({ BrowserWindow }, url) =>
+      BrowserWindow.getAllWindows()
+        .find((w) => w.webContents.getURL() === url)!
+        .webContents.setBackgroundThrottling(false),
+    report.url(),
+  );
   report.on("pageerror", (e) => errors.push(e.message));
   await report.waitForFunction(() => document.querySelector("[role=tab]"));
   expect(await report.evaluate(() => typeof window.codelines)).toBe(
@@ -397,6 +572,33 @@ try {
       report.getByRole("tabpanel", { name: tab, exact: true }),
     ).toBeVisible();
   }
+  await report.getByRole("tab", { name: /^Claude Code/ }).click();
+  await report.getByRole("button", { name: "7d", exact: true }).click();
+  await report.getByRole("tab", { name: "Time", exact: true }).click();
+  await report.getByRole("tab", { name: /^All agents/ }).click();
+  await expect(
+    report.getByRole("tab", { name: "Projects", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  await report.getByRole("tab", { name: /^Claude Code/ }).click();
+  await expect(
+    report.getByRole("tab", { name: "Time", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  await expect(
+    report.getByRole("button", { name: "7d", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await report.getByRole("tab", { name: "Overview", exact: true }).click();
+  await report.getByLabel("Report start date").fill("2099-01-02");
+  await report.getByLabel("Report end date").fill("2099-01-01");
+  await expect(report.getByRole("alert")).toContainText(
+    "Start date must be on or before end date",
+  );
+  await report.getByRole("button", { name: "All", exact: true }).click();
+  await report.locator(".heat-cell").first().focus();
+  await expect(report.getByRole("tooltip")).toContainText("Real tokens");
+  await report.locator(".heat-cell").first().press("Escape");
+  await report
+    .getByRole("heading", { name: "AI usage", exact: true })
+    .scrollIntoViewIfNeeded();
   await capture(report, {
     path: path.join(
       out,
@@ -449,6 +651,53 @@ try {
       .projects,
   ).toHaveLength(1);
   expect(errors).toEqual([]);
+  // Exercise the real OS window and state events, including changes outside the UI.
+  const nativeWindow = await desktop.browserWindow(page);
+  await nativeWindow.evaluate((w) => w.showInactive());
+  await page
+    .getByRole("button", { name: "Maximize window", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Restore window", exact: true }),
+  ).toBeVisible();
+  expect(await nativeWindow.evaluate((w) => w.isMaximized())).toBe(true);
+  await page
+    .getByRole("button", { name: "Restore window", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Maximize window", exact: true }),
+  ).toBeVisible();
+  expect(await nativeWindow.evaluate((w) => w.isMaximized())).toBe(false);
+  await nativeWindow.evaluate((w) => w.maximize());
+  await expect(
+    page.getByRole("button", { name: "Restore window", exact: true }),
+  ).toBeVisible();
+  await nativeWindow.evaluate((w) => w.unmaximize());
+  await expect(
+    page.getByRole("button", { name: "Maximize window", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Minimize window", exact: true })
+    .click();
+  await expect
+    .poll(() => nativeWindow.evaluate((w) => w.isMinimized()))
+    .toBe(true);
+  await nativeWindow.evaluate((w) => w.restore());
+  await expect
+    .poll(() => nativeWindow.evaluate((w) => w.isMinimized()))
+    .toBe(false);
+  await nativeWindow.evaluate((w) => w.blur());
+  await expect(titlebar).toHaveClass(/titlebar-inactive/);
+  const invalidWindowAction = await page.evaluate(() =>
+    window.codelines.windowAction("invalid" as "close").then(
+      () => false,
+      () => true,
+    ),
+  );
+  expect(invalidWindowAction).toBe(true);
+  const closed = page.waitForEvent("close");
+  await page.getByRole("button", { name: "Close window", exact: true }).click();
+  await closed;
   console.log(
     JSON.stringify(
       {
@@ -456,12 +705,17 @@ try {
         executable: exe ?? "electron .",
         checks: [
           "sandboxed startup",
+          "themed custom title bar, OS minimize/maximize/restore/close and external state events",
           "scan worker and bundled offline BPE",
           "Git worker",
           "Claude golden fixtures",
           "packaged node:sqlite reader",
           "seven-page navigation",
-          "all report tabs",
+          "all report tabs and agent-specific selection restoration",
+          "preset/custom dates, invalid dates and empty ranges",
+          "stable model colors, keyboard tabs and focus/hover tooltips",
+          "AI refresh preserves selected report state",
+          "overview/time/projects in light/dark at full and 950px widths",
           "light/dark",
           "950px window",
           "standalone HTML without IPC or network",
@@ -478,6 +732,9 @@ try {
       2,
     ),
   );
+} catch (error) {
+  console.error(error);
+  throw error;
 } finally {
   await desktop.close();
   await fs.rm(root, { recursive: true, force: true, maxRetries: 5 });

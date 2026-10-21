@@ -1,4 +1,7 @@
 import { describe, it, expect } from "vitest";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { AgentSources, Reports } from "../src/renderer/reports";
 import fs from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import type {
@@ -41,6 +44,47 @@ const result: AiResult = {
   agents: [],
 };
 describe("shared report calculations and exports", () => {
+  it("shows failed source details safely and keeps the empty report free of invented peak metrics", () => {
+    const agents: AiResult["agents"] = [
+      {
+        id: "claude",
+        label: "Claude Code",
+        state: "Loaded",
+        records: 10,
+        elapsed: 1,
+      },
+      {
+        id: "codex",
+        label: "Codex",
+        state: "Failed",
+        records: 0,
+        elapsed: 1,
+        error: "<script>locked source</script>",
+      },
+    ];
+    const sources = renderToStaticMarkup(
+      createElement(AgentSources, { agents }),
+    );
+    expect(sources).toContain("<details");
+    expect(sources).toContain("1 loaded");
+    expect(sources).toContain("1 failed");
+    expect(sources).toContain('class="source-failed">Failed');
+    expect(sources).toContain("&lt;script&gt;locked source&lt;/script&gt;");
+    expect(sources).not.toContain("<script>");
+    const empty = renderToStaticMarkup(
+      createElement(Reports, {
+        result: {
+          ...result,
+          combined: { ...combined, hours: {}, sessions: [] },
+          agents,
+        },
+      }),
+    );
+    expect(empty).toContain("No usage in this range");
+    expect(empty).not.toContain("Peak hour");
+    expect(empty).not.toContain("Top agent");
+    expect(empty).toContain("1 failed");
+  });
   it("uses the golden totals for every range, grouping, model and time view", () => {
     const model = reportModel(result),
       all = selectReport(model, {

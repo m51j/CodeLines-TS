@@ -354,7 +354,15 @@ export interface DesktopFailure {
 export type IpcResponse<T> =
   { ok: true; value: T } | { ok: false; error: DesktopFailure };
 export type ExportKind = "projects" | "analysis" | "history" | "daily" | "ai";
+export type WindowAction = "minimize" | "toggleMaximize" | "close";
+export interface WindowState {
+  maximized: boolean;
+  focused: boolean;
+}
 export interface DesktopApi {
+  getWindowState(): Promise<WindowState>;
+  windowAction(action: WindowAction): Promise<void>;
+  onWindowState(callback: (state: WindowState) => void): () => void;
   load(): Promise<AppState>;
   save(settings: Settings): Promise<AppState>;
   addProject(): Promise<AppState>;

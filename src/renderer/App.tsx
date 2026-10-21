@@ -16,7 +16,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type {
-  AgentStatus,
   AppState,
   Settings,
   Progress,
@@ -40,7 +39,7 @@ import {
   percent,
   type Column,
 } from "./components";
-import { Reports } from "./reports";
+import { AgentSources, Reports } from "./reports";
 import { agentLabels } from "../shared/agents";
 import {
   matchProjects,
@@ -467,55 +466,62 @@ export function App() {
               <span className="eyebrow">{title.hint}</span>
               <h1>{page}</h1>
               <p>
-                {state.settings.lastSnapshot
-                  ? "Latest scan " +
-                    new Date(
-                      state.settings.lastSnapshot.scannedAt,
-                    ).toLocaleString()
-                  : "A clearer view starts with your first scan."}
+                {page === "AI usage"
+                  ? state.ai
+                    ? "Latest AI refresh " +
+                      new Date(state.ai.generatedAt).toLocaleString()
+                    : "Refresh to read local AI agent usage."
+                  : state.settings.lastSnapshot
+                    ? "Latest scan " +
+                      new Date(
+                        state.settings.lastSnapshot.scannedAt,
+                      ).toLocaleString()
+                    : "A clearer view starts with your first scan."}
               </p>
             </div>
-            <div className="toolbar wrap">
-              <select
-                aria-label="Counting scope"
-                disabled={!!busy}
-                value={draft.scanOptions.countingScope}
-                onChange={(e) =>
-                  change((s) => {
-                    s.scanOptions.countingScope = e.target
-                      .value as Settings["scanOptions"]["countingScope"];
-                  })
-                }
-              >
-                {scopes.map((s) => (
-                  <option key={s} value={s}>
-                    {scopeLabel(s)}
-                  </option>
-                ))}
-              </select>
-              <select
-                aria-label="Tokenizer"
-                disabled={!!busy}
-                value={draft.scanOptions.tokenizerEncoding}
-                onChange={(e) =>
-                  change((s) => {
-                    s.scanOptions.tokenizerEncoding = e.target.value as
-                      "o200k_base" | "cl100k_base";
-                  })
-                }
-              >
-                <option>o200k_base</option>
-                <option>cl100k_base</option>
-              </select>
-              <button
-                className="primary"
-                disabled={!!busy || !draft.projects.some((p) => p.isEnabled)}
-                onClick={() => void execute("scan")}
-              >
-                <Play size={15} />
-                Scan all projects
-              </button>
-            </div>
+            {page !== "AI usage" && (
+              <div className="toolbar wrap">
+                <select
+                  aria-label="Counting scope"
+                  disabled={!!busy}
+                  value={draft.scanOptions.countingScope}
+                  onChange={(e) =>
+                    change((s) => {
+                      s.scanOptions.countingScope = e.target
+                        .value as Settings["scanOptions"]["countingScope"];
+                    })
+                  }
+                >
+                  {scopes.map((s) => (
+                    <option key={s} value={s}>
+                      {scopeLabel(s)}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  aria-label="Tokenizer"
+                  disabled={!!busy}
+                  value={draft.scanOptions.tokenizerEncoding}
+                  onChange={(e) =>
+                    change((s) => {
+                      s.scanOptions.tokenizerEncoding = e.target.value as
+                        "o200k_base" | "cl100k_base";
+                    })
+                  }
+                >
+                  <option>o200k_base</option>
+                  <option>cl100k_base</option>
+                </select>
+                <button
+                  className="primary"
+                  disabled={!!busy || !draft.projects.some((p) => p.isEnabled)}
+                  onClick={() => void execute("scan")}
+                >
+                  <Play size={15} />
+                  Scan all projects
+                </button>
+              </div>
+            )}
           </header>
           {error && (
             <div className="error" role="alert">
@@ -1433,32 +1439,17 @@ export function App() {
                   writes count toward real tokens.
                 </Empty>
               )}
-              <Card title="Agent sources">
-                <Table<AgentStatus>
-                  label="AI adapter status"
-                  rows={
-                    state.ai?.agents ??
-                    Object.entries(agentLabels).map(([id, label]) => ({
-                      id,
-                      label,
-                      state: "NotFound",
-                      records: 0,
-                      elapsed: 0,
-                      error: undefined,
-                    }))
-                  }
-                  columns={[
-                    col("label", "Agent", true),
-                    col("state", "Status"),
-                    col("records", "Records"),
-                    {
-                      key: "error",
-                      label: "Details",
-                      value: (r) => r.error ?? "",
-                    },
-                  ]}
+              {!state.ai && (
+                <AgentSources
+                  agents={Object.entries(agentLabels).map(([id, label]) => ({
+                    id,
+                    label,
+                    state: "NotFound",
+                    records: 0,
+                    elapsed: 0,
+                  }))}
                 />
-              </Card>
+              )}
             </>
           )}
           {page === "Settings" && (

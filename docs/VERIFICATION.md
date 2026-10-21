@@ -71,3 +71,19 @@ The source archive includes the implementation, lockfile, assets, all tests/publ
 
 No core page or agent adapter is intentionally left as a placeholder. See FEATURE-PARITY.md and AUDIT.md for the implementation map and explicitly documented behavior resolutions.
 
+
+## AI usage presentation update — 2026-10-21
+
+The refreshed shared React report was verified from the source-built Electron application with isolated synthetic agent data. Type checking, zero-warning lint, all **60 unit/service tests**, the production build, and the expanded `npm run test:desktop` suite passed. The desktop suite covers agent-specific tab/range/group restoration, date validation and empty ranges, stable model colors, keyboard tab navigation, hover/focus tooltips, refresh without losing selections, collapsible source statuses, and the same interactions in an exported standalone HTML report with Chromium offline.
+
+Native screenshots now wait for a rendered frame before capture. Overview, Time and Projects were checked in light/dark themes at normal size and 950×700. Additional synthetic standalone previews cover labeled activity calendars, weekday/hour axes and failed source details. Screenshots are under `artifacts/desktop/` (`built-ai-*` and `ai-activity-*` / `ai-heatmap-*`). The original golden totals, Claude cost behavior and unknown/partial/known-zero costs remain covered by the tests.
+
+The installer and portable binary were subsequently regenerated with `npm run package` for this UI update. `npm run test:desktop -- --packaged` passed against the newly packaged executable, including the expanded AI report checks and standalone offline HTML. `npm run test:portable` passed against the new portable wrapper itself. The new NSIS installer was generated successfully; it was not installed during this follow-up. SHA256 checksums for both executables are recorded in `release/SHA256SUMS.txt`. The current packaged `resources/app.asar` SHA256 is `f357ffba46c4f1a382024c2e4358d076e71e6cbd90f8d6a455a4c89155fa78d5`; the earlier installed-app record above describes the previous package.
+
+## Custom title bar — 2026-10-21
+
+The source-built desktop now uses a frameless Electron window with a themed React title bar. The bar remains available during startup, defines a native drag region, and provides accessible minimize, maximize/restore, and close controls through the validated preload bridge. Focus and maximize events from the operating system update its appearance and restore icon.
+
+TypeScript, zero-warning lint, all **60 unit/service tests**, the production build, and the full `npm run test:desktop` suite passed. Desktop coverage includes light/dark title-bar colors, drag/control regions, actual OS minimize/maximize/restore/close actions, externally triggered maximize events, inactive styling, invalid-action rejection, and the existing offline reports/navigation/export checks at normal and 950×700 sizes. Window-control checks target the main window explicitly after a separate report window is opened. A focused runtime check also passed System appearance in both emulated color schemes and keyboard activation of maximize.
+
+The new bar was visually checked in `artifacts/desktop/built-dashboard-light.png`, `built-dashboard-dark.png`, and `built-small-window.png`. This follow-up rebuilt `dist/`; the installer and portable executable were not regenerated for the title-bar change.

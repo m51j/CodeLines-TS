@@ -28,8 +28,13 @@ import type {
   ProjectMetric,
   HistorySnapshot,
   GitProject,
+  WindowState,
 } from "../shared/contracts";
 let window: BrowserWindow;
+const windowState = (): WindowState => ({
+  maximized: window.isMaximized(),
+  focused: window.isFocused(),
+});
 let store: Store;
 const active = new Map<
   string,
@@ -317,6 +322,18 @@ async function setup() {
       ),
   );
   await store.load();
+  handle("windowState", windowState);
+  handle("windowAction", (raw) => {
+    const action = z.enum(["minimize", "toggleMaximize", "close"]).parse(raw);
+    if (action === "minimize") window.minimize();
+    else if (action === "toggleMaximize") {
+      if (window.isMaximized()) window.unmaximize();
+      else window.maximize();
+    } else {
+      // Let the IPC response reach the renderer before closing its web contents.
+      setImmediate(() => window.close());
+    }
+  });
   handle("load", () => store.state());
   handle("save", async (value) => {
     assertIdle();
@@ -515,6 +532,7 @@ async function setup() {
     height: 940,
     minWidth: 900,
     minHeight: 620,
+    frame: false,
     backgroundColor: "#0b1120",
     title: "CodeLines TS",
     show: process.env.CODELINES_TEST !== "1",
@@ -527,6 +545,14 @@ async function setup() {
     },
   });
   window.removeMenu();
+  const publishWindowState = () => {
+    if (!window.isDestroyed() && !window.webContents.isDestroyed())
+      window.webContents.send("codelines:windowState", windowState());
+  };
+  window.on("maximize", publishWindowState);
+  window.on("unmaximize", publishWindowState);
+  window.on("focus", publishWindowState);
+  window.on("blur", publishWindowState);
   window.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   window.webContents.on("will-navigate", (event, url) => {
     if (url !== (process.env.CODELINES_DEV_URL ?? pathToFileURL(entry).href))

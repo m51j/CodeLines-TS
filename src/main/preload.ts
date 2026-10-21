@@ -1,5 +1,10 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { DesktopApi, Progress, IpcResponse } from "../shared/contracts";
+import type {
+  DesktopApi,
+  Progress,
+  IpcResponse,
+  WindowState,
+} from "../shared/contracts";
 async function invoke<T>(channel: string, ...args: unknown[]): Promise<T> {
   const response = (await ipcRenderer.invoke(
     channel,
@@ -10,6 +15,14 @@ async function invoke<T>(channel: string, ...args: unknown[]): Promise<T> {
   return response.value;
 }
 const api: DesktopApi = {
+  getWindowState: () => invoke("codelines:windowState"),
+  windowAction: (action) => invoke("codelines:windowAction", action),
+  onWindowState: (callback) => {
+    const listener = (_event: Electron.IpcRendererEvent, value: WindowState) =>
+      callback(value);
+    ipcRenderer.on("codelines:windowState", listener);
+    return () => ipcRenderer.removeListener("codelines:windowState", listener);
+  },
   load: () => invoke("codelines:load"),
   save: (settings) => invoke("codelines:save", settings),
   addProject: () => invoke("codelines:add"),
