@@ -12,7 +12,20 @@
   --accent-soft: #e9eeff;
   --success: #087e65;
   --warning: #865500;
-  --rail: #0d1525;
+  --rail: var(--surface-alt);
+  --rail-text: var(--text);
+  --rail-brand-muted: var(--muted);
+  --rail-label: var(--muted);
+  --rail-nav-text: #475569;
+  --rail-active: var(--accent-soft);
+  --rail-active-text: #3152cf;
+  --rail-hover: var(--hover);
+  --rail-card: var(--surface);
+  --rail-card-border: var(--border);
+  --rail-card-text: var(--muted);
+  --rail-card-icon: var(--rail-active-text);
+  --rail-card-title: var(--text);
+  --rail-version: var(--muted);
   --radius: 12px;
   --shadow: 0 2px 6px #17203303;
   color: var(--text);
@@ -34,6 +47,19 @@
   --success: #52d5b0;
   --warning: #f3c774;
   --rail: #080e1b;
+  --rail-text: #e2e8f0;
+  --rail-brand-muted: #92a3c1;
+  --rail-label: #8291ad;
+  --rail-nav-text: #a9b7cc;
+  --rail-active: #1c2c4a;
+  --rail-active-text: #a9bbff;
+  --rail-hover: #17243d;
+  --rail-card: transparent;
+  --rail-card-border: #26334c;
+  --rail-card-text: #adbbcf;
+  --rail-card-icon: #93aaff;
+  --rail-card-title: #dbe5f7;
+  --rail-version: #7587a4;
   --shadow: none;
 }
 * {
@@ -273,7 +299,7 @@ small {
   width: 218px;
   flex: none;
   background: var(--rail);
-  color: #e2e8f0;
+  color: var(--rail-text);
   display: flex;
   flex-direction: column;
   padding: 30px 16px 18px;
@@ -305,14 +331,14 @@ small {
   display: block;
   font-size: 8px;
   letter-spacing: 1.1px;
-  color: #92a3c1;
+  color: var(--rail-brand-muted);
   margin-top: 5px;
 }
 .rail-label {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 1.5px;
-  color: #8291ad;
+  color: var(--rail-label);
   padding-left: 13px;
   margin-bottom: 12px;
 }
@@ -326,39 +352,40 @@ nav button {
   background: none;
   justify-content: flex-start;
   gap: 12px;
-  color: #a9b7cc;
+  color: var(--rail-nav-text);
   padding: 12px 14px;
   font-size: 12px;
   font-weight: 500;
 }
 nav button.active {
-  background: #1c2c4a;
-  color: #a9bbff;
+  background: var(--rail-active);
+  color: var(--rail-active-text);
 }
 nav button.active span {
   flex: 1;
   text-align: left;
 }
 nav button:hover:not(:disabled) {
-  background: #17243d;
+  background: var(--rail-hover);
   border-color: transparent;
 }
 .privacy {
   margin-top: auto;
   margin-bottom: 20px;
   padding: 16px 12px;
-  border: 1px solid #26334c;
+  border: 1px solid var(--rail-card-border);
   border-radius: 10px;
-  color: #adbbcf;
+  background: var(--rail-card);
+  color: var(--rail-card-text);
   font-size: 11px;
 }
 .privacy > svg {
-  color: #93aaff;
+  color: var(--rail-card-icon);
   margin-bottom: 9px;
 }
 .privacy strong {
   display: block;
-  color: #dbe5f7;
+  color: var(--rail-card-title);
   font-size: 12px;
 }
 .privacy p {
@@ -367,7 +394,7 @@ nav button:hover:not(:disabled) {
   line-height: 1.6;
 }
 .version {
-  color: #7587a4;
+  color: var(--rail-version);
   margin-left: 12px;
   font-size: 10px;
 }
