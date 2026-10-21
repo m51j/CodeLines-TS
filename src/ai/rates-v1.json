@@ -1,0 +1,40 @@
+{
+  "agent": {
+    "grok-4.3": [1.25, 0.2, null, 2.5],
+    "gpt-5.6-luna": [0.2, 0.02, 0.25, 1.2],
+    "gemini-3.1-pro-preview": [2.0, 0.2, null, 12.0],
+    "gemini-3.6-flash": [0.75, 0.075, null, 3.75],
+    "gpt-6.1-sol": [2.0, 0.1, 2.5, 10.0],
+    "gpt-6-luna": [0.1, 0.01, 0.125, 0.5],
+    "gpt-5.6-terra": [2.0, 0.2, 2.5, 12.0],
+    "gpt-5.4": [2.5, 0.25, null, 15.0],
+    "gemini-3.8-flash": [0.75, 0.075, null, 3.75],
+    "ox-alpha": [0.0, 0.0, 0.0, 0.0],
+    "gemini-3.5-flash": [1.5, 0.15, null, 9.0],
+    "glm-5.3-flash": [0.15, 0.03, null, 0.5],
+    "gpt-5.5": [5.0, 0.5, null, 30.0],
+    "gemini-3.7-flash": [0.75, 0.075, null, 3.75],
+    "gemini-3-flash-preview": [0.5, 0.05, null, 3.0],
+    "gemini-3.5-flash-lite": [0.3, null, null, 2.5],
+    "gpt-6-astra": [10.0, 1.0, 12.5, 50.0],
+    "gpt-5.6-sol": [4.0, 0.4, 5.0, 20.0],
+    "gpt-6-sol": [2.0, 0.2, 2.5, 10.0]
+  },
+  "claude": {
+    "claude-opus-4-6": [5.0, 25.0, null],
+    "claude-sonnet-5-5": [2.0, 10.0, 0.2],
+    "claude-fable-5": [10.0, 50.0, null],
+    "claude-opus-5": [5.0, 25.0, null],
+    "claude-sonnet-4-5": [3.0, 15.0, null],
+    "claude-haiku-3-5": [0.8, 4.0, null],
+    "claude-opus-5-5": [4.0, 20.0, 0.2],
+    "claude-mythos-5-1": [10.0, 50.0, 0.25],
+    "claude-sonnet-5": [2.0, 10.0, null],
+    "claude-opus-4-8": [5.0, 25.0, null],
+    "claude-haiku-4-5": [1.0, 5.0, null],
+    "claude-sonnet-4-6": [3.0, 15.0, null],
+    "claude-opus-4-7": [5.0, 25.0, null],
+    "claude-fable-5-1": [10.0, 50.0, 0.25],
+    "claude-mythos-5": [10.0, 50.0, null]
+  }
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "text": "",
+    "o200k_base": 0,
+    "cl100k_base": 0
+  },
+  {
+    "text": "hello",
+    "o200k_base": 1,
+    "cl100k_base": 1
+  },
+  {
+    "text": "hello world",
+    "o200k_base": 2,
+    "cl100k_base": 2
+  },
+  {
+    "text": "// fixture\nexport const hello = \u0022hello world\u0022;\n",
+    "o200k_base": 11,
+    "cl100k_base": 11
+  },
+  {
+    "text": "\u0645\u0631\u062D\u0628\u0627 \u0628\u0627\u0644\u0639\u0627\u0644\u0645\n",
+    "o200k_base": 5,
+    "cl100k_base": 11
+  },
+  {
+    "text": "\u65E5\u672C\u8A9E\u306E\u30C6\u30AD\u30B9\u30C8",
+    "o200k_base": 6,
+    "cl100k_base": 8
+  },
+  {
+    "text": "\uD83D\uDE00\uD83D\uDC69\u200D\uD83D\uDCBB caf\u00E9 na\u00EFve",
+    "o200k_base": 9,
+    "cl100k_base": 12
+  },
+  {
+    "text": "a\r\nb\r\n",
+    "o200k_base": 4,
+    "cl100k_base": 4
+  },
+  {
+    "text": "\u003C|endoftext|\u003E",
+    "o200k_base": 1,
+    "cl100k_base": 1
+  },
+  {
+    "text": "public static void Main() { Console.WriteLine(42); }",
+    "o200k_base": 13,
+    "cl100k_base": 12
+  },
+  {
+    "text": "\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67\u200D\uD83D\uDC66",
+    "o200k_base": 11,
+    "cl100k_base": 18
+  },
+  {
+    "text": "indivisible computationally tokenized data",
+    "o200k_base": 8,
+    "cl100k_base": 8
+  }
+]

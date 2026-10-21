@@ -1,0 +1,75 @@
+{
+  "name": "codelines-ts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline CodeLines desktop analysis",
+  "author": "CodeLines",
+  "license": "UNLICENSED",
+  "main": "dist/main.cjs",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "tsx scripts/dev.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "test": "vitest run",
+    "test:desktop": "tsx scripts/desktop-test.ts",
+    "test:portable": "tsx scripts/portable-test.ts",
+    "build": "tsx scripts/build.ts",
+    "start": "electron .",
+    "package": "npm run build && electron-builder --win nsis portable",
+    "verify": "npm run typecheck && npm run lint && npm test && npm run build"
+  },
+  "dependencies": {
+    "js-tiktoken": "^1.0.21",
+    "lucide-react": "^0.548.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "recharts": "^3.3.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.9.1",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "electron": "^45.0.0",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.11",
+    "eslint": "^9.38.0",
+    "jiti": "^2.7.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.2",
+    "vite": "^7.1.12",
+    "vitest": "^3.2.4"
+  },
+  "build": {
+    "appId": "local.codelines.typescript",
+    "productName": "CodeLines TS",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "icon": "assets/CodeLines.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "signExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

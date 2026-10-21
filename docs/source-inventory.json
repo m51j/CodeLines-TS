@@ -1,0 +1,592 @@
+[
+  {
+    "path": "src\\CodeLines.App\\App.xaml",
+    "bytes": 19294,
+    "sha256": "c60acb0d9b6d2e759593b1904cf5921b6fe64f40c5fb4f1672466b3a474ebefa"
+  },
+  {
+    "path": "src\\CodeLines.App\\App.xaml.cs",
+    "bytes": 220,
+    "sha256": "887f0de60b26a87ff61182ed9714d7c3e12a412a2d28ef75cf38d2401af7823a"
+  },
+  {
+    "path": "src\\CodeLines.App\\AssemblyInfo.cs",
+    "bytes": 249,
+    "sha256": "2f22c2ed336159d6dc18fb57f21a0123328e5588372871bf1f5519f872ca904b"
+  },
+  {
+    "path": "src\\CodeLines.App\\CodeLines.App.csproj",
+    "bytes": 771,
+    "sha256": "4b4134ecfb11afda7655273e8f1c79c51dc0da2f5f67dd623134e1309d9b5ade"
+  },
+  {
+    "path": "src\\CodeLines.App\\MainWindow.xaml",
+    "bytes": 50386,
+    "sha256": "40587d16a13ea392440d800d1cb5e0a097bca55b577b24ba85c9c15634ae4229"
+  },
+  {
+    "path": "src\\CodeLines.App\\MainWindow.xaml.cs",
+    "bytes": 8673,
+    "sha256": "166c9061aaccdaa24a8f41e4a96cba2a9b55f212acdd317e426c6a8ce15d4659"
+  },
+  {
+    "path": "src\\CodeLines.App\\Assets\\CodeLines.ico",
+    "bytes": 48060,
+    "sha256": "e9aa6d8a66316ae47b30f3566cef5ddc667dffdf1a618ac66e3cb1eef5fbbd32"
+  },
+  {
+    "path": "src\\CodeLines.App\\Assets\\CodeLines.svg",
+    "bytes": 670,
+    "sha256": "9ef483b5df6893e728c4acd08945bed867a6908f64405fbfe66abd890f404a8e"
+  },
+  {
+    "path": "src\\CodeLines.App\\Converters\\EnumDisplayConverter.cs",
+    "bytes": 861,
+    "sha256": "c5a31250b3ed765ec9dccba4d37eda80a9b31161282c8939fe51beef092f0ce2"
+  },
+  {
+    "path": "src\\CodeLines.App\\Services\\ThemeManager.cs",
+    "bytes": 1931,
+    "sha256": "30a6d28ffba54e900926dcb51887e81297e432e33213eedc8782b2114fc06c6d"
+  },
+  {
+    "path": "src\\CodeLines.App\\Themes\\DarkTheme.xaml",
+    "bytes": 1260,
+    "sha256": "6e200d21c31f3e8b721c145500399de1b462344bf2b196be3ddc16f34249a944"
+  },
+  {
+    "path": "src\\CodeLines.App\\Themes\\LightTheme.xaml",
+    "bytes": 1260,
+    "sha256": "039cb9da0f24a8de2ed00330c77d64869a7d18869b8cc9ad667025b53f22223f"
+  },
+  {
+    "path": "src\\CodeLines.App\\ViewModels\\AiUsageAgentOption.cs",
+    "bytes": 499,
+    "sha256": "1a5cbfac4b564568fd478b5d3024209a2d5ee1e07004dcbd61a94732a1887107"
+  },
+  {
+    "path": "src\\CodeLines.App\\ViewModels\\MainViewModel.AiUsage.cs",
+    "bytes": 10848,
+    "sha256": "e700cc5c79cf7e7dc65d8896916ef61dbd741dd602b1c4537f6ee477b4e2a177"
+  },
+  {
+    "path": "src\\CodeLines.App\\ViewModels\\MainViewModel.cs",
+    "bytes": 13875,
+    "sha256": "b0e4a0f40ba42f2954559f0b1d5a9003488306ec8d50d37208866e65fc1835bd"
+  },
+  {
+    "path": "src\\CodeLines.App\\ViewModels\\MainViewModel.DailyLog.cs",
+    "bytes": 7355,
+    "sha256": "346a5aea1b527da2b91411f2ca9b62a6ba550c7fc28ceaadb96b87b94f6363e9"
+  },
+  {
+    "path": "src\\CodeLines.App\\ViewModels\\MainViewModel.GitHistory.cs",
+    "bytes": 15964,
+    "sha256": "b0a802d10ff34a5731f7077df00cb8fef67bd5232712b128fcc2f52b53c4610b"
+  },
+  {
+    "path": "src\\CodeLines.App\\ViewModels\\ProjectItemViewModel.cs",
+    "bytes": 1521,
+    "sha256": "fee4205fb0d1db8c7acdc1ff04efe7b07e28d4b56f3b202c3c4f0e7ab9afa376"
+  },
+  {
+    "path": "src\\CodeLines.Core\\CodeLines.Core.csproj",
+    "bytes": 880,
+    "sha256": "2e78df0edcedf11f47de8ac30abf8810068b490b6ef824abf73eb3edbaaaabda"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Abstractions\\Services.cs",
+    "bytes": 2208,
+    "sha256": "d49d53f883a168fdbcfb0f6e2d6085dc0635caa23419e3d5780be1f6f79ab241"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\AiProjectUsage.cs",
+    "bytes": 3503,
+    "sha256": "bb6333cf11aac47663b5ead9272882a6701ce5c2e0d06758db8b9fa4c1df16f7"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\AiUsageModels.cs",
+    "bytes": 2936,
+    "sha256": "c0f73909849a3f2c51c6fb8f4a2a4dbf923316c179fc0005894cf7e8ebbb8913"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\AiUsagePayloadWriter.cs",
+    "bytes": 6491,
+    "sha256": "9d00f39a5f9e28b5932dbfc12bd5d66121199bc53071b4520b8d646f691925b4"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\AiUsageReportBuilder.cs",
+    "bytes": 9346,
+    "sha256": "a877f7687443acd49f581a0e94b641200fea88ac766ad40624d151cb48bd868d"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\AiUsageTemplates.cs",
+    "bytes": 4872,
+    "sha256": "93165c0bbca02ed7b60765c0914ba07a9ae696119e6eaea1bd704770a1cc6463"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\ClaudePricing.cs",
+    "bytes": 3427,
+    "sha256": "70e9f007e07e65872e5039fa4ea695edd2bea6e8bdc2548b895843eb6b24ed39"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\ClaudeTranscriptScanner.cs",
+    "bytes": 5229,
+    "sha256": "40a059df5143cee22268a9aef9a54b995fae41cbe324a6362ccb7a17bd038334"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\ClaudeUsageAggregator.cs",
+    "bytes": 8646,
+    "sha256": "fa453bd48d1586a32a37ee4026a2d0d50827aabebee92e38709144d497b8568d"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\JsonValues.cs",
+    "bytes": 2343,
+    "sha256": "220f1e7101311ad2f22d51e4be0d26c687e5fa82efc92e617cf32decf1923133"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\UsageClock.cs",
+    "bytes": 2299,
+    "sha256": "2df4510f09907538f6d0f1239f05c42f802b99e47605052649ff56580131b6a1"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\UsageFileCache.cs",
+    "bytes": 5821,
+    "sha256": "5053df94abce3a6eb79ec8fd0c4821d13a2eeb11bc2c50c62bab474735863ce6"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\AgentPricing.cs",
+    "bytes": 3494,
+    "sha256": "fd5d67539f95616cf754e894d01ff9571c3907e89dfb10ca03092b2e21f8194e"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\AgentRecord.cs",
+    "bytes": 2615,
+    "sha256": "f4526064845369866faf54053725c7187e5a189d016ac9e792c17cbbe3785bdd"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\AgentUsageAggregator.cs",
+    "bytes": 8611,
+    "sha256": "31cf3012c36b4f628ca4f5fa8204bcc4b8a69a10dabb9d6c9d3ca71475b6c774"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\IAgentUsageAdapter.cs",
+    "bytes": 1633,
+    "sha256": "c3bb36c9e79ea6720b9751d6bd17e8d6f0ccf0d1b8c859639e6f747878a01532"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\SqliteSource.cs",
+    "bytes": 3581,
+    "sha256": "fbbca898370d12bf7d9d08284a0e82b571fb1dc4b8eebbfcabb91c11675b6d4d"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\Adapters\\AgentAdapters.cs",
+    "bytes": 922,
+    "sha256": "f2a37dd1446a1c16e33fcb4f2fa2ec70dd7be81f77e1d8fd1036b2f18ad92f2b"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\Adapters\\AntigravityAdapter.cs",
+    "bytes": 6299,
+    "sha256": "dad8b50617b22ec7a1bbb7a7401192e2aa9c566bfe40c3cd5ea81da9df6adc2d"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\Adapters\\ClineAdapter.cs",
+    "bytes": 3910,
+    "sha256": "b30ae3c370dc4c2528c3d76831f40761a1c8a10120de9cc861df05ec5e8d22f1"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\Adapters\\CodexAdapter.cs",
+    "bytes": 4686,
+    "sha256": "ac5872cd56c09801b8eb2b49e9f733f49a9575e5ee1e2df4195b448b1aeef82f"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\Adapters\\CopilotAdapter.cs",
+    "bytes": 11002,
+    "sha256": "9f867701374602705a1bc586e89b3363b862c1a8cbfd15546b3be870d3a56d25"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\Adapters\\HermesAdapter.cs",
+    "bytes": 2106,
+    "sha256": "cff11512b741e7927639f91af58d8d4fbf6c11de9c817585d38237f15749bb41"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\Adapters\\JsCompat.cs",
+    "bytes": 7167,
+    "sha256": "2d3eca288cd04a686d79bb733812a435bc9cd6bc6b601af4cb1278b3e45ed867"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\Adapters\\LmStudioAdapter.cs",
+    "bytes": 4236,
+    "sha256": "aac5371914bf4592942c6d3eae6a2c5cfedf4e9e45b47e0a01ee1c3236ce5f64"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\Adapters\\OpenCodeAdapter.cs",
+    "bytes": 3791,
+    "sha256": "8a0433cac1fce6b5dca73f4d52127726db4ae35a31f9060f24ee6c3ef74ef434"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\Adapters\\Protobuf.cs",
+    "bytes": 2845,
+    "sha256": "aedabcd431aa2791b6780d64af568d5bd5a9f07894357fce77c6ac5eb5c85501"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Agents\\Adapters\\ZCodeAdapter.cs",
+    "bytes": 1781,
+    "sha256": "5c490be1d9ad7456ec5b41af92b3edd436f783dff945218ac131b6b5804a042f"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Templates\\agent-report.html",
+    "bytes": 43357,
+    "sha256": "50ebe1644724d0d71a44ee410b1a95c84361c0a2c72565c4f0f2765e919893aa"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Templates\\claude-report.html",
+    "bytes": 41406,
+    "sha256": "349a035aa88c0bf4c255207176caca77dafddad96262603b302f2d9abc0351e7"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Templates\\dashboard.html",
+    "bytes": 2818,
+    "sha256": "3beaa1ac589f93efb1c5cbaef7bc3dca83ac4bcc0cff422b3b6476302160419f"
+  },
+  {
+    "path": "src\\CodeLines.Core\\AiUsage\\Templates\\UPSTREAM.md",
+    "bytes": 1857,
+    "sha256": "7035c48c58a813ff7b7bae76ce419b7c5f987f75197e50549dd119c611e779b1"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Models\\AiUsageSettings.cs",
+    "bytes": 846,
+    "sha256": "bb9db1190b1a1222d72055c33786c50a773a5c6097d5bfc5001e35d30a3a0d42"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Models\\AppSettings.cs",
+    "bytes": 548,
+    "sha256": "337f0e546dbdd966651f1bbf5afcf9635b17779132713ebbf78ab876d9c3ce98"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Models\\DailyLog.cs",
+    "bytes": 2809,
+    "sha256": "b0c232d2c9eff4d376b145b5901cba01256cafbc56ce6b2ef7e3ae298c57732b"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Models\\Enums.cs",
+    "bytes": 208,
+    "sha256": "8e71d5af6f3802f8a03ec7d2d9c79c24a9f1f5face33e52f6750ca1685b5eb5d"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Models\\GitHistory.cs",
+    "bytes": 2566,
+    "sha256": "2ef9708702fe005b86b9f724a6bb8c76b4e1ee49d3ed1cf997c2cce7c9dbb9e5"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Models\\LanguageDefinition.cs",
+    "bytes": 351,
+    "sha256": "2e069b223a5deaad706a7aeb701d08a367f7fb0544d53912c74fd9fae11d8890"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Models\\Metrics.cs",
+    "bytes": 4140,
+    "sha256": "f34919eec7d699abcc0bb271a5ffd79e060ea98e6a88d040617a2cb7f8bc01ef"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Models\\ProjectDefinition.cs",
+    "bytes": 346,
+    "sha256": "106485a01035cfe3008af9385c95f40d64bd1dfd9fd4a54bf422711d794e1f24"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Models\\ScanOptions.cs",
+    "bytes": 1963,
+    "sha256": "2564bc54267188fb6a226c08dbd6b26c51225cc3791d83d5381bf28c25c594cd"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Services\\DailyLogComparer.cs",
+    "bytes": 12465,
+    "sha256": "41dc11d1038c625b097c42cff23c1442e3fac68b9872d034e82ea95ec1913765"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Services\\DailyLogRecorder.cs",
+    "bytes": 5086,
+    "sha256": "759dbfae030b061f38ca8893e825d0cb813078a9799a29a72cf40c192a179d0f"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Services\\ExportService.cs",
+    "bytes": 1913,
+    "sha256": "f2e8113986468d6750cd326e5633809c2eae160a4df029745442a78d847398ef"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Services\\FileClassifier.cs",
+    "bytes": 1090,
+    "sha256": "15393753ea1c947da1c799397fdc66afc0e835cdaf47f165f69b38f425a7c5e3"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Services\\GitHistoryAnalyzer.cs",
+    "bytes": 12632,
+    "sha256": "7020e0ec0bab69d9b424fe8eefdef5f9224b1c57ba705e073654b2f24e73e709"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Services\\GitHistoryExportService.cs",
+    "bytes": 2699,
+    "sha256": "e6e4c3d278a73c97defd576257de69791114ed47929665eeb44500c1befba2d0"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Services\\GitIgnoreRuleProvider.cs",
+    "bytes": 6353,
+    "sha256": "cfafc6fa2d224355072daa1a68e651aaab8f782d9e3ee24e8e266663de40ba1e"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Services\\JsonDailyLogRepository.cs",
+    "bytes": 1892,
+    "sha256": "e243d89175a447798a700d1b30b4552fb19a58709f7a53901b061500e0804053"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Services\\JsonProjectRepository.cs",
+    "bytes": 3947,
+    "sha256": "5165dff7146d76bef7933ee9d7741c7ce4df63b8dbb4ce1c195e2b70fec286b9"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Services\\LanguageRegistry.cs",
+    "bytes": 4758,
+    "sha256": "7511fa31b19cb6023a40d8cb094ed69d4b57a97abe5561f9a5bea8518d5f43f8"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Services\\LineMetricsAnalyzer.cs",
+    "bytes": 4014,
+    "sha256": "9932b0230736af24986727b71d61347cbf0ff05459e159d1836e150bfd51754b"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Services\\ProjectListFile.cs",
+    "bytes": 2419,
+    "sha256": "559ffeb779d8b2b4ad565cfb540004c3980fa67970dc856ad0040f95088b8e82"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Services\\SourceScanner.cs",
+    "bytes": 8084,
+    "sha256": "24a74d7abca9723f155710f27559dc0f85b29e69cbb24f796ad5aa4d2f3db696"
+  },
+  {
+    "path": "src\\CodeLines.Core\\Services\\TokenCounter.cs",
+    "bytes": 843,
+    "sha256": "8b6350dc038bd2053eb4f25325469e48e75c71af35c6c08b5e99eeb5a085fc0d"
+  },
+  {
+    "path": "tests\\CodeLines.App.Tests\\AiUsageViewModelTests.cs",
+    "bytes": 10921,
+    "sha256": "23e6a689a8c141148f00d1496534f424bc003a19479c3949d97c6e3982b9d2f5"
+  },
+  {
+    "path": "tests\\CodeLines.App.Tests\\CodeLines.App.Tests.csproj",
+    "bytes": 624,
+    "sha256": "914a096ebc971fd0cda666345e69d9850fc595bb3757190c5e0ae54ca3eadded"
+  },
+  {
+    "path": "tests\\CodeLines.App.Tests\\DailyLogViewModelTests.cs",
+    "bytes": 9790,
+    "sha256": "362d74358b8029612088f757f5d3b869d4b5bbb9f7430458478aee9a8ff00157"
+  },
+  {
+    "path": "tests\\CodeLines.App.Tests\\GitHistoryViewModelTests.cs",
+    "bytes": 13831,
+    "sha256": "c9bae75d6eb2a8561ef93e2d1a07437f9cd5a37675f376020f74b5ee12c460f2"
+  },
+  {
+    "path": "tests\\CodeLines.App.Tests\\ProjectListViewModelTests.cs",
+    "bytes": 2593,
+    "sha256": "ff8bf0607d465f8c173229c648db635560ecdbdf587d9c6cac5d32801ba6e9a9"
+  },
+  {
+    "path": "tests\\CodeLines.App.Tests\\WpfTestHost.cs",
+    "bytes": 1179,
+    "sha256": "6412625596743d7d687b7bc196ca5794a806674346180a7582d2bb986f6325db"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\CodeLines.Tests.csproj",
+    "bytes": 866,
+    "sha256": "b3498fa21952487d4e2d9554e01ab983d174891559fc68c7973a7c25f8891594"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\DailyLogTests.cs",
+    "bytes": 8620,
+    "sha256": "e08d94a7581c4862e7c47da6fce3a32cbd2fd30582273e54f08866d6d290239a"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\FileClassifierTests.cs",
+    "bytes": 1708,
+    "sha256": "e01de68a1e9129c0bed7a8be46745904786d957a0f9c691963711cc118cecabf"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\GitHistoryTests.cs",
+    "bytes": 13973,
+    "sha256": "d6e54d92116e6bb926964a8d7bfed7cd1d52a045522d5f56ddb6b01ddb6ba9f3"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\GitIgnoreRuleProviderTests.cs",
+    "bytes": 1741,
+    "sha256": "a08479cb9f21ed4b460f6146fc2d8b3c116c20fee76cbcf66a84d2c9bc305658"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\LineMetricsAnalyzerTests.cs",
+    "bytes": 1941,
+    "sha256": "cb69a459bea5da76a738a5791a3fc463d94b53e961eb6fc56bdea3bfedf6a20a"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\LiveProjectsSmokeTests.cs",
+    "bytes": 1904,
+    "sha256": "de8a25894e62ffd316998aed9727d4501848e2f573fea6139826672dc8bb488e"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\PersistenceAndExportTests.cs",
+    "bytes": 7166,
+    "sha256": "f7b3252bc3719e30d68303ea2859ea25526c7f10e415b2fcce8fd6fd37d5768d"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\SourceScannerTests.cs",
+    "bytes": 4614,
+    "sha256": "011d98ba9896854f5415a7704dfb043db2b9f9cb60c9620f15a54f5c8888757b"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\TokenCounterTests.cs",
+    "bytes": 539,
+    "sha256": "f83b60df4d94c8a475a4f8c3667d21c7d4800180d8ff62e6ca74903e90309eaf"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\AiUsageReportBuilderTests.cs",
+    "bytes": 7972,
+    "sha256": "ea8b576575f761aebfc7dec0b1fb51f090bd0f6b0e42d4252dc39a92fa432ce7"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\AiUsageUnitTests.cs",
+    "bytes": 9345,
+    "sha256": "cba287fe2bd47e785d7240956bbf37eadb1bf4cbb67b7484cbe78b4bba16d4f2"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\ClaudeParityTests.cs",
+    "bytes": 4256,
+    "sha256": "40e9122e5ded67610d01883605ae63c4b9ae4e894e21276be9e71512f84708a2"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Adapters\\AdapterTestEnv.cs",
+    "bytes": 3270,
+    "sha256": "7efd3b19951245afbdbf217ab77aff970666986377e2ac68216fedad841924ca"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Adapters\\AgentAdaptersTests.cs",
+    "bytes": 821,
+    "sha256": "5cdee3ab3605dab21e05a788f131a4df5b16feac5ec2a790122e762610b53bfc"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Adapters\\AntigravityAdapterTests.cs",
+    "bytes": 5128,
+    "sha256": "a27df75e38a2216818e6e40cfe9b1d15181d9d1bb7ff649fd15fd7c09ec4d4b2"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Adapters\\CodexAdapterTests.cs",
+    "bytes": 3895,
+    "sha256": "4f9d466cf0e3c8c45e1ec8f3bbaf7477c5d8c24f1fe738208415b55fd3867ce2"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Adapters\\JsonAdapterTests.cs",
+    "bytes": 8181,
+    "sha256": "2106bd8dcd6251384e720e8d9f2cb0fe2f28f2237362c909b72795c8cf87d561"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Adapters\\SqliteAdapterTests.cs",
+    "bytes": 7691,
+    "sha256": "fa492bfbc5f656a3c22439567a5cc990761883b4196c6634ebcfdafcacb2f5a3"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\agents-payload.golden.json",
+    "bytes": 31132,
+    "sha256": "d5a219dc249c21c18544f5edf2e2e02be46d5c88cd41da73c7613fd933195393"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude-payload-raw.golden.json",
+    "bytes": 27378,
+    "sha256": "98557d4c5316c69681ee1843aca2e52857c1b06d44ec071a77d88c225c89bb12"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude-payload.golden.json",
+    "bytes": 27197,
+    "sha256": "8fa4c44af1fd2ede8ec274b7997cff571d88a72005a6b57ab3e7342487626fd6"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\generate-goldens.mjs",
+    "bytes": 5453,
+    "sha256": "6bf87405d31e4508d15eeb777a34268f28655be88b189b08826a7fad2d640148"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-0\\sess-000.jsonl",
+    "bytes": 37235,
+    "sha256": "2270fc0935b436d4a594dd0af0c45437a2ef59a2b6a75088aa417c47197a481a"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-0\\sess-004.jsonl",
+    "bytes": 31068,
+    "sha256": "6186363202d19946985f3433fc4df5cff7ed73b3a97ed745dc7ab5b407c2b063"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-0\\sess-008.jsonl",
+    "bytes": 31966,
+    "sha256": "fc665670742170e4e94eddb670aa0e0c0079b8909229fd76d906746d58a07ff8"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-0\\sess-012.jsonl",
+    "bytes": 33274,
+    "sha256": "3fc1185c0a58d471a7a8625a005fb4c3ecc75a6038ef670740589f34a10ea868"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-0\\sess-000\\subagents\\agent-1.jsonl",
+    "bytes": 516,
+    "sha256": "06640d6ca029ef3877ab5ffdabedc11dd17e5901e9d149a7888981539c6ff825"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-1\\sess-001.jsonl",
+    "bytes": 31544,
+    "sha256": "12d6c39b5b4cbe5b2eebef6d76d48261576e410f730fa9cf87f4bf082a21432a"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-1\\sess-005.jsonl",
+    "bytes": 31452,
+    "sha256": "80513ebf623e6ba172bc757cfd1a1a66b6d9ddb74c9df7c66a0e846c811a12b5"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-1\\sess-009.jsonl",
+    "bytes": 33138,
+    "sha256": "9ee4fa5dc18a90e867847b8b4c18c4d5f231489bc50303a0f0157f31c2dba7f0"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-1\\sess-013.jsonl",
+    "bytes": 27816,
+    "sha256": "4e082cdd0d71e1272b0ed7f1fc7e02388f1fcf15400a70ecd78fb7fe6910602a"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-2\\sess-002.jsonl",
+    "bytes": 32279,
+    "sha256": "def92e1a97738ac4c8a86c4858d05a721604c5139ba9a4f811a7df6c774c9d23"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-2\\sess-006.jsonl",
+    "bytes": 31758,
+    "sha256": "e03939d6662946d1ed9954d89eea6e8bcd653695444d3820d26bdaa3e46f0db9"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-2\\sess-010.jsonl",
+    "bytes": 32739,
+    "sha256": "972763995be50d9f6ac6716d47e9542df8eadb52b496581031628f8f9479988b"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-3\\sess-003.jsonl",
+    "bytes": 36934,
+    "sha256": "77431d99226d3397da207cb8734eacf5305797134ff279731f44352a84ab7820"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-3\\sess-007.jsonl",
+    "bytes": 30412,
+    "sha256": "74b0f04c5da1861142ccb3d9c0ccf4b16d795f9c0530cd2a2e6de653d75fad31"
+  },
+  {
+    "path": "tests\\CodeLines.Tests\\AiUsage\\Fixtures\\claude\\project-3\\sess-011.jsonl",
+    "bytes": 34470,
+    "sha256": "8dc8751ed57dc135d025ab567cce6b31f8fcce7109c8de4058123492aeb61162"
+  }
+]
