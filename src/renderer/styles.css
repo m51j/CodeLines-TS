@@ -822,6 +822,31 @@ summary {
   cursor: pointer;
   color: var(--muted);
 }
+.report-accuracy-notes {
+  margin-bottom: 16px;
+  color: var(--muted);
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.report-accuracy-notes summary {
+  width: fit-content;
+  max-width: 100%;
+  padding: 3px 2px;
+  border-radius: 4px;
+}
+.report-accuracy-notes summary:hover {
+  color: var(--text);
+}
+.report-accuracy-notes ul {
+  margin: 8px 0 0;
+  padding-left: 22px;
+}
+.report-accuracy-notes li + li {
+  margin-top: 6px;
+}
+.report-accuracy-notes strong {
+  color: var(--text);
+}
 .notice,
 .error {
   border: 1px solid color-mix(in srgb, var(--warning) 35%, var(--border));

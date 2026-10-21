@@ -525,6 +525,13 @@ export function Reports({ result }: { result: AiResult }) {
         <AgentSources agents={result.agents} />
       </div>
     );
+  const accuracyNotes = new Map<string, string[]>();
+  for (const [id, source] of Object.entries(result.combined.agents)) {
+    if (!source.note || (agent !== "all" && id !== agent)) continue;
+    const labels = accuracyNotes.get(source.note) ?? [];
+    labels.push(source.label);
+    accuracyNotes.set(source.note, labels);
+  }
   const total = tokens(view.total),
     active = view.days.filter((d) => tokens(d.v) > 0).length,
     peak = view.byHour.reduce(
@@ -747,13 +754,18 @@ export function Reports({ result }: { result: AiResult }) {
           hourly facts · Equivalent API costs · * partial cost · ¹ Reasoning is
           included in output.
         </p>
-        {Object.entries(result.combined.agents)
-          .filter(([id, a]) => a.note && (agent === "all" || id === agent))
-          .map(([id, a]) => (
-            <p className="notice" key={id}>
-              {a.label}: {a.note}
-            </p>
-          ))}
+        {accuracyNotes.size > 0 && (
+          <details className="report-accuracy-notes" key={agent}>
+            <summary>Data accuracy notes ({accuracyNotes.size})</summary>
+            <ul>
+              {Array.from(accuracyNotes, ([note, labels]) => (
+                <li key={note}>
+                  <strong>{labels.join(", ")}</strong>: {note}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
         <div
           role="tabpanel"
           id={`${navigationId}-report-${tab}`}
