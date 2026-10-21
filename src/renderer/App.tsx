@@ -40,6 +40,7 @@ import {
   type Column,
 } from "./components";
 import { AgentSources, Reports } from "./reports";
+import { PageTransition } from "./PageTransition";
 import { agentLabels } from "../shared/agents";
 import {
   matchProjects,
@@ -460,7 +461,7 @@ export function App() {
             )}
           </div>
         </header>
-        <main>
+        <PageTransition page={page}>
           <header className="page-header">
             <div>
               <span className="eyebrow">{title.hint}</span>
@@ -1710,7 +1711,7 @@ export function App() {
               </ul>
             </details>
           )}
-        </main>
+        </PageTransition>
         <footer className="statusbar" aria-live="polite">
           <span className={busy ? "working-dot" : "online-dot"} />
           <span title={status}>{status}</span>
