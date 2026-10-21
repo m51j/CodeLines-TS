@@ -12,6 +12,8 @@ Git must be installed on PATH only for the optional history feature. SQLite is p
 
 Requirements: Windows, Node.js 24+, npm, and Git for history tests. Run from this directory:
 
+On Windows, double-click `run.bat` to build and launch the application, or `build-release.bat` to build both the installer and portable executable in `release/`. Both scripts work from any current directory and run `npm ci` automatically when the required local tools are missing. The release script pauses when finished; both scripts pause on errors so the details remain visible.
+
 ```powershell
 npm ci
 npm run dev
