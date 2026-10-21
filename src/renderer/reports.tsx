@@ -534,6 +534,14 @@ export function Reports({ result }: { result: AiResult }) {
   }
   const total = tokens(view.total),
     active = view.days.filter((d) => tokens(d.v) > 0).length,
+    peakDay = view.days.reduce<ReportBucket | undefined>(
+      (peak, day) => (!peak || tokens(day.v) > tokens(peak.v) ? day : peak),
+      undefined,
+    ),
+    peakMonth = view.months.reduce<ReportBucket | undefined>(
+      (peak, month) => (!peak || tokens(month.v) > tokens(peak.v) ? month : peak),
+      undefined,
+    ),
     peak = view.byHour.reduce(
       (p, v, i) => (tokens(v) > tokens(view.byHour[p]) ? i : p),
       0,
@@ -821,6 +829,16 @@ export function Reports({ result }: { result: AiResult }) {
                           ? `${String(peak).padStart(2, "0")}:00`
                           : "—",
                         detail: `${compact(tokens(view.byHour[peak]))} tokens`,
+                      },
+                      {
+                        label: "Peak day",
+                        value: total && peakDay ? peakDay.key : "—",
+                        detail: `${compact(peakDay ? tokens(peakDay.v) : 0)} tokens`,
+                      },
+                      {
+                        label: "Peak month",
+                        value: total && peakMonth ? peakMonth.key : "—",
+                        detail: `${compact(peakMonth ? tokens(peakMonth.v) : 0)} tokens`,
                       },
                       {
                         label:
