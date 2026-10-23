@@ -7,7 +7,6 @@ import {
   useState,
   type CSSProperties,
   type ReactNode,
-  type KeyboardEvent,
 } from "react";
 import { createPortal } from "react-dom";
 import { agentLabels } from "../shared/agents";
@@ -32,29 +31,19 @@ import {
 } from "../reports/selectors";
 import { tokens } from "../ai/model";
 import { costText, currency } from "../ai/aggregate";
-import { Card, Table, Empty, number, percent, type Column } from "./components";
-const palette = [
-  "#6d8bff",
-  "#38bca4",
-  "#b396f5",
-  "#e5aa59",
-  "#61bce6",
-  "#e38097",
-  "#a4bc6b",
-  "#bc9b80",
-  "#d595d0",
-  "#65a5a0",
-  "#d27656",
-  "#9babe4",
-];
+import {
+  Card,
+  Table,
+  Empty,
+  number,
+  percent,
+  tabKeys,
+  type Column,
+} from "./components";
+import { compact, palette } from "./format";
 const agentColors: Record<string, string> = Object.fromEntries(
   Object.keys(agentLabels).map((id, i) => [id, palette[i % palette.length]]),
 );
-const compact = (n: number) =>
-  Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(n);
 const tokenColors: Record<string, string> = {
   Input: "#6d8bff",
   "Cache write": "#b396f5",
@@ -89,28 +78,6 @@ const defaultSelection: ReportSelection = {
   since: "",
   until: "",
 };
-function tabKeys(event: KeyboardEvent<HTMLElement>) {
-  const buttons = Array.from(
-    event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
-  );
-  const index = buttons.indexOf(event.target as HTMLButtonElement);
-  if (index < 0) return;
-  const next =
-    event.key === "ArrowRight"
-      ? (index + 1) % buttons.length
-      : event.key === "ArrowLeft"
-        ? (index + buttons.length - 1) % buttons.length
-        : event.key === "Home"
-          ? 0
-          : event.key === "End"
-            ? buttons.length - 1
-            : -1;
-  if (next >= 0) {
-    event.preventDefault();
-    buttons[next].focus();
-    buttons[next].click();
-  }
-}
 function Detail({ title, detail }: { title: ReactNode; detail: string }) {
   return (
     <>

@@ -44,16 +44,9 @@ export function DesktopShell({ children }: { children: ReactNode }) {
         aria-label="Application title bar"
       >
         <div className="titlebar-brand">
-          <span className="titlebar-mark" aria-hidden="true">
-            CL
-          </span>
-          <span>
-            CodeLines <span className="titlebar-edition">TS</span>
-          </span>
+          CodeLines <span className="titlebar-edition">TS</span>
         </div>
-        <span className="titlebar-caption">
-          Project intelligence · Local workspace
-        </span>
+        <span className="titlebar-caption">Local workspace</span>
         <div
           className="window-controls"
           role="group"
