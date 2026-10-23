@@ -3,6 +3,17 @@
 An offline Windows desktop replacement for CodeLines, implemented with Electron, strict TypeScript, and React. All seven pages are integrated: Dashboard, Projects, Analysis, Code changes, Daily log, AI usage, and Settings. No .NET runtime, ccstats checkout, backend service, account, API key, or development server is required by the packaged application.
 
 <p align="center">
+  <a href="docs/screenshots/dashboard-anonymized.png">
+    <img src="docs/screenshots/dashboard-showcase.png" alt="CodeLines TS dashboard in a rounded frame on a navy gradient background, showing workspace totals, anonymized projects, and language distribution" width="1280" />
+  </a>
+</p>
+
+<p align="center">
+  <em>Workspace dashboard with project metrics and language distribution. Project names have been replaced with generic labels for privacy.</em><br />
+  <a href="docs/screenshots/dashboard-anonymized.png">View the anonymized dashboard at full resolution</a>
+</p>
+
+<p align="center">
   <a href="docs/screenshots/ai-usage-overview.png">
     <img src="docs/screenshots/ai-usage-showcase.png" alt="CodeLines TS AI usage overview in dark mode, showing token totals, API cost equivalents, sessions, and usage by agent" width="1280" />
   </a>
