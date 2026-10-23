@@ -3,3 +3,27 @@ dist/
 release/
 artifacts/
 *.log
+
+# Credentials and local environment (examples may be committed).
+.env
+.env.*
+!.env.example
+!.env.*.example
+.npmrc
+*.pem
+*.key
+*.pfx
+*.p12
+*.keystore
+
+# Local application data when CODELINES_DATA_DIR points at this checkout.
+/local-data/
+/settings.json
+/daily-log.json
+/ai-report.json
+/ai-usage/
+/migration.json
+/migration-backups/
+/*.bak
+/*.invalid-*
+/*.tmp

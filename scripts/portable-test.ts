@@ -6,6 +6,7 @@ import path from "node:path";
 import os from "node:os";
 import { randomUUID } from "node:crypto";
 import { defaults } from "../src/domain/defaults";
+import manifest from "../package.json";
 const root = await fs.mkdtemp(path.join(os.tmpdir(), "codelines-portable-")),
   data = path.join(root, "data"),
   project = path.join(root, "project");
@@ -44,7 +45,10 @@ const env: NodeJS.ProcessEnv = {
 };
 delete env.ELECTRON_RUN_AS_NODE;
 delete env.CODELINES_DEV_URL;
-const executable = path.resolve("release/CodeLines TS 1.0.0.exe"),
+const executable = path.resolve(
+    manifest.build.directories.output,
+    `${manifest.build.productName} ${manifest.version}.exe`,
+  ),
   child = spawn(executable, [`--remote-debugging-port=${port}`], {
     env,
     windowsHide: true,

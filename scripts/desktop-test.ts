@@ -932,8 +932,26 @@ try {
   await expect
     .poll(() => nativeWindow.evaluate((w) => w.isMinimized()))
     .toBe(false);
-  await nativeWindow.evaluate((w) => w.blur());
+  // Transfer focus to a real second window. On Windows, restore() can queue
+  // activation after a bare blur(), making that assertion depend on timing.
+  const reportWindow = await desktop.browserWindow(report);
+  await reportWindow.evaluate((w) => {
+    w.show();
+    w.focus();
+  });
+  await expect
+    .poll(() => reportWindow.evaluate((w) => w.isFocused()))
+    .toBe(true);
+  await expect
+    .poll(() => nativeWindow.evaluate((w) => w.isFocused()))
+    .toBe(false);
   await expect(titlebar).toHaveClass(/titlebar-inactive/);
+  await reportWindow.evaluate((w) => w.hide());
+  await nativeWindow.evaluate((w) => w.focus());
+  await expect
+    .poll(() => nativeWindow.evaluate((w) => w.isFocused()))
+    .toBe(true);
+  await expect(titlebar).not.toHaveClass(/titlebar-inactive/);
   const invalidWindowAction = await page.evaluate(() =>
     window.codelines.windowAction("invalid" as "close").then(
       () => false,

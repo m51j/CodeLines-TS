@@ -1,0 +1,37 @@
+name: Bug report
+description: Report a reproducible application problem using sanitized examples.
+body:
+  - type: markdown
+    attributes:
+      value: For vulnerabilities, follow SECURITY.md. Remove credentials, private project paths, and live conversations from all examples and attachments.
+  - type: input
+    id: version
+    attributes:
+      label: Application version or source commit
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Windows version and architecture
+      description: Include Node.js and npm versions if running from source.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Use a minimal synthetic project or agent fixture where possible.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized logs or screenshots
+      description: Do not attach full settings, caches, agent logs, or private transcripts.

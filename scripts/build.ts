@@ -30,6 +30,7 @@ await writeFile(
     report.outputFiles[0].text,
 );
 await copyFile("src/renderer/styles.css", "dist/report.css");
+await copyFile("LICENSE", "dist/LICENSE");
 await copyFile("THIRD-PARTY-NOTICES.md", "dist/THIRD-PARTY-NOTICES.md");
 await copyFile(
   "docs/THIRD-PARTY-LICENSES.txt",

@@ -1,6 +1,6 @@
 # Source audit and resolutions
 
-Source: `D:\Work\_Core\CodeLines`, commit `09e711258a8b713c76a80bb9e1bb58b041465264`, clean at the start of the audit. The original repository is kept unchanged. `source-inventory.json` records hashes and sizes for source, fixtures, tests, themes, and build configuration.
+Source: the original CodeLines repository, commit `09e711258a8b713c76a80bb9e1bb58b041465264`, clean at the start of the audit. The original repository is kept unchanged. `source-inventory.json` records hashes and sizes for source, fixtures, tests, themes, and build configuration.
 
 ## Specification evidence
 

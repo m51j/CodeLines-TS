@@ -26,7 +26,24 @@ An offline Windows desktop replacement for CodeLines, implemented with Electron,
 
 ## Install or run
 
-Use `release/CodeLines TS Setup 1.0.0.exe` for an installable application, or `release/CodeLines TS 1.0.0.exe` for the portable executable. Builds are unsigned. Windows may identify the publisher as unknown. The installer preserves application data on uninstall.
+Download **[v1.0.0 for Windows x64](https://github.com/m51j/CodeLines-TS/releases/tag/v1.0.0)**: [installer](https://github.com/m51j/CodeLines-TS/releases/download/v1.0.0/CodeLines%20TS%20Setup%201.0.0.exe), [portable executable](https://github.com/m51j/CodeLines-TS/releases/download/v1.0.0/CodeLines%20TS%201.0.0.exe), and [SHA256 checksums](https://github.com/m51j/CodeLines-TS/releases/download/v1.0.0/SHA256SUMS.txt). See [GitHub Releases](https://github.com/m51j/CodeLines-TS/releases) for later versions, or build from source using the instructions below. Executables are build outputs and are not included in a source checkout.
+
+For a local build, use `release/CodeLines TS Setup 1.0.0.exe` for an installable application, or `release/CodeLines TS 1.0.0.exe` for the portable executable. Builds are unsigned. Windows may identify the publisher as unknown. The installer preserves application data on uninstall. Windows x64 is the supported packaging target.
+
+Packaging also generates `release/SHA256SUMS.txt` for both executables. Run `npm run checksums:verify` to check a local build. To verify downloaded files without Node.js, place both executables and `SHA256SUMS.txt` in one folder and run this PowerShell command from that folder; it throws if a file is missing or its content differs:
+
+```powershell
+$entries = @(Get-Content -LiteralPath .\SHA256SUMS.txt -ErrorAction Stop)
+if ($entries.Count -ne 2) { throw "Expected checksums for both executables" }
+$entries | ForEach-Object {
+  if ($_ -notmatch '^([a-fA-F0-9]{64})  (.+)$') { throw "Invalid checksum entry" }
+  $expected = $Matches[1]
+  $file = $Matches[2]
+  $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256 -ErrorAction Stop).Hash
+  if ($actual -ine $expected) { throw "Checksum mismatch: $file" }
+  Write-Host "Verified: $file"
+}
+```
 
 Git must be installed on PATH only for the optional history feature. SQLite is part of Electron's bundled Node runtime. Both tokenizer vocabularies are bundled into the scan worker. Runtime analysis does not download anything.
 
@@ -46,11 +63,12 @@ npm run build
 npm run start
 npm run test:desktop
 npm run package
+npm run checksums:verify
 npm run test:desktop -- --packaged
 npm run test:portable
 ```
 
-`npm run verify` runs type checking, lint, unit/service tests, and a production build. `npm ci` uses the checked-in lockfile. Development and packaging dependencies require network access at installation; the installed app works offline. The development command builds desktop entry points and starts a loopback-only Vite server. Renderer changes reload automatically; restart the command after main/preload/worker changes. Production startup loads local built files.
+`npm run verify` runs type checking, lint, unit/service tests, and a production build. `npm ci` uses the checked-in lockfile. Development and packaging dependencies require network access at installation; the installed app works offline. The development command builds desktop entry points and starts a loopback-only Vite server. Renderer changes reload automatically; restart the command after main/preload/worker changes. Production startup loads local built files. `npm run package` builds Windows x64 executables and their checksums without publishing them; `npm run checksums` regenerates the manifest only when both nonempty executables exist.
 
 `npm run test:desktop` launches Electron with isolated temporary projects, agent roots, and data. `--packaged` tests `release/win-unpacked/CodeLines TS.exe`. Set `CODELINES_TEST_EXECUTABLE` to test an installed executable instead. Desktop tests cover real workers, dialogs with test-selected paths, exports, UI navigation, themes, cancellation, conflicting operations, and offline standalone reports. Screenshots are saved under `artifacts/desktop/`.
 
@@ -119,3 +137,13 @@ CSV string cells are escaped and protected against spreadsheet formula injection
 Heavy work runs in background workers. Scan/history share an exclusive lane; AI has its own lane. Cancellation IDs and active-generation checks prevent stale progress/results. Settings/project mutation is blocked during active work. No arbitrary filesystem, SQL, IPC, or shell API is available to renderer code.
 
 See [feature parity](docs/FEATURE-PARITY.md), [audit resolutions](docs/AUDIT.md), and [verification](docs/VERIFICATION.md) for evidence and exact verification limits. macOS/Linux packaging and platform-specific visual behavior have not been verified; native Git/path/data-root operations are isolated from the domain layer.
+
+## Contributing and maintenance
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development and pull request checks, [SECURITY.md](SECURITY.md) for private vulnerability reporting, and [CHANGELOG.md](CHANGELOG.md) for release notes. Report ordinary bugs and feature requests through [GitHub Issues](https://github.com/m51j/CodeLines-TS/issues); remove private project paths, transcripts, and credentials from attachments.
+
+GitHub Actions checks Windows/Node 24 installations, dependency advisories, source builds, and the desktop suite on pushes and pull requests. The manually dispatched **Build release artifacts** workflow also packages and tests the unpacked and portable executables, verifies checksums, and uploads build artifacts. It does not create a GitHub Release. Dependabot proposes weekly npm and workflow dependency updates; updates require review and are not automatically merged. Maintainers should follow the [publication checklist](docs/PUBLISHING.md) before making the repository public or publishing binaries.
+
+## License
+
+Copyright (c) 2026 m51j. Licensed under the [MIT License](LICENSE). See [third-party attribution](THIRD-PARTY-NOTICES.md) and [dependency license texts](docs/THIRD-PARTY-LICENSES.txt) for upstream notices. The package remains marked `private` to prevent accidental npm publication; this does not restrict public GitHub hosting.

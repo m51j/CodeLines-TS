@@ -3,8 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "description": "Offline CodeLines desktop analysis",
-  "author": "CodeLines",
-  "license": "UNLICENSED",
+  "author": "m51j",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/m51j/CodeLines-TS.git"
+  },
+  "homepage": "https://github.com/m51j/CodeLines-TS#readme",
+  "bugs": {
+    "url": "https://github.com/m51j/CodeLines-TS/issues"
+  },
   "main": "dist/main.cjs",
   "type": "module",
   "engines": {
@@ -19,7 +27,9 @@
     "test:portable": "tsx scripts/portable-test.ts",
     "build": "tsx scripts/build.ts",
     "start": "electron .",
-    "package": "npm run build && electron-builder --win nsis portable",
+    "package": "npm run build && electron-builder --win nsis portable --x64 --publish never && npm run checksums",
+    "checksums": "tsx scripts/checksums.ts",
+    "checksums:verify": "tsx scripts/checksums.ts --verify",
     "verify": "npm run typecheck && npm run lint && npm test && npm run build"
   },
   "dependencies": {
@@ -46,7 +56,7 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.2",
     "vite": "^7.1.12",
-    "vitest": "^3.2.4"
+    "vitest": "4.1.12"
   },
   "build": {
     "appId": "local.codelines.typescript",

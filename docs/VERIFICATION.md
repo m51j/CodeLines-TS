@@ -1,6 +1,6 @@
 # Verification — 2026-10-21
 
-The implementation is in `D:\Work\_Core\CodeLines-TS`. The original `D:\Work\_Core\CodeLines` repository remained clean at commit `09e711258a8b713c76a80bb9e1bb58b041465264`. Legacy data was inspected for schema shape only; it was not imported, overwritten, or used as test data.
+The implementation is in the CodeLines TS repository. The original CodeLines repository remained clean at commit `09e711258a8b713c76a80bb9e1bb58b041465264`. Legacy data was inspected for schema shape only; it was not imported, overwritten, or used as test data.
 
 ## Environment and reproducibility
 
@@ -87,3 +87,40 @@ The source-built desktop now uses a frameless Electron window with a themed Reac
 TypeScript, zero-warning lint, all **60 unit/service tests**, the production build, and the full `npm run test:desktop` suite passed. Desktop coverage includes light/dark title-bar colors, drag/control regions, actual OS minimize/maximize/restore/close actions, externally triggered maximize events, inactive styling, invalid-action rejection, and the existing offline reports/navigation/export checks at normal and 950×700 sizes. Window-control checks target the main window explicitly after a separate report window is opened. A focused runtime check also passed System appearance in both emulated color schemes and keyboard activation of maximize.
 
 The new bar was visually checked in `artifacts/desktop/built-dashboard-light.png`, `built-dashboard-dark.png`, and `built-small-window.png`. This follow-up rebuilt `dist/`; the installer and portable executable were not regenerated for the title-bar change.
+
+## Public repository preparation — 2026-10-23
+
+This follow-up prepares version 1.0.0 for public hosting under MIT, following the maintainer's confirmation of rights to CodeLines, ccstats, and their derived assets. Existing README screenshots and independently generated fixtures were retained. The earlier records above describe their respective builds; the following results describe the newly generated binaries.
+
+| Check | Result |
+|---|---|
+| Clean locked install | `npm ci --no-fund` passed after normally closing a running source-built app that had locked Electron DLLs |
+| Dependency security audit | `npm audit --json` and `npm audit --omit=dev --json`: zero reported vulnerabilities |
+| Test dependency upgrade | Vitest and @vitest/mocker 4.1.12; the previous tinypool dependency is absent |
+| Type checking, lint, tests, production build | `npm run verify` passed: **74 tests in 8 files**, including all 70 existing tests and 4 new release-integrity tests |
+| Checksum regression coverage | Known SHA256 vectors and filenames with spaces; altered executable rejection; missing/empty executable rejection; removal of a stale manifest on failed generation |
+| Source-built desktop | `npm run test:desktop` passed with isolated data, synthetic agent stores, and Chromium offline |
+| Windows x64 packaging | `npm run package` generated NSIS and portable executables with publishing explicitly disabled and fresh checksums |
+| Packaged desktop | `npm run test:desktop -- --packaged` passed against the new unpacked application, including all pages, workers, native window controls, themes, small windows, imports, exports, and standalone offline reports |
+| Actual portable wrapper | `npm run test:portable` passed launch, local-file/offline startup, real BPE scan worker, and snapshot persistence |
+| Checksum verification | `npm run checksums:verify` passed; PowerShell `Get-FileHash` independently matched both manifest entries |
+| Packaged contents | MIT license, attribution, and dependency notices match the source files byte-for-byte inside app.asar; main/preload/worker bundles match the current build, and packaged metadata declares MIT / 1.0.0 |
+| Workflow validation | Both workflows passed actionlint 1.7.12; workflow, Dependabot, and issue-form YAML parsed successfully; official actions are pinned to full commit SHAs with read-only repository permissions |
+| Repository hygiene | No matches in a targeted credential-pattern search of tracked and non-ignored source files; ignore rules exclude local data, credentials, recovery/temp files, and build artifacts without excluding fixtures or environment examples; no whitespace errors |
+
+The first packaged desktop run reached the final native-window checks but failed a timing-sensitive inactive-titlebar assertion after `restore()` followed immediately by `blur()`. The test harness now transfers focus to its real report window, checks OS focus state and inactive styling, then transfers focus back and checks active styling. A focused packaged smoke check and the complete packaged suite passed after this harness-only change. Type checking and lint also passed again. Application behavior was not changed.
+
+The current packaged `resources/app.asar` SHA256 is:
+
+```text
+d7cc3ec8ea925f16b50b9bb3c0a61763a7e8f9cb18fe3d2652be3bc07e4d9944
+```
+
+The new `release/SHA256SUMS.txt` contains:
+
+```text
+eb0bf98bffd9f383f4e51e1f59ac07bb5987059304abb801f42e1c07e65e60e9  CodeLines TS Setup 1.0.0.exe
+37f4ad3fa809a637c1a3a328fce93c5057a1ccd8e69b83bbac4b748206955076  CodeLines TS 1.0.0.exe
+```
+
+The earlier publication review also searched text blobs reachable from the 17 locally available Git commits without finding obvious credential patterns; this is a targeted hygiene check, not a comprehensive security audit. Build warnings about Zod annotations and renderer bundle size, and npm deprecation/install-script-policy notices, did not prevent installation, building, or runtime checks. The installer was generated but was not installed during this follow-up. Builds remain unsigned. GitHub-hosted workflow execution, repository visibility changes, branch-protection/security settings, pushes, tags, and Release publication were not performed. See [PUBLISHING.md](PUBLISHING.md) for the remaining remote publication steps.
