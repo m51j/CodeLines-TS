@@ -63,7 +63,10 @@ const analyze = (
     progress,
   );
 beforeEach(async () => {
-  root = await fs.mkdtemp(path.join(os.tmpdir(), "codelines-ts-git-"));
+  // Git reports canonical paths; hosted Windows TEMP can use an 8.3 alias.
+  root = await fs.realpath(
+    await fs.mkdtemp(path.join(os.tmpdir(), "codelines-ts-git-")),
+  );
   git(["init", "-b", "main"]);
   git(["config", "user.name", "Test"]);
   git(["config", "user.email", "test@example.invalid"]);

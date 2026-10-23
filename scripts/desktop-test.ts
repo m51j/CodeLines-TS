@@ -6,7 +6,10 @@ import { randomUUID } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 import { spawnSync } from "node:child_process";
 import { defaults } from "../src/domain/defaults";
-const root = await fs.mkdtemp(path.join(os.tmpdir(), "codelines-desktop-")),
+// Match Git's canonical root even when Windows TEMP contains an 8.3 alias.
+const root = await fs.realpath(
+    await fs.mkdtemp(path.join(os.tmpdir(), "codelines-desktop-")),
+  ),
   data = path.join(root, "data"),
   home = path.join(root, "agents"),
   project = path.join(root, "project"),

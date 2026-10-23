@@ -7,7 +7,9 @@ import os from "node:os";
 import { randomUUID } from "node:crypto";
 import { defaults } from "../src/domain/defaults";
 import manifest from "../package.json";
-const root = await fs.mkdtemp(path.join(os.tmpdir(), "codelines-portable-")),
+const root = await fs.realpath(
+    await fs.mkdtemp(path.join(os.tmpdir(), "codelines-portable-")),
+  ),
   data = path.join(root, "data"),
   project = path.join(root, "project");
 await fs.mkdir(data);
