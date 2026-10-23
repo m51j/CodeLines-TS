@@ -180,6 +180,9 @@ describe("shared report calculations and exports", () => {
     expect(html).not.toContain("<iframe");
     expect(html).not.toContain("<img src=x");
     expect(html).toContain("connect-src 'none'");
+    const closing = reportHtml(hostile, 's="</SCRIPT>";', "a{content:'</Style>'}");
+    expect(closing.match(/<\/script>/gi)).toHaveLength(2);
+    expect(closing.match(/<\/style>/gi)).toHaveLength(1);
     expect(csvCell("=1+1")).toBe('"\'=1+1"');
     expect(csvCell('a,"b"')).toBe('"a,""b"""');
   });

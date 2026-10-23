@@ -245,12 +245,21 @@ export class Store {
           String(error),
       );
     }
-    this.ai = await readRecover(
-      path.join(this.directory, "ai-report.json"),
-      (v) => storedAi.parse(v) as AiResult,
-      () => null,
-      this.warnings,
-    );
+    try {
+      this.ai = await readRecover(
+        path.join(this.directory, "ai-report.json"),
+        (v) => storedAi.parse(v) as AiResult,
+        () => null,
+        this.warnings,
+      );
+    } catch (error) {
+      // The report is regenerated from local logs, so an unreadable copy must not block startup.
+      this.ai = null;
+      this.warnings.push(
+        "The saved AI report could not be read; refresh AI usage to rebuild it. " +
+          String(error),
+      );
+    }
     return this.state();
   }
   state(): AppState {
@@ -268,14 +277,19 @@ export class Store {
       this.settings,
     );
   }
-  async saveDaily() {
+  private assertDailyWritable() {
     if (this.dailyReadFailed)
       throw new Error(
         "The existing daily log was unreadable. Resolve access to daily-log.json and reopen the application before recording changes.",
       );
+  }
+  async saveDaily() {
+    this.assertDailyWritable();
     await atomicWrite(path.join(this.directory, "daily-log.json"), this.daily);
   }
   async migrate(legacy: string) {
+    // Migration writes settings and the daily log together; refuse before changing either.
+    this.assertDailyWritable();
     const sources = ["settings.json", "daily-log.json"];
     const bytes = await Promise.all(
       sources.map(async (n) => {

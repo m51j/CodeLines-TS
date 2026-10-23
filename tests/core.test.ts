@@ -162,6 +162,20 @@ describe("scanner and exclusions", () => {
       true,
     );
   });
+  it("applies directory-only rules to directories and their contents, not same-named files", () => {
+    const p = path.join(os.tmpdir(), "codelines-dir-only"),
+      ig = new IgnoreProvider(),
+      global = ["build/"],
+      ignored = (f: string, dir = false) =>
+        ig.ignored(p, path.join(p, f), dir, global, []);
+    expect(ignored("build", true)).toBe(true);
+    expect(ignored("src/build", true)).toBe(true);
+    expect(ignored("src/build/out.js")).toBe(true);
+    expect(ignored("build/deep/out.js")).toBe(true);
+    expect(ignored("build")).toBe(false);
+    expect(ignored("src/build")).toBe(false);
+    expect(ignored("src/builder.js")).toBe(false);
+  });
   it("scans all scopes, skips nested checkouts/NuGet, retains npm packages and reports progress", async () => {
     const p = await root();
     const write = async (f: string, c: string | Buffer) => {
@@ -268,6 +282,14 @@ describe("persistence compatibility and recovery", () => {
     expect(incoming.projects[1].name).toBe("other");
     expect(incoming.projects[1].id).not.toBe(id);
     expect(() => importProjectList({ theme: "Dark" }, [])).toThrow();
+  });
+  it("starts without the AI report when its file cannot be read", async () => {
+    const p = await root();
+    // A directory in the file's place makes every read fail with a non-ENOENT error.
+    await fs.mkdir(path.join(p, "ai-report.json"));
+    const state = await new Store(p).load();
+    expect(state.ai).toBeNull();
+    expect(state.warnings.join()).toContain("AI report could not be read");
   });
   it("serializes atomic saves and recovers corrupt data without losing originals", async () => {
     const p = await root(),

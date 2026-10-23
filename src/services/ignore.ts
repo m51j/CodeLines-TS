@@ -58,6 +58,13 @@ export function parseRules(patterns: string[], base = ""): IgnoreRule[] {
 }
 export class IgnoreProvider {
   private cache = new Map<string, IgnoreRule[]>();
+  // Callers pass the same pattern arrays for every path; parse each once.
+  private parsed = new WeakMap<string[], IgnoreRule[]>();
+  private rules(patterns: string[]): IgnoreRule[] {
+    let rules = this.parsed.get(patterns);
+    if (!rules) this.parsed.set(patterns, (rules = parseRules(patterns)));
+    return rules;
+  }
   ignored(
     root: string,
     file: string,
@@ -78,7 +85,7 @@ export class IgnoreProvider {
         break;
       current = path.dirname(current);
     }
-    const rules = parseRules(global);
+    const rules = [...this.rules(global)];
     for (const d of dirs) {
       const f = path.join(d, ".gitignore");
       let list = this.cache.get(f);
@@ -95,12 +102,18 @@ export class IgnoreProvider {
       }
       rules.push(...list);
     }
-    rules.push(...parseRules(project));
+    rules.push(...this.rules(project));
+    // A directory-only rule matches a file only through one of its parent
+    // directories, never a file that merely shares the directory's name.
+    const parent = relative.includes("/")
+      ? relative.slice(0, relative.lastIndexOf("/"))
+      : null;
     let ignored = false;
     for (const r of rules)
       if (
-        (!r.directoryOnly || isDirectory || relative.includes("/")) &&
-        r.regex.test(relative)
+        r.directoryOnly && !isDirectory
+          ? parent !== null && r.regex.test(parent)
+          : r.regex.test(relative)
       )
         ignored = !r.negated;
     return ignored;
