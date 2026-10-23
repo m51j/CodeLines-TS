@@ -256,6 +256,7 @@ const claudePayload = z.object({
       z.string(),
       z.string(),
       z.string(),
+      n.optional(),
     ]),
   ),
   appBasis: z.record(z.string(), cvector),

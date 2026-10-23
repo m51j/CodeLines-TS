@@ -71,10 +71,19 @@ export function record(
   if (r.cost !== null && !Number.isFinite(r.cost)) r.cost = null;
   return r;
 }
+// Records outside this range come from corrupt or zeroed timestamps; one such
+// value would otherwise break date bucketing for every agent.
+const earliestTs = Date.UTC(2000, 0, 1),
+  latestTs = Date.UTC(2100, 0, 1);
+export const plausibleTs = (ts: number): boolean =>
+  Number.isFinite(ts) && ts >= earliestTs && ts < latestTs;
 export const vec = (): Vector => [0, 0, 0, 0, 0, 0, 0, 0];
 export const cv = (): ClaudeVector => [0, 0, 0, 0, 0, 0, 0];
 export const tokens = (v: readonly number[]): number =>
   v[0] + v[1] + v[2] + v[3];
+/** Vector index 7 holds the tokens that have a known price; fewer than all means a partial cost. */
+export const partialCost = (v: readonly number[]): boolean =>
+  v[7] < tokens(v) * 0.999;
 export const claudeTokens = (v: readonly number[]): number =>
   v[0] + v[1] + v[2] + v[3] + v[4];
 export function add(a: number[], b: readonly number[]): void {

@@ -97,6 +97,16 @@ describe("classification and line semantics", () => {
     expect(analyzeLines("", languages[0]).physicalLines).toBe(0);
     expect(analyzeLines("\r\n\r\n", languages[0]).blankLines).toBe(2);
   });
+  it("counts Visual Basic apostrophe comments and Lua block comments", () => {
+    const vb = classify("a.vb", "SourceOnly")!,
+      lua = classify("a.lua", "SourceOnly")!;
+    expect(
+      analyzeLines('x = 1\n\' a comment\ny = "it\'s" \' trailing\n', vb),
+    ).toMatchObject({ codeLines: 2, commentLines: 1, mixedLines: 1 });
+    expect(
+      analyzeLines("--[[\nlocal x\n]]\nlocal y = 1 -- note\n-- line\n", lua),
+    ).toMatchObject({ codeLines: 1, commentLines: 4, mixedLines: 1 });
+  });
   it("handles UTF-8/UTF-16 BOMs, invalid UTF-8 and binary controls", () => {
     expect(decode(Buffer.from([239, 187, 191, 104, 105]))).toBe("hi");
     expect(decode(Buffer.from([255, 254, 104, 0, 105, 0]))).toBe("hi");
@@ -161,6 +171,20 @@ describe("scanner and exclusions", () => {
     expect(ig.ignored(p, path.join(p, "..", "outside.cs"), false, [], [])).toBe(
       true,
     );
+  });
+  it("applies directory-only rules to directories and their contents, not same-named files", () => {
+    const p = path.join(os.tmpdir(), "codelines-dir-only"),
+      ig = new IgnoreProvider(),
+      global = ["build/"],
+      ignored = (f: string, dir = false) =>
+        ig.ignored(p, path.join(p, f), dir, global, []);
+    expect(ignored("build", true)).toBe(true);
+    expect(ignored("src/build", true)).toBe(true);
+    expect(ignored("src/build/out.js")).toBe(true);
+    expect(ignored("build/deep/out.js")).toBe(true);
+    expect(ignored("build")).toBe(false);
+    expect(ignored("src/build")).toBe(false);
+    expect(ignored("src/builder.js")).toBe(false);
   });
   it("scans all scopes, skips nested checkouts/NuGet, retains npm packages and reports progress", async () => {
     const p = await root();
@@ -268,6 +292,14 @@ describe("persistence compatibility and recovery", () => {
     expect(incoming.projects[1].name).toBe("other");
     expect(incoming.projects[1].id).not.toBe(id);
     expect(() => importProjectList({ theme: "Dark" }, [])).toThrow();
+  });
+  it("starts without the AI report when its file cannot be read", async () => {
+    const p = await root();
+    // A directory in the file's place makes every read fail with a non-ENOENT error.
+    await fs.mkdir(path.join(p, "ai-report.json"));
+    const state = await new Store(p).load();
+    expect(state.ai).toBeNull();
+    expect(state.warnings.join()).toContain("AI report could not be read");
   });
   it("serializes atomic saves and recovers corrupt data without losing originals", async () => {
     const p = await root(),

@@ -76,6 +76,7 @@ async function nuget(dir: string) {
   }
   return false;
 }
+const maxBufferedBytes = 512 * 1024 ** 2;
 export interface ScanUpdate {
   project: string;
   path: string;
@@ -155,9 +156,16 @@ export async function scanProject(
   }
   let next = 0,
     processed = 0;
+  // Each reader holds up to one maximum-size file, so cap the readers to keep
+  // buffered bytes bounded even with very large file-size limits.
+  const readers = Math.min(
+    options.maxDegreeOfParallelism,
+    Math.max(1, Math.floor(maxBufferedBytes / options.maxFileSizeBytes)),
+    candidates.length,
+  );
   await Promise.all(
     Array.from(
-      { length: Math.min(options.maxDegreeOfParallelism, candidates.length) },
+      { length: readers },
       async () => {
         while (next < candidates.length) {
           cancelled(signal);
@@ -205,9 +213,11 @@ export async function scanProject(
   cancelled(signal);
   return projectMetrics(
     project,
-    files.sort((a, b) =>
-      a.relativePath.toLowerCase() < b.relativePath.toLowerCase() ? -1 : 1,
-    ),
+    files.sort((a, b) => {
+      const x = a.relativePath.toLowerCase(),
+        y = b.relativePath.toLowerCase();
+      return x < y ? -1 : x > y ? 1 : a.relativePath < b.relativePath ? -1 : 1;
+    }),
     warnings.sort(),
     performance.now() - start,
   );

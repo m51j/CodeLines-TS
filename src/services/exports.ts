@@ -197,11 +197,11 @@ export function reportHtml(
 ): string {
   return (
     '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'unsafe-inline\'; style-src \'unsafe-inline\'; img-src data:; connect-src \'none\'"><title>CodeLines — AI usage</title><style>' +
-    css.replaceAll("</style", "<\\/style") +
+    css.replace(/<\/(style)/gi, "<\\/$1") +
     '</style></head><body><div id="root"></div><script>window.CODELINES_REPORT=' +
     safeJson(result) +
     ";</script><script>" +
-    script.replaceAll("</script", "<\\/script") +
+    script.replace(/<\/(script)/gi, "<\\/$1") +
     "</script></body></html>"
   );
 }

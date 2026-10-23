@@ -100,6 +100,15 @@ const desktop = await _electron.launch({
   timeout: 30000,
 });
 const errors: string[] = [];
+/** The theme applies and persists immediately; wait for the saved value. */
+async function chooseTheme(page: Page, theme: string) {
+  await page.getByRole("radio", { name: `${theme} theme`, exact: true }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(async () => (await window.codelines.load()).settings.theme),
+    )
+    .toBe(theme);
+}
 async function capture(page: Page, options: { path: string }) {
   const base64 = await desktop.evaluate(async ({ BrowserWindow }, url) => {
     const w = BrowserWindow.getAllWindows().find(
@@ -234,7 +243,7 @@ try {
   expect(duplicate.settings.projects).toHaveLength(1);
   for (const theme of ["Light", "Dark"]) {
     console.log(`Desktop UI: ${theme} theme`);
-    await page.getByLabel("Appearance", { exact: true }).selectOption(theme);
+    await chooseTheme(page, theme);
     expect(
       await titlebar.evaluate((el) => getComputedStyle(el).backgroundColor),
     ).toBe(theme === "Light" ? "rgb(247, 249, 253)" : "rgb(21, 33, 54)");
@@ -450,9 +459,7 @@ try {
     .click();
   for (const smallTheme of ["Light", "Dark"]) {
     console.log(`Desktop UI: 950×700 ${smallTheme}`);
-    await page
-      .getByLabel("Appearance", { exact: true })
-      .selectOption(smallTheme);
+    await chooseTheme(page, smallTheme);
     for (const smallTab of ["Overview", "Time", "Projects"]) {
       await page.getByRole("tab", { name: smallTab, exact: true }).click();
       expect(
@@ -473,13 +480,11 @@ try {
       });
     }
   }
-  await page.getByLabel("Appearance", { exact: true }).selectOption("Dark");
-  const save = page.getByRole("button", { name: "Save changes", exact: true });
-  if (await save.isVisible()) await save.click();
+  await chooseTheme(page, "Dark");
   await page.reload();
-  await expect(page.getByLabel("Appearance", { exact: true })).toHaveValue(
-    "Dark",
-  );
+  await expect(
+    page.getByRole("radio", { name: "Dark theme", exact: true }),
+  ).toHaveAttribute("aria-checked", "true");
   await page.evaluate(async () => {
     const state = await window.codelines.load();
     state.settings.dailyLog.refreshAiAfterScan = true;

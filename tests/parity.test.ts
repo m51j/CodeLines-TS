@@ -8,7 +8,12 @@ import {
   aggregateAgents,
   fromClaude,
 } from "../src/ai/aggregate";
-import { claudeRate, listRate, claudeCost } from "../src/ai/pricing";
+import {
+  claudeRate,
+  listRate,
+  claudeCost,
+  rateCost,
+} from "../src/ai/pricing";
 const fixture = path.resolve("tests/fixtures");
 const records = (
   await Promise.all(
@@ -40,9 +45,25 @@ describe("original ccstats golden payload parity", () => {
           "utf8",
         ),
       );
-      expect(stripGenerated(aggregateClaude(records, true, dedupe))).toEqual(
-        stripGenerated(golden),
-      );
+      const actual = aggregateClaude(records, true, dedupe);
+      // Session cost (index 12) is an addition to the legacy payload; the
+      // golden files stay as published and the rest must match exactly.
+      expect(
+        stripGenerated({
+          ...actual,
+          sessions: actual.sessions.map((s) => s.slice(0, 12)),
+        }),
+      ).toEqual(stripGenerated(golden));
+      // Each request is priced at its own model, so session costs add up to
+      // the per-model hourly totals.
+      let hourly = 0;
+      for (const hours of Object.values(actual.hours))
+        for (const models of Object.values(hours))
+          for (const [model, v] of Object.entries(models))
+            hourly += rateCost(actual.rates[model], v[0], v[1], v[2], v[3], v[4]);
+      expect(
+        actual.sessions.reduce((n, s) => n + (s[12] ?? NaN), 0),
+      ).toBeCloseTo(hourly, 6);
     });
   it("matches the combined agents payload", async () => {
     const golden = JSON.parse(

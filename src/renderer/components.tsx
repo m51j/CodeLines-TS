@@ -1,10 +1,16 @@
-import { useMemo, useState, type ReactNode } from "react";
+import {
+  useMemo,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { FolderSearch } from "lucide-react";
-export const number = (v: number | null | undefined) =>
-  v === null || v === undefined ? "—" : Math.round(v).toLocaleString("en-US");
-export const signed = (v: number | null | undefined) =>
-  v === null || v === undefined ? "—" : (v > 0 ? "+" : "") + number(v);
-export const percent = (v: number) => `${(v * 100).toFixed(1)}%`;
+import { number } from "./format";
+export { number, signed, percent } from "./format";
+export type Tone = "accent" | "success" | "danger";
+/** Colors a signed delta: growth green, shrinkage red, zero neutral. */
+export const deltaTone = (v: number | null | undefined): Tone | undefined =>
+  !v ? undefined : v > 0 ? "success" : "danger";
 export function Card({
   title,
   subtitle,
@@ -31,14 +37,20 @@ export function Card({
 export function Tiles({
   items,
 }: {
-  items: { label: string; value: ReactNode; detail?: ReactNode }[];
+  items: {
+    label: string;
+    value: ReactNode;
+    detail?: ReactNode;
+    tone?: Tone;
+    title?: string;
+  }[];
 }) {
   return (
     <div className="tiles">
       {items.map((i) => (
-        <div className="tile" key={i.label}>
+        <div className={"tile" + (i.tone ? " tone-" + i.tone : "")} key={i.label}>
           <span>{i.label}</span>
-          <strong>{i.value}</strong>
+          <strong title={i.title}>{i.value}</strong>
           {i.detail && <small>{i.detail}</small>}
         </div>
       ))}
@@ -58,12 +70,14 @@ export function Table<T>({
   columns,
   onSelect,
   selected,
+  rowKey,
 }: {
   label: string;
   rows: T[];
   columns: Column<T>[];
   onSelect?: (row: T) => void;
   selected?: (row: T) => boolean;
+  rowKey?: (row: T) => string;
 }) {
   const [sort, setSort] = useState<{ key: string; descending: boolean } | null>(
       null,
@@ -71,29 +85,18 @@ export function Table<T>({
     [query, setQuery] = useState(""),
     [page, setPage] = useState(0);
   const sorted = useMemo(() => {
-    const filtered = query
+    const needle = query.toLowerCase();
+    const filtered = needle
       ? rows.filter((r) =>
           columns.some((c) =>
             String(c.value(r) ?? "")
               .toLowerCase()
-              .includes(query.toLowerCase()),
+              .includes(needle),
           ),
         )
       : [...rows];
-    if (sort) {
-      const c = columns.find((c) => c.key === sort.key);
-      if (c)
-        filtered.sort((a, b) => {
-          const av = c.value(a) ?? "",
-            bv = c.value(b) ?? "";
-          return (
-            (typeof av === "number" && typeof bv === "number"
-              ? av - bv
-              : String(av).localeCompare(String(bv))) *
-            (sort.descending ? -1 : 1)
-          );
-        });
-    }
+    const c = sort && columns.find((c) => c.key === sort.key);
+    if (sort && c) filtered.sort((a, b) => compareCells(c.value(a), c.value(b), sort.descending));
     return filtered;
   }, [rows, columns, query, sort]);
   const pages = Math.max(1, Math.ceil(sorted.length / 100)),
@@ -167,7 +170,7 @@ export function Table<T>({
           </thead>
           <tbody>
             {sorted.slice(current * 100, (current + 1) * 100).map((r, i) => (
-              <tr key={i} className={selected?.(r) ? "selected" : ""}>
+              <tr key={rowKey?.(r) ?? i} className={selected?.(r) ? "selected" : ""}>
                 {columns.map((c, j) => (
                   <td className={columnClasses[j]} key={c.key}>
                     {onSelect && j === 0 ? (
@@ -219,6 +222,43 @@ export function Table<T>({
     </div>
   );
 }
+/** Missing values always sort last; numbers compare numerically, text naturally. */
+export function compareCells(
+  a: string | number | null | undefined,
+  b: string | number | null | undefined,
+  descending = false,
+): number {
+  const missingA = a === null || a === undefined || a === "",
+    missingB = b === null || b === undefined || b === "";
+  if (missingA || missingB) return Number(missingA) - Number(missingB);
+  const order =
+    typeof a === "number" && typeof b === "number"
+      ? a - b
+      : String(a).localeCompare(String(b), "en", { numeric: true });
+  return descending ? -order : order;
+}
+export function tabKeys(event: KeyboardEvent<HTMLElement>) {
+  const buttons = Array.from(
+    event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+  );
+  const index = buttons.indexOf(event.target as HTMLButtonElement);
+  if (index < 0) return;
+  const next =
+    event.key === "ArrowRight"
+      ? (index + 1) % buttons.length
+      : event.key === "ArrowLeft"
+        ? (index + buttons.length - 1) % buttons.length
+        : event.key === "Home"
+          ? 0
+          : event.key === "End"
+            ? buttons.length - 1
+            : -1;
+  if (next >= 0) {
+    event.preventDefault();
+    buttons[next].focus();
+    buttons[next].click();
+  }
+}
 export const col = <T,>(
   key: keyof T & string,
   label: string = key,
@@ -261,5 +301,40 @@ export function Field({
       {children}
       {help && <small>{help}</small>}
     </label>
+  );
+}
+export const splitLines = (s: string) =>
+  s
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+/**
+ * A one-entry-per-line textarea. The raw text stays local so a new empty line
+ * can be typed; the parsed list is reported on every change.
+ */
+export function LinesInput({
+  value,
+  onChange,
+  ...props
+}: {
+  value: string[];
+  onChange: (lines: string[]) => void;
+  disabled?: boolean;
+  rows?: number;
+  className?: string;
+  "aria-label"?: string;
+}) {
+  const [text, setText] = useState(() => value.join("\n"));
+  const joined = value.join("\n");
+  if (joined !== splitLines(text).join("\n")) setText(joined);
+  return (
+    <textarea
+      {...props}
+      value={text}
+      onChange={(e) => {
+        setText(e.target.value);
+        onChange(splitLines(e.target.value));
+      }}
+    />
   );
 }

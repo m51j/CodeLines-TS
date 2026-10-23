@@ -33,20 +33,34 @@ export function claudeRate(model: string): Rate {
     label: displayClaude(model),
   };
 }
+/** Cost of Claude token counts at per-million rates, in the vector order input, 5m write, 1h write, cache read, output. */
+export const rateCost = (
+  p: Rate,
+  input: number,
+  write5m: number,
+  write1h: number,
+  cacheRead: number,
+  output: number,
+): number =>
+  (input * p.input +
+    write5m * p.write5m +
+    write1h * p.write1h +
+    cacheRead * p.cacheRead +
+    output * p.output) /
+  1e6;
 export function claudeCost(
   r: Pick<
     ClaudeRecord,
     "model" | "input" | "cacheWrite5m" | "cacheWrite1h" | "cacheRead" | "output"
   >,
 ): number {
-  const p = claudeRate(r.model);
-  return (
-    (r.input * p.input +
-      r.cacheWrite5m * p.write5m +
-      r.cacheWrite1h * p.write1h +
-      r.cacheRead * p.cacheRead +
-      r.output * p.output) /
-    1e6
+  return rateCost(
+    claudeRate(r.model),
+    r.input,
+    r.cacheWrite5m,
+    r.cacheWrite1h,
+    r.cacheRead,
+    r.output,
   );
 }
 export function listRate(model: string): {

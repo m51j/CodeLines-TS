@@ -95,6 +95,19 @@ function editorSettings(raw: unknown): Settings {
     lastGitHistory: store.settings.lastGitHistory,
   });
 }
+const historyInputs = (s: Settings) =>
+  JSON.stringify([
+    s.projects,
+    s.scanOptions.countingScope,
+    s.scanOptions.globalExcludePatterns,
+    s.gitHistory,
+  ]);
+/** Replaces stored settings, discarding history computed under other inputs. */
+function adoptSettings(next: Settings) {
+  if (historyInputs(next) !== historyInputs(store.settings))
+    next.lastGitHistory = null;
+  store.settings = next;
+}
 function assertIdle() {
   if (active.size || reservedLanes.size)
     throw new Error(
@@ -136,7 +149,7 @@ async function run(raw: unknown): Promise<OperationResult> {
     throw new Error("AI usage is disabled.");
   reservedLanes.add(lane);
   if (request.kind === "history") settings.lastGitHistory = null;
-  store.settings = settings;
+  adoptSettings(settings);
   try {
     await store.save();
   } catch (error) {
@@ -218,6 +231,10 @@ async function run(raw: unknown): Promise<OperationResult> {
         }
         if (message.type === "result") {
           receivedResult = true;
+          const previous = {
+            lastSnapshot: store.settings.lastSnapshot,
+            lastGitHistory: store.settings.lastGitHistory,
+          };
           try {
             const value = message.value as {
               projects?: ProjectMetric[];
@@ -263,11 +280,12 @@ async function run(raw: unknown): Promise<OperationResult> {
             }
             if (value.history) store.settings.lastGitHistory = value.history;
             if (value.ai) {
-              store.ai = value.ai;
+              // Write first so memory never holds a report that is not on disk.
               await atomicWrite(
                 path.join(store.directory, "ai-report.json"),
-                store.ai,
+                value.ai,
               );
+              store.ai = value.ai;
               if (value.ai.combined) {
                 recordAi(
                   store.daily,
@@ -287,6 +305,7 @@ async function run(raw: unknown): Promise<OperationResult> {
             await store.save();
             finish("completed");
           } catch (e) {
+            Object.assign(store.settings, previous);
             finish("failed", String(e));
           }
         }
@@ -337,22 +356,7 @@ async function setup() {
   handle("load", () => store.state());
   handle("save", async (value) => {
     assertIdle();
-    const next = editorSettings(value);
-    const historyChanged =
-      JSON.stringify([
-        next.projects,
-        next.scanOptions.countingScope,
-        next.scanOptions.globalExcludePatterns,
-        next.gitHistory,
-      ]) !==
-      JSON.stringify([
-        store.settings.projects,
-        store.settings.scanOptions.countingScope,
-        store.settings.scanOptions.globalExcludePatterns,
-        store.settings.gitHistory,
-      ]);
-    if (historyChanged) next.lastGitHistory = null;
-    store.settings = next;
+    adoptSettings(editorSettings(value));
     await store.save();
     return store.state();
   });
@@ -433,8 +437,8 @@ async function setup() {
       op = active.get(key);
     if (op) {
       op.cancelled = true;
-      op.worker.postMessage("cancel");
-      await new Promise<void>((resolve) => {
+      // Listen before signalling so a fast exit is never missed.
+      const exited = new Promise<void>((resolve) => {
         const timer = setTimeout(() => {
           void op.worker.terminate().finally(resolve);
         }, 1000);
@@ -443,6 +447,8 @@ async function setup() {
           resolve();
         });
       });
+      op.worker.postMessage("cancel");
+      await exited;
     }
   });
   handle("export", async (raw) => {
@@ -554,10 +560,12 @@ async function setup() {
   window.on("focus", publishWindowState);
   window.on("blur", publishWindowState);
   window.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
-  window.webContents.on("will-navigate", (event, url) => {
+  const guardNavigation = (event: Electron.Event, url: string) => {
     if (url !== (process.env.CODELINES_DEV_URL ?? pathToFileURL(entry).href))
       event.preventDefault();
-  });
+  };
+  window.webContents.on("will-navigate", guardNavigation);
+  window.webContents.on("will-redirect", guardNavigation);
   await (process.env.CODELINES_DEV_URL
     ? window.loadURL(process.env.CODELINES_DEV_URL)
     : window.loadFile(entry));

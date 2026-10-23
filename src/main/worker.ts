@@ -33,13 +33,19 @@ let latest: Progress = {
   total: null,
   elapsed: 0,
 };
+// Finished history projects can be large; resend them only after they change.
+let partialChanged = false;
 const update = (value: Partial<Progress>) => {
+  if (value.partial) partialChanged = true;
   latest = { ...latest, ...value, elapsed: performance.now() - start };
 };
-const timer = setInterval(
-  () => parentPort?.postMessage({ type: "progress", value: latest }),
-  250,
-);
+const timer = setInterval(() => {
+  parentPort?.postMessage({
+    type: "progress",
+    value: { ...latest, partial: partialChanged ? latest.partial : undefined },
+  });
+  partialChanged = false;
+}, 250);
 async function execute() {
   try {
     const projects = work.projectId

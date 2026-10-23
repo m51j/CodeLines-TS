@@ -115,7 +115,7 @@ describe("daily recording parity", () => {
           label: "Codex",
           records: [
             record({
-              ts: 1,
+              ts: Date.UTC(2026, 0, 1),
               model: "unknown",
               input: 100,
               cacheRead: 50,
