@@ -1,4 +1,4 @@
-CodeLines TS — installed production dependency license notices
+CodeLines — installed production dependency license notices
 Generated from package-lock.json. Electron includes additional notices in its distribution.
 
 ========================================================================

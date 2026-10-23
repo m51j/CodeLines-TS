@@ -16,7 +16,7 @@ afterEach(async () => {
 async function fixture() {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "codelines-checksums-"));
   roots.push(root);
-  const files = releaseFileNames("CodeLines TS", "2.3.4");
+  const files = releaseFileNames("CodeLines", "2.3.4");
   await fs.writeFile(path.join(root, files[0]), "abc");
   await fs.writeFile(path.join(root, files[1]), "hello");
   return { root, files, manifest: path.join(root, "SHA256SUMS.txt") };
@@ -26,8 +26,8 @@ describe("release checksum integrity", () => {
     const { root, files, manifest } = await fixture();
     await writeReleaseChecksums(root, files);
     expect(await fs.readFile(manifest, "utf8")).toBe(
-      "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad  CodeLines TS Setup 2.3.4.exe\n" +
-        "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824  CodeLines TS 2.3.4.exe\n",
+      "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad  CodeLines Setup 2.3.4.exe\n" +
+        "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824  CodeLines 2.3.4.exe\n",
     );
     await verifyReleaseChecksums(root, files);
   });

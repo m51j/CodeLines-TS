@@ -7,7 +7,7 @@ const lock = JSON.parse(await fs.readFile("package-lock.json", "utf8")) as {
   >;
 };
 const sections: string[] = [
-  "CodeLines TS — installed production dependency license notices\nGenerated from package-lock.json. Electron includes additional notices in its distribution.",
+  "CodeLines — installed production dependency license notices\nGenerated from package-lock.json. Electron includes additional notices in its distribution.",
 ];
 for (const [directory, p] of Object.entries(lock.packages)) {
   if (!directory || p.dev) continue;

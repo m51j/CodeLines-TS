@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableExtensions DisableDelayedExpansion
-title CodeLines TS - Build Release
+title CodeLines - Build Release
 
 pushd "%~dp0"
 if errorlevel 1 (

@@ -1,6 +1,6 @@
 # Contributing
 
-CodeLines TS targets Windows x64, Node.js 24, npm, and Git. Install dependencies with `npm ci`, then use `npm run dev`. Use synthetic projects and agent records for development; do not commit real transcripts, credentials, local data, or screenshots showing private paths. If setting `CODELINES_DATA_DIR` manually, use a directory outside the checkout or the ignored `local-data/` folder; avoid using the repository root as a Chromium profile.
+CodeLines targets Windows x64, Node.js 24, npm, and Git. Install dependencies with `npm ci`, then use `npm run dev`. Use synthetic projects and agent records for development; do not commit real transcripts, credentials, local data, or screenshots showing private paths. If setting `CODELINES_DATA_DIR` manually, use a directory outside the checkout or the ignored `local-data/` folder; avoid using the repository root as a Chromium profile.
 
 Before opening a pull request, run:
 

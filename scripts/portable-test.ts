@@ -80,6 +80,8 @@ try {
     page.getByRole("heading", { name: "Dashboard", exact: true }),
   ).toBeVisible();
   expect(page.url()).toMatch(/^file:/);
+  await expect(page).toHaveTitle("CodeLines");
+  await expect(page.locator(".titlebar-brand")).toHaveText("CodeLines");
   await page
     .getByRole("button", { name: "Scan all projects", exact: true })
     .click();
