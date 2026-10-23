@@ -3,13 +3,30 @@ import { Download, Play, Plus } from "lucide-react";
 import { Card, Empty, Field, LinesInput } from "../components";
 import { money, number } from "../format";
 import { matchProjects } from "../../domain/daily";
+import type { Project } from "../../shared/contracts";
 import { useWorkspace } from "../workspace";
 export function Projects() {
-  const { state, draft, busy, dirty, change, execute, save, saveThen, exportData } =
-    useWorkspace();
+  const {
+    state,
+    draft,
+    busy,
+    dirty,
+    change,
+    execute,
+    save,
+    saveThen,
+    exportData,
+  } = useWorkspace();
   const [confirming, setConfirming] = useState("");
+  const [selectedId, setSelectedId] = useState("");
   const sessions = state.ai?.combined?.sessions,
-    projects = draft.projects;
+    projects = draft.projects,
+    selected = projects.find((p) => p.id === selectedId) ?? projects[0];
+  const updateProject = (id: string, edits: Partial<Omit<Project, "id">>) =>
+    change((s) => {
+      const project = s.projects.find((p) => p.id === id);
+      if (project) Object.assign(project, edits);
+    });
   const usage = useMemo(() => {
     if (!sessions) return { all: [], recent: [] };
     const cut = Date.now() - 30 * 86400000;
@@ -28,38 +45,54 @@ export function Projects() {
           <h2>Project sources</h2>
           <p className="muted">
             {projects.length} {projects.length === 1 ? "folder" : "folders"} ·
-            edit names, paths, and exclusions below
+            enable, rename, or add folders to the workspace
           </p>
         </div>
         <div className="spacer" />
-        <button
-          disabled={!!busy}
-          onClick={() =>
-            void saveThen(
-              () => window.codelines.importProjects(),
-              "Project list imported",
-            )
-          }
-        >
-          Import…
-        </button>
-        <button
-          disabled={!!busy || !projects.length}
-          onClick={() => void exportData("projects", "json")}
-        >
-          <Download size={15} />
-          Export
-        </button>
-        <button
-          className="primary"
-          disabled={!!busy}
-          onClick={() =>
-            void saveThen(() => window.codelines.addProject(), "Project added")
-          }
-        >
-          <Plus size={15} />
-          Add project
-        </button>
+        <div className="toolbar wrap">
+          <button
+            disabled={!!busy || !selected}
+            onClick={() => selected && void execute("scan", selected.id)}
+          >
+            <Play size={15} />
+            Scan selected
+          </button>
+          <button
+            disabled={!!busy}
+            onClick={() =>
+              void saveThen(
+                () => window.codelines.importProjects(),
+                "Project list imported",
+              )
+            }
+          >
+            Import…
+          </button>
+          <button
+            disabled={!!busy || !projects.length}
+            onClick={() => void exportData("projects", "json")}
+          >
+            <Download size={15} />
+            Export
+          </button>
+          <button
+            className="primary"
+            disabled={!!busy}
+            onClick={() =>
+              void saveThen(async () => {
+                const next = await window.codelines.addProject();
+                const added = next.settings.projects.find(
+                  (p) => !projects.some((old) => old.id === p.id),
+                );
+                if (added) setSelectedId(added.id);
+                return next;
+              }, "Project added")
+            }
+          >
+            <Plus size={15} />
+            Add project
+          </button>
+        </div>
       </div>
       {!projects.length ? (
         <Empty title="A home for your projects">
@@ -67,140 +100,181 @@ export function Projects() {
           it when you scan.
         </Empty>
       ) : (
-        <div className="project-list">
-          {projects.map((p, i) => {
-            const u = usage.all.find((u) => u.projectId === p.id),
-              r = usage.recent.find((u) => u.projectId === p.id);
-            return (
-              <Card key={p.id} className={p.isEnabled ? "" : "is-disabled"}>
-                <div className="project-editor">
-                  <label className="check">
-                    <input
-                      type="checkbox"
-                      aria-label={"Enable " + p.name}
-                      checked={p.isEnabled}
-                      disabled={!!busy}
-                      onChange={(e) =>
-                        change((s) => {
-                          s.projects[i].isEnabled = e.target.checked;
-                        })
-                      }
-                    />
-                    Enabled
-                  </label>
-                  <Field label="Project name">
-                    <input
-                      value={p.name}
-                      title={p.name}
-                      disabled={!!busy}
-                      onChange={(e) =>
-                        change((s) => {
-                          s.projects[i].name = e.target.value;
-                        })
-                      }
-                    />
-                  </Field>
-                  <Field label="Root path">
-                    <input
-                      className="mono"
-                      value={p.rootPath}
-                      title={p.rootPath}
-                      disabled={!!busy}
-                      onChange={(e) =>
-                        change((s) => {
-                          s.projects[i].rootPath = e.target.value;
-                        })
-                      }
-                    />
-                  </Field>
-                  <div className="toolbar wrap project-actions">
-                    {confirming === p.id ? (
-                      <>
-                        <button onClick={() => setConfirming("")}>Keep</button>
-                        <button
-                          className="danger-button"
-                          disabled={!!busy}
-                          onClick={() => {
-                            setConfirming("");
-                            change((s) => {
-                              s.projects = s.projects.filter(
-                                (x) => x.id !== p.id,
-                              );
-                            });
-                          }}
-                        >
-                          Confirm remove
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          disabled={!!busy}
-                          onClick={() => void execute("scan", p.id)}
-                        >
-                          <Play size={14} />
-                          Scan
-                        </button>
-                        <button
-                          className="danger-button"
-                          disabled={!!busy}
-                          onClick={() => setConfirming(p.id)}
-                        >
-                          Remove
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className="project-usage">
-                  <span>
-                    AI tokens · 30d <strong>{number(r?.tokens)}</strong>
-                  </span>
-                  <span>
-                    AI tokens · all time <strong>{number(u?.tokens)}</strong>
-                  </span>
-                  <span>
-                    API equivalent{" "}
-                    <strong>
-                      {!u || !u.sessions || (u.cost === 0 && u.costPartial)
-                        ? "—"
-                        : money(u.cost, u.costPartial)}
-                    </strong>
-                  </span>
-                  <span>
-                    {number(u?.sessions ?? 0)}{" "}
-                    {u?.sessions === 1 ? "session" : "sessions"}
-                  </span>
-                </div>
-                <details>
-                  <summary>
-                    Project exclusions
-                    {p.excludePatterns.length
-                      ? ` · ${p.excludePatterns.length}`
-                      : ""}
-                  </summary>
-                  <Field
-                    label="Patterns (one per line)"
-                    help="Applied after global patterns and repository .gitignore rules."
-                  >
-                    <LinesInput
-                      className="mono"
-                      disabled={!!busy}
-                      value={p.excludePatterns}
-                      onChange={(lines) =>
-                        change((s) => {
-                          s.projects[i].excludePatterns = lines;
-                        })
-                      }
-                    />
-                  </Field>
-                </details>
-              </Card>
-            );
-          })}
-        </div>
+        <>
+          <Card className="projects-table-card">
+            <div
+              className="table-scroll projects-table-scroll"
+              tabIndex={0}
+              role="region"
+              aria-label="Project sources"
+            >
+              <table className="projects-table" aria-label="Projects">
+                <colgroup>
+                  <col className="project-enabled-column" />
+                  <col className="project-name-column" />
+                  <col />
+                  <col className="project-tokens-column" />
+                  <col className="project-tokens-column" />
+                  <col className="project-cost-column" />
+                  <col className="project-remove-column" />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th scope="col">Enabled</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Root path</th>
+                    <th scope="col" className="numeric-column">
+                      AI tokens · 30d
+                    </th>
+                    <th scope="col" className="numeric-column">
+                      AI tokens
+                    </th>
+                    <th scope="col" className="numeric-column">
+                      AI cost
+                    </th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {projects.map((p) => {
+                    const u = usage.all.find((u) => u.projectId === p.id),
+                      r = usage.recent.find((u) => u.projectId === p.id);
+                    return (
+                      <tr
+                        key={p.id}
+                        className={[
+                          selected?.id === p.id ? "selected" : "",
+                          p.isEnabled ? "" : "project-row-disabled",
+                        ].join(" ")}
+                        aria-selected={selected?.id === p.id}
+                        tabIndex={0}
+                        onClick={() => setSelectedId(p.id)}
+                        onFocusCapture={() => setSelectedId(p.id)}
+                        onKeyDown={(e) => {
+                          if (e.target !== e.currentTarget) return;
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setSelectedId(p.id);
+                          }
+                        }}
+                      >
+                        <td className="project-enabled-cell">
+                          <input
+                            type="checkbox"
+                            aria-label={"Enable " + p.name}
+                            checked={p.isEnabled}
+                            disabled={!!busy}
+                            onChange={(e) =>
+                              updateProject(p.id, {
+                                isEnabled: e.target.checked,
+                              })
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            aria-label={"Project name for " + p.name}
+                            value={p.name}
+                            title={p.name}
+                            disabled={!!busy}
+                            onChange={(e) =>
+                              updateProject(p.id, { name: e.target.value })
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="mono"
+                            aria-label={"Root path for " + p.name}
+                            value={p.rootPath}
+                            title={p.rootPath}
+                            disabled={!!busy}
+                            onChange={(e) =>
+                              updateProject(p.id, { rootPath: e.target.value })
+                            }
+                          />
+                        </td>
+                        <td className="numeric-column">{number(r?.tokens)}</td>
+                        <td className="numeric-column">{number(u?.tokens)}</td>
+                        <td className="numeric-column" title="API equivalent">
+                          {!u || !u.sessions || (u.cost === 0 && u.costPartial)
+                            ? "—"
+                            : money(u.cost, u.costPartial)}
+                        </td>
+                        <td className="project-remove-cell">
+                          {confirming === p.id ? (
+                            <div className="toolbar wrap">
+                              <button
+                                disabled={!!busy}
+                                onClick={() => setConfirming("")}
+                              >
+                                Keep
+                              </button>
+                              <button
+                                className="danger-button"
+                                disabled={!!busy}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setConfirming("");
+                                  if (selected?.id === p.id)
+                                    setSelectedId(
+                                      projects.find((x) => x.id !== p.id)?.id ??
+                                        "",
+                                    );
+                                  change((s) => {
+                                    s.projects = s.projects.filter(
+                                      (x) => x.id !== p.id,
+                                    );
+                                  });
+                                }}
+                              >
+                                Confirm remove
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              className="danger-button"
+                              aria-label={"Remove " + p.name}
+                              disabled={!!busy}
+                              onClick={() => setConfirming(p.id)}
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+          {selected && (
+            <Card className="project-exclusions">
+              <div>
+                <h2>Project exclusions</h2>
+                <p className="muted">
+                  One .gitignore-style pattern per line. Applied after global
+                  patterns and repository .gitignore rules.
+                </p>
+              </div>
+              <Field label={"Patterns for " + selected.name}>
+                <LinesInput
+                  key={selected.id}
+                  className="mono"
+                  rows={4}
+                  disabled={!!busy}
+                  value={selected.excludePatterns}
+                  onChange={(lines) =>
+                    updateProject(selected.id, { excludePatterns: lines })
+                  }
+                />
+              </Field>
+            </Card>
+          )}
+        </>
       )}
-      {projects.length > 0 && (
+      {(projects.length > 0 || dirty) && (
         <div className="toolbar wrap sticky-actions">
           <button
             className="primary"

@@ -102,7 +102,9 @@ const desktop = await _electron.launch({
 const errors: string[] = [];
 /** The theme applies and persists immediately; wait for the saved value. */
 async function chooseTheme(page: Page, theme: string) {
-  await page.getByRole("radio", { name: `${theme} theme`, exact: true }).click();
+  await page
+    .getByRole("radio", { name: `${theme} theme`, exact: true })
+    .click();
   await expect
     .poll(() =>
       page.evaluate(async () => (await window.codelines.load()).settings.theme),
@@ -241,6 +243,245 @@ try {
   }, project);
   const duplicate = await page.evaluate(() => window.codelines.addProject());
   expect(duplicate.settings.projects).toHaveLength(1);
+  // Edit two projects through the table and verify selected-project operations.
+  const openProjects = () =>
+    page
+      .getByRole("navigation", { name: "Main navigation" })
+      .getByRole("button", { name: "Projects", exact: true })
+      .click();
+  await openProjects();
+  const projectTable = page.getByRole("table", {
+      name: "Projects",
+      exact: true,
+    }),
+    projectRows = projectTable.locator("tbody tr"),
+    firstProject = projectRows.nth(0),
+    secondProject = projectRows.nth(1),
+    patterns = page.locator(".project-exclusions textarea"),
+    saveProjects = page.getByRole("button", {
+      name: "Save project changes",
+      exact: true,
+    });
+  await expect(projectTable.getByRole("columnheader")).toHaveText([
+    "Enabled",
+    "Name",
+    "Root path",
+    "AI tokens · 30d",
+    "AI tokens",
+    "AI cost",
+    "Actions",
+  ]);
+  await expect(firstProject).toHaveAttribute("aria-selected", "true");
+  await firstProject
+    .getByRole("textbox", {
+      name: "Project name for Fixture project",
+      exact: true,
+    })
+    .fill("First edited project");
+  await patterns.fill("first-excluded/\n*.ignore");
+  const addedRoot = path.join(root, "second-project"),
+    editedRoot = path.join(addedRoot, "source");
+  await fs.mkdir(path.join(editedRoot, "ignored"), { recursive: true });
+  await fs.writeFile(
+    path.join(editedRoot, "second.ts"),
+    "export const second = 2;\n",
+  );
+  await fs.writeFile(
+    path.join(editedRoot, "ignored", "skip.ts"),
+    "export const skip = 1;\n",
+  );
+  await desktop.evaluate(({ dialog }, folder) => {
+    dialog.showOpenDialog = async () => ({
+      canceled: false,
+      filePaths: [folder],
+    });
+  }, addedRoot);
+  await page.getByRole("button", { name: "Add project", exact: true }).click();
+  await expect(projectRows).toHaveCount(2);
+  await expect(secondProject).toHaveAttribute("aria-selected", "true");
+  await expect(patterns).toHaveValue("");
+  expect(
+    (await page.evaluate(() => window.codelines.load())).settings.projects[0],
+  ).toMatchObject({
+    name: "First edited project",
+    excludePatterns: ["first-excluded/", "*.ignore"],
+  });
+  await secondProject
+    .getByRole("textbox", {
+      name: "Project name for second-project",
+      exact: true,
+    })
+    .fill("Second edited project");
+  await secondProject
+    .getByRole("textbox", {
+      name: "Root path for Second edited project",
+      exact: true,
+    })
+    .fill(editedRoot);
+  await patterns.fill("ignored/\nsecond-excluded/");
+  await firstProject
+    .getByRole("textbox", {
+      name: "Project name for First edited project",
+      exact: true,
+    })
+    .focus();
+  await expect(firstProject).toHaveAttribute("aria-selected", "true");
+  await expect(patterns).toHaveValue("first-excluded/\n*.ignore");
+  await secondProject.focus();
+  await secondProject.press("Enter");
+  await expect(secondProject).toHaveAttribute("aria-selected", "true");
+  await expect(patterns).toHaveValue("ignored/\nsecond-excluded/");
+  await secondProject
+    .getByRole("checkbox", {
+      name: "Enable Second edited project",
+      exact: true,
+    })
+    .uncheck();
+  await saveProjects.click();
+  await expect(saveProjects).toBeDisabled();
+  const savedProjects = (await page.evaluate(() => window.codelines.load()))
+    .settings.projects;
+  expect(savedProjects[1]).toMatchObject({
+    name: "Second edited project",
+    rootPath: editedRoot,
+    isEnabled: false,
+    excludePatterns: ["ignored/", "second-excluded/"],
+  });
+  await page.reload();
+  await openProjects();
+  await expect(firstProject).toHaveAttribute("aria-selected", "true");
+  await expect(patterns).toHaveValue("first-excluded/\n*.ignore");
+  await secondProject
+    .getByRole("textbox", {
+      name: "Root path for Second edited project",
+      exact: true,
+    })
+    .focus();
+  await expect(patterns).toHaveValue("ignored/\nsecond-excluded/");
+  // An explicit selected scan also works for a disabled project, as in C#.
+  await patterns.fill("ignored/\nchanged-before-scan/");
+  const priorScan = (await page.evaluate(() => window.codelines.load()))
+    .settings.lastSnapshot!.projects[0];
+  await page
+    .getByRole("button", { name: "Scan selected", exact: true })
+    .click();
+  await expect(firstProject.getByRole("textbox").first()).toBeDisabled();
+  await expect(patterns).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Cancel", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".statusbar")).toContainText("Scan complete", {
+    timeout: 30000,
+  });
+  const scannedState = await page.evaluate(() => window.codelines.load());
+  expect(scannedState.settings.projects[1].excludePatterns).toEqual([
+    "ignored/",
+    "changed-before-scan/",
+  ]);
+  expect(
+    scannedState.settings.lastSnapshot!.projects.find(
+      (p) => p.projectId === savedProjects[1].id,
+    ),
+  ).toMatchObject({ fileCount: 1, projectName: "Second edited project" });
+  expect(
+    scannedState.settings.lastSnapshot!.projects.find(
+      (p) => p.projectId === savedProjects[0].id,
+    ),
+  ).toEqual(priorScan);
+  for (const theme of ["Light", "Dark"]) {
+    await chooseTheme(page, theme);
+    await capture(page, {
+      path: path.join(
+        out,
+        `${packaged ? "packaged" : "built"}-projects-table-${theme.toLowerCase()}.png`,
+      ),
+    });
+    await desktop.evaluate(({ BrowserWindow }) =>
+      BrowserWindow.getAllWindows()[0].setSize(950, 700),
+    );
+    expect(
+      await page.evaluate(() => {
+        const main = document.querySelector("main")!,
+          scroll = document.querySelector(".projects-table-scroll")!;
+        return (
+          main.scrollWidth <= main.clientWidth &&
+          scroll.scrollWidth > scroll.clientWidth
+        );
+      }),
+    ).toBe(true);
+    await capture(page, {
+      path: path.join(
+        out,
+        `${packaged ? "packaged" : "built"}-projects-table-small-${theme.toLowerCase()}.png`,
+      ),
+    });
+    await desktop.evaluate(({ BrowserWindow }) =>
+      BrowserWindow.getAllWindows()[0].setSize(1440, 960),
+    );
+  }
+  await secondProject
+    .getByRole("button", { name: "Remove Second edited project", exact: true })
+    .click();
+  await expect(projectRows).toHaveCount(2);
+  await secondProject
+    .getByRole("button", { name: "Keep", exact: true })
+    .click();
+  await expect(projectRows).toHaveCount(2);
+  await secondProject
+    .getByRole("button", { name: "Remove Second edited project", exact: true })
+    .click();
+  await secondProject
+    .getByRole("button", { name: "Confirm remove", exact: true })
+    .click();
+  await expect(projectRows).toHaveCount(1);
+  await expect(firstProject).toHaveAttribute("aria-selected", "true");
+  await expect(patterns).toHaveValue("first-excluded/\n*.ignore");
+  await firstProject
+    .getByRole("button", { name: "Remove First edited project", exact: true })
+    .click();
+  await firstProject
+    .getByRole("button", { name: "Confirm remove", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", {
+      name: "A home for your projects",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Scan selected", exact: true }),
+  ).toBeDisabled();
+  await expect(saveProjects).toBeEnabled();
+  await saveProjects.click();
+  await expect(saveProjects).toHaveCount(0);
+  expect(
+    (await page.evaluate(() => window.codelines.load())).settings.projects,
+  ).toEqual([]);
+  await page.reload();
+  await openProjects();
+  await expect(
+    page.getByRole("heading", {
+      name: "A home for your projects",
+      exact: true,
+    }),
+  ).toBeVisible();
+  // Restore the original isolated fixture for the remaining desktop suite.
+  await page.evaluate(async (settings) => {
+    let current = await window.codelines.save(settings);
+    // Project edits invalidate Git history; saving cannot inject stored results.
+    for (const kind of ["scan", "history"] as const) {
+      const result = await window.codelines.run({
+        id: crypto.randomUUID(),
+        kind,
+        settings: current.settings,
+      });
+      if (result.status !== "completed")
+        throw new Error(result.error ?? `Fixture ${kind} failed`);
+      current = result.state;
+    }
+  }, duplicate.settings);
+  await page.reload();
+  console.log("Projects table interactions and layouts passed");
   for (const theme of ["Light", "Dark"]) {
     console.log(`Desktop UI: ${theme} theme`);
     await chooseTheme(page, theme);
@@ -716,6 +957,8 @@ try {
           "Claude golden fixtures",
           "packaged node:sqlite reader",
           "seven-page navigation",
+          "editable projects table, selection, exclusions, save/reload, selected scan and confirmed removal to empty",
+          "projects table in light/dark at full and 950px widths",
           "all report tabs and agent-specific selection restoration",
           "preset/custom dates, invalid dates and empty ranges",
           "stable model colors, keyboard tabs and focus/hover tooltips",

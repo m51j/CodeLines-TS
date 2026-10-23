@@ -823,36 +823,93 @@ th.path-column {
   gap: 13px;
   margin-bottom: 25px;
 }
-.project-editor {
-  display: grid;
-  grid-template-columns: 80px minmax(140px, 1fr) minmax(200px, 2fr) auto;
-  gap: 18px;
-  align-items: center;
+.projects-table-card {
+  padding: 6px;
 }
-.project-editor > * {
+.projects-table-scroll {
+  max-height: min(50vh, 600px);
+  border: 0;
+}
+.projects-table {
+  table-layout: fixed;
+  min-width: 1040px;
+}
+.projects-table .project-enabled-column {
+  width: 76px;
+}
+.projects-table .project-name-column {
+  width: 210px;
+}
+.projects-table .project-tokens-column {
+  width: 128px;
+}
+.projects-table .project-cost-column {
+  width: 98px;
+}
+.projects-table .project-remove-column {
+  width: 144px;
+}
+.projects-table th {
+  padding: 12px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.projects-table td {
+  padding: 6px 10px;
+}
+.projects-table td input:not([type="checkbox"]) {
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 7px;
+  background: transparent;
+  border-color: transparent;
+  text-overflow: ellipsis;
+}
+.projects-table td input:not([type="checkbox"]):hover:not(:disabled) {
+  border-color: var(--border);
+}
+.projects-table td input:not([type="checkbox"]):focus {
+  background: var(--surface);
+  border-color: var(--accent);
+}
+.projects-table :focus-visible {
+  outline-offset: -3px;
+}
+.projects-table tr:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.projects-table .project-enabled-cell {
+  text-align: center;
+}
+.projects-table .project-row-disabled input:not([type="checkbox"]),
+.projects-table .project-row-disabled .numeric-column {
+  color: var(--muted);
+}
+.projects-table .project-remove-cell {
+  white-space: normal;
+}
+.project-remove-cell button {
+  min-height: 32px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.project-exclusions {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 24px;
+}
+.project-exclusions p {
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+.project-exclusions .field {
+  margin: 0;
   min-width: 0;
 }
-.project-actions {
-  align-self: end;
-  justify-content: flex-end;
-}
-.project-editor .field {
-  margin: 0;
-}
-.project-usage {
-  display: flex;
-  gap: 12px 24px;
-  margin: 20px 0 16px;
-  padding: 14px 0;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  font-size: 12px;
-  color: var(--muted);
-  flex-wrap: wrap;
-}
-.project-usage strong {
-  color: var(--text);
-  margin-left: 8px;
+.project-exclusions .field > span {
+  overflow-wrap: anywhere;
 }
 .danger-button {
   color: var(--danger);
@@ -860,10 +917,6 @@ th.path-column {
 button.danger-button:hover:not(:disabled) {
   border-color: var(--danger);
   background: color-mix(in srgb, var(--danger) 8%, var(--surface));
-}
-.card.is-disabled .project-editor .field,
-.card.is-disabled .project-usage {
-  opacity: 0.6;
 }
 details {
   font-size: 13px;
@@ -1113,13 +1166,6 @@ fieldset {
   main {
     padding: 24px;
   }
-  .project-editor {
-    grid-template-columns: 70px 1fr 1.7fr;
-    gap: 12px;
-  }
-  .project-actions {
-    grid-column: 2 / -1;
-  }
   .settings-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1149,14 +1195,9 @@ fieldset {
     padding: 16px;
   }
 
-  .project-editor {
-    grid-template-columns: 1fr 2fr;
-  }
-  .project-editor .check {
-    grid-column: span 2;
-  }
-  .project-actions {
-    grid-column: 1 / -1;
+  .project-exclusions {
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
   .toolbar {
     gap: 7px;
