@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableExtensions DisableDelayedExpansion
-title CodeLines TS
+title CodeLines
 
 pushd "%~dp0"
 if errorlevel 1 (
@@ -35,11 +35,11 @@ call npm ci
 if errorlevel 1 goto :error
 
 :run
-echo Building CodeLines TS...
+echo Building CodeLines...
 call npm run build
 if errorlevel 1 goto :error
 
-echo Starting CodeLines TS...
+echo Starting CodeLines...
 set "ELECTRON_RUN_AS_NODE="
 call npm start
 if errorlevel 1 goto :error
@@ -49,7 +49,7 @@ exit /b 0
 
 :error
 echo.
-echo CodeLines TS could not start. See the error above.
+echo CodeLines could not start. See the error above.
 popd
 pause
 exit /b 1

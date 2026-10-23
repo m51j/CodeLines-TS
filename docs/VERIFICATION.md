@@ -124,3 +124,36 @@ eb0bf98bffd9f383f4e51e1f59ac07bb5987059304abb801f42e1c07e65e60e9  CodeLines TS S
 ```
 
 The earlier publication review also searched text blobs reachable from the 17 locally available Git commits without finding obvious credential patterns; this is a targeted hygiene check, not a comprehensive security audit. Build warnings about Zod annotations and renderer bundle size, and npm deprecation/install-script-policy notices, did not prevent installation, building, or runtime checks. The installer was generated but was not installed during this follow-up. Builds remain unsigned. GitHub-hosted workflow execution, repository visibility changes, branch-protection/security settings, pushes, tags, and Release publication were not performed. See [PUBLISHING.md](PUBLISHING.md) for the remaining remote publication steps.
+
+## CodeLines naming and documentation follow-up — 2026-10-23
+
+This section records the local builds after adopting the CodeLines display name. Earlier sections retain the names and hashes of the builds they verified. Published v1.0.0 downloads were not changed.
+
+- `npm run verify` passed type checking, zero-warning lint, all **74 unit/service tests**, and a production build.
+- `npm run test:desktop` and `npm run test:desktop -- --packaged` both passed, including the CodeLines page/title-bar text, runtime application name, custom data-directory override, workers, reports, exports, persistence, themes, responsive layouts, and native window controls. The packaged executable was `release/win-unpacked/CodeLines.exe`. Screenshots are under `artifacts/desktop/`; visual inspection confirmed the title bar displays CodeLines without an edition badge.
+- A separate startup probe used synthetic existing settings and an existing Chromium profile under isolated local/roaming directories, with `CODELINES_DATA_DIR` unset. The actual built main entry reused `CodeLines-TS` application data and the `CodeLines TS` Chromium profile, loading the existing project and theme and preserving the profile marker.
+- `npm run package` built the renamed installer and portable executable. `npm run test:portable` passed actual wrapper launch, the CodeLines title and brand, offline startup, a real packaged scan/BPE worker, and saved scan results.
+- `npm run checksums:verify` passed for both new executables. Windows executable metadata reports CodeLines as its product name and description. The packaged npm name is `codelines`; bundled license and attribution files match the build outputs byte-for-byte. The installer identifier, dependency versions, repository links, and attribution content remain unchanged apart from the application name.
+- Local links and anchors in README.md and TECHNICAL.md resolve. The README presents features, installation, and everyday use; development, storage, import, analysis, and architecture details are in [TECHNICAL.md](TECHNICAL.md).
+
+The local build manifest contains:
+
+```text
+680fbb6ffa4137051d46dc0f1174f3dc3a3bf35dc3d81703f1e867c16a76405c  CodeLines Setup 1.0.0.exe
+ce09a4645a445357422ce5f4c74f8754d6ad5fe9d97a8a07387d701c19e451a2  CodeLines 1.0.0.exe
+```
+
+The installer was generated but not installed. These builds remain unsigned. No repository rename, push, tag, or Release publication was performed; use a new version before publishing the renamed application, as described in [PUBLISHING.md](PUBLISHING.md).
+
+## v1.0.0 in-place publication preparation — 2026-10-23
+
+The maintainer explicitly authorized refreshing the same v1.0.0 release with the tested CodeLines binaries. This supersedes the earlier recommendation to use a new version for the naming change. Application sources and packaged contents are unchanged from the successful verification recorded above; only publication documentation is updated here.
+
+The original release metadata, both original executables (verified against GitHub asset digests), and the original published checksum manifest are backed up in the ignored `release/publication-backup-v1.0.0/` directory. The upload files in `release/github/` use GitHub download names and retain the tested binary hashes:
+
+```text
+680fbb6ffa4137051d46dc0f1174f3dc3a3bf35dc3d81703f1e867c16a76405c  CodeLines.Setup.1.0.0.exe
+ce09a4645a445357422ce5f4c74f8754d6ad5fe9d97a8a07387d701c19e451a2  CodeLines.1.0.0.exe
+```
+
+The publication update uses the existing release and version, three current assets, a CodeLines release title and description, and a source tag aligned with the refreshed source commit. Previous build records and original hashes above remain historical evidence.

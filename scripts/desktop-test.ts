@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 import { spawnSync } from "node:child_process";
 import { defaults } from "../src/domain/defaults";
+import manifest from "../package.json";
 // Match Git's canonical root even when Windows TEMP contains an 8.3 alias.
 const root = await fs.realpath(
     await fs.mkdtemp(path.join(os.tmpdir(), "codelines-desktop-")),
@@ -85,7 +86,11 @@ const packaged = process.argv.includes("--packaged"),
   exe =
     process.env.CODELINES_TEST_EXECUTABLE ??
     (packaged
-      ? path.resolve("release/win-unpacked/CodeLines TS.exe")
+      ? path.resolve(
+          manifest.build.directories.output,
+          "win-unpacked",
+          `${manifest.build.productName}.exe`,
+        )
       : undefined),
   env = {
     ...process.env,
@@ -162,6 +167,14 @@ try {
   });
   const titlebar = page.getByRole("banner", { name: "Application title bar" });
   await expect(titlebar).toBeVisible();
+  await expect(page).toHaveTitle("CodeLines");
+  await expect(titlebar.locator(".titlebar-brand")).toHaveText("CodeLines");
+  expect(
+    await desktop.evaluate(({ app }) => ({
+      name: app.getName(),
+      userData: app.getPath("userData"),
+    })),
+  ).toEqual({ name: "CodeLines", userData: data });
   expect(
     await titlebar.evaluate((el) =>
       getComputedStyle(el).getPropertyValue("-webkit-app-region"),

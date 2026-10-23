@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest a concrete improvement to CodeLines TS.
+description: Suggest a concrete improvement to CodeLines.
 body:
   - type: textarea
     id: problem

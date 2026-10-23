@@ -540,7 +540,7 @@ async function setup() {
     minHeight: 620,
     frame: false,
     backgroundColor: "#0b1120",
-    title: "CodeLines TS",
+    title: "CodeLines",
     show: process.env.CODELINES_TEST !== "1",
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
@@ -570,8 +570,13 @@ async function setup() {
     ? window.loadURL(process.env.CODELINES_DEV_URL)
     : window.loadFile(entry));
 }
-if (process.env.CODELINES_DATA_DIR)
-  app.setPath("userData", process.env.CODELINES_DATA_DIR);
+app.setName("CodeLines");
+// Preserve the existing Chromium profile independently of the product name.
+app.setPath(
+  "userData",
+  process.env.CODELINES_DATA_DIR ??
+    path.join(app.getPath("appData"), "CodeLines TS"),
+);
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
   app.on("second-instance", () => {

@@ -1,5 +1,5 @@
 {
-  "name": "codelines-ts",
+  "name": "codelines",
   "version": "1.0.0",
   "private": true,
   "description": "Offline CodeLines desktop analysis",
@@ -60,7 +60,7 @@
   },
   "build": {
     "appId": "local.codelines.typescript",
-    "productName": "CodeLines TS",
+    "productName": "CodeLines",
     "directories": {
       "output": "release"
     },

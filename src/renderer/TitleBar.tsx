@@ -43,9 +43,7 @@ export function DesktopShell({ children }: { children: ReactNode }) {
         className={`titlebar${state.focused ? "" : " titlebar-inactive"}`}
         aria-label="Application title bar"
       >
-        <div className="titlebar-brand">
-          CodeLines <span className="titlebar-edition">TS</span>
-        </div>
+        <div className="titlebar-brand">CodeLines</div>
         <span className="titlebar-caption">Local workspace</span>
         <div
           className="window-controls"
