@@ -2,16 +2,18 @@ export type Proto = Map<number, (number | Uint8Array)[]>;
 export function protobuf(buf: Uint8Array): Proto {
   const m: Proto = new Map();
   let i = 0;
+  // Values beyond 2^53 (including negative int64s) cannot be represented
+  // exactly and are never valid counts or times; they decode as 0.
   const varint = () => {
-    let r = 0,
-      s = 1,
+    let r = 0n,
+      shift = 0n,
       x: number;
     do {
       x = buf[i++] ?? 0;
-      r += (x & 127) * s;
-      s *= 128;
+      if (shift < 70n) r |= BigInt(x & 127) << shift;
+      shift += 7n;
     } while ((x & 128) !== 0 && i < buf.length);
-    return r;
+    return r <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(r) : 0;
   };
   while (i < buf.length) {
     const key = varint(),

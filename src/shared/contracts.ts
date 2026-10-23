@@ -230,6 +230,11 @@ export type AgentSession = [
   string,
   ...Vector,
 ];
+/**
+ * [id, start, end, calls, input, write5m, write1h, cacheRead, output, cwd,
+ * branch, top model, cost]. Cost sums each request at its own model's rate;
+ * reports saved before it existed omit it.
+ */
 export type ClaudeSession = [
   string,
   number,
@@ -243,6 +248,7 @@ export type ClaudeSession = [
   string,
   string,
   string,
+  number?,
 ];
 export interface AgentPayload {
   meta: {

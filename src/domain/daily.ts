@@ -10,7 +10,7 @@ import type {
   AgentSession,
   Project,
 } from "../shared/contracts";
-import { add, vec, tokens, dayParts } from "../ai/model";
+import { add, vec, tokens, dayParts, partialCost } from "../ai/model";
 import { sessionVector } from "../ai/aggregate";
 export function normalizedUsagePath(value: string): string {
   let p = value.trim().replaceAll("\\", "/");
@@ -42,7 +42,7 @@ export function matchProjects(
     sessions: a.sessions,
     tokens: tokens(a.v),
     cost: a.v[6],
-    costPartial: a.v[7] < tokens(a.v) * 0.999,
+    costPartial: partialCost(a.v),
   }));
 }
 function getDay(log: DailyLog, date: string): DailyDay {
@@ -104,7 +104,7 @@ function amount(v: number[]): AiAmount {
     output: v[3],
     requests: v[4],
     cost: v[6],
-    costPartial: v[7] < tokens(v) * 0.999,
+    costPartial: partialCost(v),
     tokens: tokens(v),
   };
 }
@@ -115,7 +115,14 @@ export function recordAi(
   now = new Date().toISOString(),
 ): void {
   const utc = payload.meta.tz === "utc",
-    today = dayParts(Date.parse(now), utc).day;
+    today = dayParts(Date.parse(now), utc).day,
+    sessionsByDay = new Map<string, AgentPayload["sessions"]>();
+  for (const s of payload.sessions) {
+    const day = dayParts(s[2], utc).day,
+      list = sessionsByDay.get(day);
+    if (list) list.push(s);
+    else sessionsByDay.set(day, [s]);
+  }
   for (const [date, hours] of Object.entries(payload.hours)) {
     const total = vec(),
       byAgent: Record<string, ReturnType<typeof vec>> = Object.create(null);
@@ -127,7 +134,14 @@ export function recordAi(
       }
     const existing = log.days.find((d) => d.date === date)?.ai,
       a = amount(total);
-    if (existing && date !== today && a.tokens < existing.total.tokens)
+    // Historical totals never shrink when local logs disappear, unless they
+    // were bucketed under the other clock and so describe a different day.
+    if (
+      existing &&
+      existing.tz === payload.meta.tz &&
+      date !== today &&
+      a.tokens < existing.total.tokens
+    )
       continue;
     getDay(log, date).ai = {
       updatedAt: now,
@@ -136,10 +150,9 @@ export function recordAi(
       byAgent: Object.fromEntries(
         Object.entries(byAgent).map(([k, v]) => [k, amount(v)]),
       ),
-      projects: matchProjects(
-        payload.sessions.filter((s) => dayParts(s[2], utc).day === date),
-        projects,
-      ).filter((p) => p.sessions > 0),
+      projects: matchProjects(sessionsByDay.get(date) ?? [], projects).filter(
+        (p) => p.sessions > 0,
+      ),
     };
   }
 }

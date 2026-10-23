@@ -14,9 +14,10 @@ import {
   vec,
   cv,
   add,
-  tokens,
   dayParts,
   timezoneLabel,
+  plausibleTs,
+  partialCost,
 } from "./model";
 import { claudeCost, claudeRate, costOf } from "./pricing";
 export interface AgentSource {
@@ -73,7 +74,7 @@ export function aggregateClaude(
     duplicates = 0,
     partials = 0;
   for (const r of records) {
-    if (r.ts < since || r.ts > until) continue;
+    if (r.ts < since || r.ts > until || !plausibleTs(r.ts)) continue;
     raw++;
     add((appBasis[r.model] ??= cv()), cvector(r));
     if (dedupe && r.request) {
@@ -107,7 +108,12 @@ export function aggregateClaude(
     hours: Hours<ClaudeVector> = Object.create(null),
     states = new Map<
       string,
-      { row: ClaudeSession; vector: ClaudeVector; models: Map<string, number> }
+      {
+        row: ClaudeSession;
+        vector: ClaudeVector;
+        models: Map<string, number>;
+        cost: number;
+      }
     >(),
     models = new Set<string>();
   let first = Infinity,
@@ -126,6 +132,7 @@ export function aggregateClaude(
         row: [sid, r.ts, r.ts, 0, 0, 0, 0, 0, 0, r.cwd, r.branch, ""],
         vector: cv(),
         models: new Map(),
+        cost: 0,
       };
       states.set(sid, s);
     }
@@ -136,6 +143,7 @@ export function aggregateClaude(
       if (r.branch) s.row[10] = r.branch;
     }
     add(s.vector, v);
+    s.cost += claudeCost(r);
     s.models.set(
       r.model,
       (s.models.get(r.model) ?? 0) + r.output + r.cacheRead,
@@ -151,6 +159,7 @@ export function aggregateClaude(
       s.row[7] = v[3];
       s.row[8] = v[4];
       s.row[11] = top(s.models);
+      s.row[12] = s.cost;
       return s.row;
     })
     .sort((a, b) => a[1] - b[1]);
@@ -222,7 +231,7 @@ export function aggregateAgents(
     agents[source.id] = { label: source.label, note: source.note ?? "" };
     const seen = new Set<string>();
     for (const r of source.records) {
-      if (r.ts < since || r.ts > until) continue;
+      if (r.ts < since || r.ts > until || !plausibleTs(r.ts)) continue;
       if (r.request && seen.has(r.request)) {
         dropped++;
         continue;
@@ -303,10 +312,9 @@ export function payloadTotals(
 }
 export const sessionVector = (s: AgentSession) => s.slice(6) as Vector;
 export function costText(v: Vector): string {
-  const tk = tokens(v);
   return !v[7] && v[6] === 0
     ? "—"
-    : currency(v[6]) + (v[7] < tk * 0.999 ? "*" : "");
+    : currency(v[6]) + (partialCost(v) ? "*" : "");
 }
 export function currency(value: number): string {
   return value >= 1000

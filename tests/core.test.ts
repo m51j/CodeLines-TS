@@ -97,6 +97,16 @@ describe("classification and line semantics", () => {
     expect(analyzeLines("", languages[0]).physicalLines).toBe(0);
     expect(analyzeLines("\r\n\r\n", languages[0]).blankLines).toBe(2);
   });
+  it("counts Visual Basic apostrophe comments and Lua block comments", () => {
+    const vb = classify("a.vb", "SourceOnly")!,
+      lua = classify("a.lua", "SourceOnly")!;
+    expect(
+      analyzeLines('x = 1\n\' a comment\ny = "it\'s" \' trailing\n', vb),
+    ).toMatchObject({ codeLines: 2, commentLines: 1, mixedLines: 1 });
+    expect(
+      analyzeLines("--[[\nlocal x\n]]\nlocal y = 1 -- note\n-- line\n", lua),
+    ).toMatchObject({ codeLines: 1, commentLines: 4, mixedLines: 1 });
+  });
   it("handles UTF-8/UTF-16 BOMs, invalid UTF-8 and binary controls", () => {
     expect(decode(Buffer.from([239, 187, 191, 104, 105]))).toBe("hi");
     expect(decode(Buffer.from([255, 254, 104, 0, 105, 0]))).toBe("hi");

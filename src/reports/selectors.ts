@@ -1,6 +1,7 @@
 import type { AiResult, ClaudePayload, Vector } from "../shared/contracts";
 import { vec, add, tokens, dayParts } from "../ai/model";
 import { sessionVector } from "../ai/aggregate";
+import { rateCost } from "../ai/pricing";
 export interface ReportSession {
   id: string;
   agent: string;
@@ -37,14 +38,14 @@ export function reportModel(result: AiResult, agent = "all"): ReportModel {
     for (const [day, hours] of Object.entries(claude.hours))
       for (const [hour, models] of Object.entries(hours))
         for (const [model, v] of Object.entries(models)) {
-          const p = claude.rates[model],
-            cost =
-              (v[0] * p.input +
-                v[1] * p.write5m +
-                v[2] * p.write1h +
-                v[3] * p.cacheRead +
-                v[4] * p.output) /
-              1e6;
+          const cost = rateCost(
+            claude.rates[model],
+            v[0],
+            v[1],
+            v[2],
+            v[3],
+            v[4],
+          );
           facts.push({
             day,
             hour: Number(hour),
@@ -65,15 +66,11 @@ export function reportModel(result: AiResult, agent = "all"): ReportModel {
           });
         }
     for (const s of claude.sessions) {
-      const p = claude.rates[s[11]],
-        tk = s[4] + s[5] + s[6] + s[7] + s[8],
+      const tk = s[4] + s[5] + s[6] + s[7] + s[8],
+        // Older saved reports lack per-request session cost; price them at the top model.
         cost =
-          (s[4] * p.input +
-            s[5] * p.write5m +
-            s[6] * p.write1h +
-            s[7] * p.cacheRead +
-            s[8] * p.output) /
-          1e6;
+          s[12] ??
+          rateCost(claude.rates[s[11]], s[4], s[5], s[6], s[7], s[8]);
       sessions.push({
         id: s[0],
         agent: "claude",
@@ -308,9 +305,12 @@ export function claudeCostRows(
   includeTotal = false,
 ) {
   const rows = groups
-    .map((g) => {
-      const model = g.key.slice(g.key.indexOf("::") + 2),
+    .flatMap((g) => {
+      const separator = g.key.indexOf("::"),
+        model = separator < 0 ? g.key : g.key.slice(separator + 2),
         r = payload.rates[model];
+      // Only model-grouped buckets carry a Claude rate.
+      if (!r) return [];
       return {
         model: r.label,
         known: r.known,

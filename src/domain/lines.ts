@@ -44,27 +44,29 @@ export function analyzeLines(text: string, language: Language): Lines {
         i++;
         continue;
       }
+      // Comment markers are matched before quotes so a marker that is itself a
+      // quote character (Visual Basic's ') starts a comment, and the longest
+      // marker wins so a block opener (Lua's --[[) beats its line prefix (--).
+      const lineMarker = language.comments.find(
+          (m) =>
+            line.startsWith(m, i) &&
+            (m !== "REM " || i === 0 || /\s/.test(line[i - 1])),
+        ),
+        block = language.blocks.find((b) => line.startsWith(b[0], i));
+      if (block && (!lineMarker || block[0].length > lineMarker.length)) {
+        comment = true;
+        active = block[1];
+        i += block[0].length;
+        continue;
+      }
+      if (lineMarker) {
+        comment = true;
+        break;
+      }
       if (ch === "'" || ch === '"' || ch === "`") {
         code = true;
         quote = ch;
         i++;
-        continue;
-      }
-      if (
-        language.comments.some(
-          (m) =>
-            line.startsWith(m, i) &&
-            (m !== "REM " || i === 0 || /\s/.test(line[i - 1])),
-        )
-      ) {
-        comment = true;
-        break;
-      }
-      const block = language.blocks.find((b) => line.startsWith(b[0], i));
-      if (block) {
-        comment = true;
-        active = block[1];
-        i += block[0].length;
         continue;
       }
       if (ch.trim()) code = true;

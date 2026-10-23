@@ -157,7 +157,13 @@ export function rows(db: DatabaseSync, sql: string): SqlRow[] {
       Object.fromEntries(
         Object.entries(row).map(([key, value]) => [
           key,
-          typeof value === "bigint" ? Number(value) : value,
+          // Keep 64-bit IDs exact so distinct requests never collide as duplicates.
+          typeof value === "bigint"
+            ? value >= BigInt(Number.MIN_SAFE_INTEGER) &&
+              value <= BigInt(Number.MAX_SAFE_INTEGER)
+              ? Number(value)
+              : String(value)
+            : value,
         ]),
       ),
     ) as SqlRow[];
