@@ -8,6 +8,7 @@ import { pathToFileURL } from "node:url";
 import {
   analyzeHistory,
   estimateModified,
+  splitPatch,
   type HistoryUpdate,
 } from "../src/services/history";
 import { defaults } from "../src/domain/defaults";
@@ -220,4 +221,35 @@ describe("local first-parent history parity", () => {
         "diff --git a/a b/a\n--- a/a\n+++ b/a\n@@ -1 +1 @@\n---source\n+++source\n@@ -3,0 +3 @@\n+addition\n@@ -6 +6,0 @@\n-deletion\n",
       ),
     ).toBe(1));
+  it("splits a whole-comparison patch by file, including spaced, quoted and deleted paths", () => {
+    const sections = splitPatch(
+      [
+        "diff --git a/with space.sql b/with space.sql",
+        "--- a/with space.sql\t",
+        "+++ b/with space.sql\t",
+        "@@ -1 +1 @@",
+        "--- removed comment",
+        "+++ added comment",
+        'diff --git "a/caf\\303\\251 \\"q\\".ts" "b/caf\\303\\251 \\"q\\".ts"',
+        '--- "a/caf\\303\\251 \\"q\\".ts"',
+        '+++ "b/caf\\303\\251 \\"q\\".ts"',
+        "@@ -2 +2 @@",
+        "-x",
+        "+y",
+        "diff --git a/gone.sql b/gone.sql",
+        "deleted file mode 100644",
+        "--- a/gone.sql",
+        "+++ /dev/null",
+        "@@ -1 +0,0 @@",
+        "--- only line",
+      ].join("\n"),
+    );
+    expect([...sections.keys()]).toEqual([
+      "with space.sql",
+      'café "q".ts',
+      "gone.sql",
+    ]);
+    expect(estimateModified(sections.get("with space.sql")!)).toBe(1);
+    expect(estimateModified(sections.get('café "q".ts')!)).toBe(1);
+  });
 });

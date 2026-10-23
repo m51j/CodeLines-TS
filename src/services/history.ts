@@ -120,8 +120,73 @@ export function estimateModified(patch: string): number {
   flush();
   return total;
 }
+/** Decodes a path Git printed in C-style quotes (special characters or bytes). */
+function unquotePath(value: string): string {
+  if (!value.startsWith('"')) return value;
+  const bytes: number[] = [],
+    escapes: Record<string, number> = {
+      a: 7,
+      b: 8,
+      t: 9,
+      n: 10,
+      v: 11,
+      f: 12,
+      r: 13,
+      '"': 34,
+      "\\": 92,
+    };
+  for (let i = 1; i < value.length - 1; i++) {
+    const c = value[i];
+    if (c !== "\\") {
+      bytes.push(...Buffer.from(c, "utf8"));
+      continue;
+    }
+    const next = value[++i];
+    if (/[0-7]/.test(next)) {
+      bytes.push(parseInt(value.slice(i, i + 3), 8));
+      i += 2;
+    } else bytes.push(escapes[next] ?? next.charCodeAt(0));
+  }
+  return Buffer.from(bytes).toString("utf8");
+}
+// Git ends a header name containing spaces with a tab so patch tools can find its end.
+const headerPath = (line: string) =>
+  unquotePath(line.slice(4).replace(/\t$/, ""));
+/**
+ * Splits a whole-commit patch into per-file sections keyed by the file's path
+ * after the change, so one Git process serves every file in a comparison.
+ */
+export function splitPatch(patch: string): Map<string, string> {
+  const sections = new Map<string, string>();
+  let lines: string[] = [],
+    before = "",
+    after = "",
+    header = false;
+  const flush = () => {
+    const key = after || before;
+    if (lines.length && key) sections.set(key, lines.join("\n"));
+    lines = [];
+    before = after = "";
+  };
+  for (const line of patch.split("\n")) {
+    if (line.startsWith("diff --git ")) {
+      flush();
+      header = true;
+    } else if (line.startsWith("@@")) header = false;
+    // File names appear only in the header; hunk lines may start the same way.
+    else if (header && line.startsWith("--- ")) {
+      const p = headerPath(line);
+      if (p !== "/dev/null") before = p.replace(/^a\//, "");
+    } else if (header && line.startsWith("+++ ")) {
+      const p = headerPath(line);
+      if (p !== "/dev/null") after = p.replace(/^b\//, "");
+    }
+    lines.push(line);
+  }
+  flush();
+  return sections;
+}
 import { finishGit } from "../domain/history";
-export { finishGit } from "../domain/history";
 export { gitTotals } from "../domain/history";
 export async function analyzeHistory(
   project: Project,
@@ -239,6 +304,9 @@ export async function analyzeHistory(
       "--no-textconv",
       "--no-color",
       "--diff-algorithm=myers",
+      // Fixed prefixes keep patch headers parseable whatever the user's config.
+      "--src-prefix=a/",
+      "--dst-prefix=b/",
     ];
     const accumulate = async (before: string, after: string) => {
       report("Reading changed files", completed, total, {
@@ -279,6 +347,23 @@ export async function analyzeHistory(
       const filtered = entries.filter(
         (e) => included(e.path) || (e.oldPath && included(e.oldPath)),
       );
+      // Modified-line estimates need the patch; read it once for the whole
+      // comparison instead of starting a Git process per file.
+      const patches = filtered.some((e) => !e.binary && e.added && e.deleted)
+        ? splitPatch(
+            await run(root, [
+              "-c",
+              "core.quotePath=false",
+              "diff",
+              "--unified=0",
+              "--find-renames=50%",
+              ...flags,
+              before,
+              after,
+              "--",
+            ]),
+          )
+        : new Map<string, string>();
       let done = 0;
       for (const e of filtered) {
         cancelled(signal);
@@ -289,19 +374,7 @@ export async function analyzeHistory(
         });
         const modifiedEstimate =
           !e.binary && e.added > 0 && e.deleted > 0
-            ? estimateModified(
-                await run(root, [
-                  "diff",
-                  "--unified=0",
-                  "--find-renames=50%",
-                  ...flags,
-                  before,
-                  after,
-                  "--",
-                  e.path,
-                  ...(e.oldPath ? [e.oldPath] : []),
-                ]),
-              )
+            ? estimateModified(patches.get(e.path) ?? "")
             : 0;
         let relative = slash(
           path.relative(project.rootPath, path.join(root, e.path)),
