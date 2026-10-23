@@ -14,7 +14,30 @@ The repository preparation and local packaging commands do not push commits, cha
 
 1. Build from the intended reviewed source revision using `npm run package`. The command disables publishing and generates a fresh SHA256 manifest after creating both executables.
 2. Run `npm run test:desktop -- --packaged`, `npm run test:portable`, and `npm run checksums:verify` sequentially. The same checks are available in the manually dispatched **Build release artifacts** workflow. Downloaded workflow artifacts are not a published Release.
-3. Confirm that `release/SHA256SUMS.txt` matches **CodeLines TS Setup 1.0.0.exe** and **CodeLines TS 1.0.0.exe**. Attach both executables and the manifest to a GitHub Release for the same source commit, using tag `v1.0.0` and the changelog notes. Disclose unsigned publisher status. Do not upload builder debug/config files or local application data.
+3. Confirm that `release/SHA256SUMS.txt` matches both local executables. GitHub normalizes spaces in uploaded filenames to periods, so stage the download names and a matching checksum manifest before uploading. From the repository root, run:
+
+   ```powershell
+   $metadata = Get-Content -LiteralPath package.json -Raw | ConvertFrom-Json
+   $output = $metadata.build.directories.output
+   $staging = Join-Path $output 'github'
+   New-Item -ItemType Directory -Path $staging -Force | Out-Null
+   $manifest = Join-Path $staging 'SHA256SUMS.txt'
+   Remove-Item -LiteralPath $manifest -Force -ErrorAction SilentlyContinue
+   $names = @(
+     "$($metadata.build.productName) Setup $($metadata.version).exe"
+     "$($metadata.build.productName) $($metadata.version).exe"
+   )
+   $lines = foreach ($name in $names) {
+     $downloadName = $name.Replace(' ', '.')
+     $destination = Join-Path $staging $downloadName
+     Copy-Item -LiteralPath (Join-Path $output $name) -Destination $destination -Force -ErrorAction Stop
+     $hash = (Get-FileHash -LiteralPath $destination -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
+     "$hash  $downloadName"
+   }
+   [System.IO.File]::WriteAllText((Join-Path $PWD $manifest), ($lines -join "`n") + "`n")
+   ```
+
+   Attach only the two executables and `SHA256SUMS.txt` from `release/github/` to a GitHub Release for the same source commit, using tag `v1.0.0` and the changelog notes. Version 1.0.0 downloads are **CodeLines.TS.Setup.1.0.0.exe** and **CodeLines.TS.1.0.0.exe**; their contents are identical to the tested local executables. Disclose unsigned publisher status. Do not upload builder debug/config files or local application data.
 4. Publish only after the artifact checks pass. If either executable is rebuilt, regenerate and verify the manifest before uploading. When the version changes, update the package version, lockfile, changelog, and documented example names together.
 
 The complete MIT license and third-party notices are bundled inside `resources/app.asar` under `dist/`; Electron also includes its own distribution notices.
