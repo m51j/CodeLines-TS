@@ -2,6 +2,10 @@
 
 An offline Windows desktop replacement for CodeLines, implemented with Electron, strict TypeScript, and React. All seven pages are integrated: Dashboard, Projects, Analysis, Code changes, Daily log, AI usage, and Settings. No .NET runtime, ccstats checkout, backend service, account, API key, or development server is required by the packaged application.
 
+![CodeLines TS AI usage overview in dark mode, showing token totals, API cost equivalents, sessions, and usage by agent](docs/screenshots/ai-usage-overview.png)
+
+*AI usage overview with token totals, API cost equivalents, session statistics, and a breakdown by agent.*
+
 ## Install or run
 
 Use `release/CodeLines TS Setup 1.0.0.exe` for an installable application, or `release/CodeLines TS 1.0.0.exe` for the portable executable. Builds are unsigned. Windows may identify the publisher as unknown. The installer preserves application data on uninstall.
