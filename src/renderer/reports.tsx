@@ -1,7 +1,9 @@
 import {
+  useCallback,
   useEffect,
   useId,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -141,31 +143,38 @@ function UsageHint({
   style?: CSSProperties;
 }) {
   const id = useId();
+  const trigger = useRef<HTMLSpanElement>(null);
   const [position, setPosition] = useState<{
     left: number;
     top: number;
     above: boolean;
   } | null>(null);
-  useEffect(() => {
-    if (!position) return;
-    const hide = () => setPosition(null);
-    window.addEventListener("scroll", hide, true);
-    window.addEventListener("resize", hide);
-    return () => {
-      window.removeEventListener("scroll", hide, true);
-      window.removeEventListener("resize", hide);
-    };
-  }, [position]);
-  const show = (element: HTMLElement) => {
+  const show = useCallback((element: HTMLElement) => {
     const rect = element.getBoundingClientRect();
     setPosition({
       left: Math.max(8, Math.min(rect.left, window.innerWidth - 328)),
       top: rect.bottom + 8,
       above: rect.bottom > window.innerHeight - 280,
     });
-  };
+  }, []);
+  const visible = position !== null;
+  useEffect(() => {
+    if (!visible) return;
+    const reposition = () => {
+      const element = trigger.current;
+      if (element && document.activeElement === element) show(element);
+      else setPosition(null);
+    };
+    window.addEventListener("scroll", reposition, true);
+    window.addEventListener("resize", reposition);
+    return () => {
+      window.removeEventListener("scroll", reposition, true);
+      window.removeEventListener("resize", reposition);
+    };
+  }, [visible, show]);
   return (
     <span
+      ref={trigger}
       tabIndex={0}
       role="img"
       className={className}
@@ -173,7 +182,9 @@ function UsageHint({
       aria-label={`${title} · ${detail}`}
       aria-describedby={position ? id : undefined}
       onMouseEnter={(e) => show(e.currentTarget)}
-      onMouseLeave={() => setPosition(null)}
+      onMouseLeave={(e) => {
+        if (document.activeElement !== e.currentTarget) setPosition(null);
+      }}
       onFocus={(e) => show(e.currentTarget)}
       onBlur={() => setPosition(null)}
       onKeyDown={(e) => {
@@ -539,7 +550,8 @@ export function Reports({ result }: { result: AiResult }) {
       undefined,
     ),
     peakMonth = view.months.reduce<ReportBucket | undefined>(
-      (peak, month) => (!peak || tokens(month.v) > tokens(peak.v) ? month : peak),
+      (peak, month) =>
+        !peak || tokens(month.v) > tokens(peak.v) ? month : peak,
       undefined,
     ),
     peak = view.byHour.reduce(
@@ -854,9 +866,19 @@ export function Reports({ result }: { result: AiResult }) {
                     ].map((metric) => (
                       <div className="tile" key={metric.label}>
                         <span>{metric.label}</span>
-                        <strong title={String(metric.value)}>
-                          {metric.value}
-                        </strong>
+                        {metric.label.startsWith("Top ") ? (
+                          <UsageHint
+                            className="metric-name"
+                            title={String(metric.value)}
+                            detail={metric.detail}
+                          >
+                            <strong>{metric.value}</strong>
+                          </UsageHint>
+                        ) : (
+                          <strong title={String(metric.value)}>
+                            {metric.value}
+                          </strong>
+                        )}
                         <small>{metric.detail}</small>
                       </div>
                     ))}

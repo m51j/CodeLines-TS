@@ -400,6 +400,45 @@ export function App() {
       </button>
     </>
   );
+  const aiActions = (
+    <div className="toolbar ai-actions">
+      <div className="toolbar wrap">
+        <button
+          className="primary"
+          disabled={!!busy}
+          onClick={() => {
+            aiOpened.current = true;
+            void execute("ai");
+          }}
+        >
+          <RefreshCw size={15} />
+          Refresh
+        </button>
+        <button
+          disabled={!!busy}
+          onClick={() => {
+            aiOpened.current = true;
+            void execute("ai", undefined, true);
+          }}
+        >
+          Full rescan
+        </button>
+      </div>
+      <div className="toolbar wrap">
+        <button
+          disabled={!!busy || !state.ai?.combined}
+          onClick={() => {
+            void window.codelines
+              .openReport()
+              .catch((e) => setError(String(e)));
+          }}
+        >
+          Open in browser
+        </button>
+        {state.ai?.combined && toolbarExport("ai", true)}
+      </div>
+    </div>
+  );
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -480,7 +519,9 @@ export function App() {
                     : "A clearer view starts with your first scan."}
               </p>
             </div>
-            {page !== "AI usage" && (
+            {page === "AI usage" ? (
+              aiActions
+            ) : (
               <div className="toolbar wrap">
                 <select
                   aria-label="Counting scope"
@@ -533,7 +574,7 @@ export function App() {
           )}
           {busy && (
             <Card className="progress-card">
-              <div className="toolbar">
+              <div className="toolbar wrap">
                 <strong>
                   {progress?.stage ?? "Starting background worker…"}
                 </strong>
@@ -766,6 +807,7 @@ export function App() {
                           <Field label="Project name">
                             <input
                               value={p.name}
+                              title={p.name}
                               disabled={!!busy}
                               onChange={(e) =>
                                 change((s) => {
@@ -787,24 +829,26 @@ export function App() {
                               }
                             />
                           </Field>
-                          <button
-                            disabled={!!busy}
-                            onClick={() => void execute("scan", p.id)}
-                          >
-                            <Play size={14} />
-                            Scan
-                          </button>
-                          <button
-                            className="danger-button"
-                            disabled={!!busy}
-                            onClick={() =>
-                              change((s) => {
-                                s.projects.splice(i, 1);
-                              })
-                            }
-                          >
-                            Remove
-                          </button>
+                          <div className="toolbar wrap project-actions">
+                            <button
+                              disabled={!!busy}
+                              onClick={() => void execute("scan", p.id)}
+                            >
+                              <Play size={14} />
+                              Scan
+                            </button>
+                            <button
+                              className="danger-button"
+                              disabled={!!busy}
+                              onClick={() =>
+                                change((s) => {
+                                  s.projects.splice(i, 1);
+                                })
+                              }
+                            >
+                              Remove
+                            </button>
+                          </div>
                         </div>
                         <div className="project-usage">
                           <span>
@@ -853,7 +897,7 @@ export function App() {
                   })}
                 </div>
               )}
-              <div className="toolbar">
+              <div className="toolbar wrap">
                 <button
                   className="primary"
                   disabled={!!busy || !dirty}
@@ -1398,40 +1442,6 @@ export function App() {
           )}
           {page === "AI usage" && (
             <>
-              <div className="toolbar section-toolbar">
-                <button
-                  className="primary"
-                  disabled={!!busy}
-                  onClick={() => {
-                    aiOpened.current = true;
-                    void execute("ai");
-                  }}
-                >
-                  <RefreshCw size={15} />
-                  Refresh
-                </button>
-                <button
-                  disabled={!!busy}
-                  onClick={() => {
-                    aiOpened.current = true;
-                    void execute("ai", undefined, true);
-                  }}
-                >
-                  Full rescan
-                </button>
-                <div className="spacer" />
-                <button
-                  disabled={!!busy || !state.ai?.combined}
-                  onClick={() => {
-                    void window.codelines
-                      .openReport()
-                      .catch((e) => setError(String(e)));
-                  }}
-                >
-                  Open in browser
-                </button>
-                {state.ai?.combined && toolbarExport("ai", true)}
-              </div>
               {state.ai ? (
                 <Reports result={state.ai} />
               ) : (

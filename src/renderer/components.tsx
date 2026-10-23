@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
+import { FolderSearch } from "lucide-react";
 export const number = (v: number | null | undefined) =>
   v === null || v === undefined ? "—" : Math.round(v).toLocaleString("en-US");
 export const signed = (v: number | null | undefined) =>
@@ -97,6 +98,20 @@ export function Table<T>({
   }, [rows, columns, query, sort]);
   const pages = Math.max(1, Math.ceil(sorted.length / 100)),
     current = Math.min(page, pages - 1);
+  const columnClasses = useMemo(
+    () =>
+      columns.map((c) =>
+        [
+          c.path ? "path-column" : "",
+          !c.path && rows.some((r) => typeof c.value(r) === "number")
+            ? "numeric-column"
+            : "",
+        ]
+          .filter(Boolean)
+          .join(" "),
+      ),
+    [columns, rows],
+  );
   return (
     <div className="data-table">
       <div className="table-tools">
@@ -122,10 +137,10 @@ export function Table<T>({
         <table>
           <thead>
             <tr>
-              {columns.map((c) => (
+              {columns.map((c, j) => (
                 <th
                   key={c.key}
-                  className={c.path ? "path-column" : ""}
+                  className={columnClasses[j]}
                   aria-sort={
                     sort?.key === c.key
                       ? sort.descending
@@ -154,9 +169,13 @@ export function Table<T>({
             {sorted.slice(current * 100, (current + 1) * 100).map((r, i) => (
               <tr key={i} className={selected?.(r) ? "selected" : ""}>
                 {columns.map((c, j) => (
-                  <td className={c.path ? "path-column" : ""} key={c.key}>
+                  <td className={columnClasses[j]} key={c.key}>
                     {onSelect && j === 0 ? (
-                      <button className="row-link" onClick={() => onSelect(r)}>
+                      <button
+                        className="row-link"
+                        title={String(c.value(r) ?? "")}
+                        onClick={() => onSelect(r)}
+                      >
                         {c.render ? c.render(r) : c.value(r)}
                       </button>
                     ) : c.render ? (
@@ -219,7 +238,9 @@ export function Empty({
 }) {
   return (
     <div className="empty-state">
-      <div className="empty-icon">⌁</div>
+      <div className="empty-icon" aria-hidden="true">
+        <FolderSearch size={26} strokeWidth={1.75} />
+      </div>
       <h2>{title}</h2>
       <p>{children}</p>
     </div>
