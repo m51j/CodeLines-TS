@@ -36,7 +36,7 @@ export function PageTransition({
   }, [page]);
 
   return (
-    <main>
+    <main className={page === "Dashboard" ? "dashboard-page" : undefined}>
       <div ref={content} className="page-content">
         {children}
       </div>
