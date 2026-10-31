@@ -45,7 +45,11 @@ export function Dashboard() {
             detail: `${draft.projects.filter((p) => p.isEnabled).length} enabled`,
           },
           { label: "Files", value: number(snapshot?.fileCount) },
-          { label: "Physical lines", value: tileNumber(snapshot?.physicalLines), title: number(snapshot?.physicalLines) },
+          {
+            label: "Physical lines",
+            value: tileNumber(snapshot?.physicalLines),
+            title: number(snapshot?.physicalLines),
+          },
           {
             label: "Code lines",
             value: tileNumber(snapshot?.codeLines),
@@ -82,34 +86,45 @@ export function Dashboard() {
           />
         </Card>
         <Card title="Language share" subtitle={selectedResult?.projectName}>
-          {selectedResult?.languages.map((l, i) => {
-            const share = percent(
-              l.physicalLines / (selectedResult.physicalLines || 1),
-            );
-            return (
-              <div className="language-share" key={l.language}>
-                <div>
-                  <span>
-                    <i style={{ background: palette[i % palette.length] }} />
-                    {l.language}
-                  </span>
-                  <strong>{share}</strong>
+          <div
+            className="language-list"
+            key={selectedResult?.projectId}
+            role="region"
+            aria-label="Language share"
+            tabIndex={0}
+          >
+            {!selectedResult?.languages.length && (
+              <p className="muted">No language data for this project.</p>
+            )}
+            {selectedResult?.languages.map((l, i) => {
+              const share = percent(
+                l.physicalLines / (selectedResult.physicalLines || 1),
+              );
+              return (
+                <div className="language-share" key={l.language}>
+                  <div>
+                    <span>
+                      <i style={{ background: palette[i % palette.length] }} />
+                      {l.language}
+                    </span>
+                    <strong>{share}</strong>
+                  </div>
+                  <div className="share-track">
+                    <div
+                      style={{
+                        width: share,
+                        background: palette[i % palette.length],
+                      }}
+                    />
+                  </div>
+                  <small>
+                    {number(l.files)} {l.files === 1 ? "file" : "files"} ·{" "}
+                    {number(l.physicalLines)} lines · {number(l.tokens)} tokens
+                  </small>
                 </div>
-                <div className="share-track">
-                  <div
-                    style={{
-                      width: share,
-                      background: palette[i % palette.length],
-                    }}
-                  />
-                </div>
-                <small>
-                  {number(l.files)} {l.files === 1 ? "file" : "files"} ·{" "}
-                  {number(l.physicalLines)} lines · {number(l.tokens)} tokens
-                </small>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </Card>
       </div>
     </>

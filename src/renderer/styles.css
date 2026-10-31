@@ -566,7 +566,62 @@ main {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(250px, 1fr);
   gap: 20px;
-  align-items: start;
+}
+/* Let the two panels share the space below the summary, with local scrolling. */
+.dashboard-page {
+  display: flex;
+  min-height: 0;
+}
+.dashboard-page .page-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.dashboard-page .page-content > * {
+  flex-shrink: 0;
+}
+.dashboard-page .dashboard-grid {
+  flex: 1 0 320px;
+  min-height: 320px;
+}
+.dashboard-grid > .card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-bottom: 0;
+}
+.dashboard-grid .section-heading,
+.dashboard-grid .table-tools,
+.dashboard-grid .pagination {
+  flex: none;
+}
+.dashboard-grid .data-table {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.dashboard-grid .table-scroll,
+.language-list {
+  flex: 1;
+  min-height: 0;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+.dashboard-grid .table-scroll {
+  max-height: none;
+}
+.language-list {
+  overflow: auto;
+  padding: 4px;
+}
+.language-list:focus-visible {
+  outline-offset: -3px;
+}
+.language-share:last-child {
+  margin-bottom: 0;
 }
 .table-tools {
   display: flex;
@@ -690,11 +745,14 @@ th.path-column {
   justify-content: space-between;
   font-size: 13px;
   margin-bottom: 9px;
+  gap: 12px;
 }
 .language-share span {
   display: flex;
   gap: 8px;
   align-items: center;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .language-share i,
 .legend i {
@@ -702,11 +760,13 @@ th.path-column {
   height: 8px;
   display: inline-block;
   border-radius: 2px;
+  flex: none;
 }
 .language-share strong {
   font-size: 12px;
   font-weight: 500;
   color: var(--muted);
+  flex: none;
 }
 .share-track {
   height: 5px;
@@ -1157,6 +1217,10 @@ fieldset {
   }
   .dashboard-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .dashboard-page .dashboard-grid {
+    flex: none;
+    grid-auto-rows: clamp(320px, 55vh, 600px);
   }
   main {
     padding: 24px;

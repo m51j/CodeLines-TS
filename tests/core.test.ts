@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import { randomUUID } from "node:crypto";
+import { getEncoding } from "js-tiktoken";
 import tokenGoldens from "./fixtures/token-counts.golden.json";
 import { classify, languages } from "../src/domain/languages";
 import { analyzeLines } from "../src/domain/lines";
@@ -14,6 +15,7 @@ import {
   looksBinary,
   decode,
 } from "../src/services/scanner";
+import { AnalyzerPool } from "../src/services/pool";
 import {
   Store,
   parseSettings,
@@ -101,7 +103,7 @@ describe("classification and line semantics", () => {
     const vb = classify("a.vb", "SourceOnly")!,
       lua = classify("a.lua", "SourceOnly")!;
     expect(
-      analyzeLines('x = 1\n\' a comment\ny = "it\'s" \' trailing\n', vb),
+      analyzeLines("x = 1\n' a comment\ny = \"it's\" ' trailing\n", vb),
     ).toMatchObject({ codeLines: 2, commentLines: 1, mixedLines: 1 });
     expect(
       analyzeLines("--[[\nlocal x\n]]\nlocal y = 1 -- note\n-- line\n", lua),
@@ -124,8 +126,63 @@ describe("classification and line semantics", () => {
       expect(tokenCount("", encoding)).toBe(0);
       expect(tokenCount("<|endoftext|>", encoding)).toBe(1);
     });
+  it("matches js-tiktoken's merges and stays fast on long unbroken runs", () => {
+    const alphabet = "aAbB01 _-=+/\\\n\t\r.,;'\"<|>éمر日本語🙂\u200d";
+    let seed = 7;
+    const random = () =>
+      (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+    for (const encoding of ["o200k_base", "cl100k_base"] as const) {
+      const reference = getEncoding(encoding);
+      const texts = ["A".repeat(300), "ab".repeat(200), "=".repeat(300)];
+      for (let k = 0; k < 300; k++)
+        texts.push(
+          Array.from(
+            { length: Math.floor(random() * 120) },
+            () => alphabet[Math.floor(random() * alphabet.length)],
+          ).join(""),
+        );
+      for (const text of texts)
+        expect(tokenCount(text, encoding), JSON.stringify(text)).toBe(
+          reference.encode(text, "all", []).length,
+        );
+    }
+    // js-tiktoken needs minutes for this; a scan must not stall on one file.
+    const start = performance.now();
+    expect(tokenCount("A".repeat(200_000), "o200k_base")).toBeGreaterThan(0);
+    expect(performance.now() - start).toBeLessThan(5000);
+  });
 });
 describe("scanner and exclusions", () => {
+  it("runs analyzers on a bounded pool and survives a crashed worker", async () => {
+    const script = path.join(await root(), "analyzer.cjs");
+    await fs.writeFile(
+      script,
+      `const { parentPort } = require("node:worker_threads");
+      parentPort.on("message", ({ file }) => {
+        if (file === "crash") process.exit(3);
+        if (file === "missing")
+          parentPort.postMessage({ error: { name: "Error", message: "ENOENT: missing" } });
+        else
+          setTimeout(() => parentPort.postMessage({ value: { kind: "binary" } }), 20);
+      });`,
+    );
+    const pool = new AnalyzerPool(script, 2),
+      language = classify("a.ts", "AllText")!,
+      run = (file: string) =>
+        pool.analyze(file, language, defaults().scanOptions);
+    try {
+      expect(await Promise.all(["a", "b", "c", "d", "e"].map(run))).toEqual(
+        Array(5).fill({ kind: "binary" }),
+      );
+      await expect(run("crash")).rejects.toThrow("Analyzer exited (3)");
+      expect(String(await run("missing").catch((e: unknown) => e))).toBe(
+        "Error: ENOENT: missing",
+      );
+      expect(await run("after")).toEqual({ kind: "binary" });
+    } finally {
+      await pool.close();
+    }
+  });
   it("does not traverse a junction back to the project root", async () => {
     const p = await root();
     await fs.writeFile(path.join(p, "only.ts"), "export const value=1;");
