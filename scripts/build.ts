@@ -4,7 +4,7 @@ import { mkdir, copyFile, writeFile } from "node:fs/promises";
 import "./licenses";
 await mkdir("dist", { recursive: true });
 await viteBuild();
-for (const name of ["main", "preload", "worker"])
+for (const name of ["main", "preload", "worker", "analyzer"])
   await build({
     entryPoints: [`src/main/${name}.ts`],
     outfile: `dist/${name}.cjs`,

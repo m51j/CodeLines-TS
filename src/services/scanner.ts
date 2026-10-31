@@ -1,25 +1,22 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { getEncoding } from "js-tiktoken";
-import type { FileMetric, Project, ScanOptions } from "../shared/contracts";
+import type {
+  FileMetric,
+  Lines,
+  Project,
+  ScanOptions,
+} from "../shared/contracts";
 import { classify, extension, type Language } from "../domain/languages";
 import { analyzeLines } from "../domain/lines";
 import { projectMetrics } from "../domain/metrics";
 import { IgnoreProvider } from "./ignore";
+import { countTokens } from "./tokenizer";
 export const cancelled = (signal?: AbortSignal) => signal?.throwIfAborted();
-const encoders = new Map<string, ReturnType<typeof getEncoding>>();
 export function tokenCount(
   text: string,
   encoding: ScanOptions["tokenizerEncoding"],
 ): number {
-  if (!["o200k_base", "cl100k_base"].includes(encoding))
-    throw new Error("Unsupported tokenizer encoding");
-  let enc = encoders.get(encoding);
-  if (!enc) {
-    enc = getEncoding(encoding);
-    encoders.set(encoding, enc);
-  }
-  return enc.encode(text, "all", []).length;
+  return countTokens(text, encoding);
 }
 export function looksBinary(bytes: Uint8Array): boolean {
   if (
@@ -77,6 +74,33 @@ async function nuget(dir: string) {
   return false;
 }
 const maxBufferedBytes = 512 * 1024 ** 2;
+export type FileAnalysis =
+  | { kind: "text"; bytes: number; tokens: number; lines: Lines }
+  | { kind: "binary" }
+  | { kind: "oversized" };
+// The CPU-heavy part of a scan, kept free of shared state so worker threads
+// can run it in parallel.
+export async function analyzeFile(
+  file: string,
+  language: Language,
+  options: Pick<ScanOptions, "maxFileSizeBytes" | "tokenizerEncoding">,
+): Promise<FileAnalysis> {
+  const bytes = await fs.readFile(file);
+  if (bytes.length > options.maxFileSizeBytes) return { kind: "oversized" };
+  if (looksBinary(bytes)) return { kind: "binary" };
+  const text = decode(bytes);
+  return {
+    kind: "text",
+    bytes: bytes.length,
+    tokens: tokenCount(text, options.tokenizerEncoding),
+    lines: analyzeLines(text, language),
+  };
+}
+export type FileAnalyzer = (
+  file: string,
+  language: Language,
+  options: ScanOptions,
+) => Promise<FileAnalysis>;
 export interface ScanUpdate {
   project: string;
   path: string;
@@ -88,6 +112,8 @@ export async function scanProject(
   options: ScanOptions,
   signal?: AbortSignal,
   progress?: (p: ScanUpdate) => void,
+  analyze: FileAnalyzer = analyzeFile,
+  workers = options.maxDegreeOfParallelism,
 ) {
   const start = performance.now(),
     warnings: string[] = [],
@@ -159,56 +185,52 @@ export async function scanProject(
   // Each reader holds up to one maximum-size file, so cap the readers to keep
   // buffered bytes bounded even with very large file-size limits.
   const readers = Math.min(
-    options.maxDegreeOfParallelism,
+    workers,
     Math.max(1, Math.floor(maxBufferedBytes / options.maxFileSizeBytes)),
     candidates.length,
   );
   await Promise.all(
-    Array.from(
-      { length: readers },
-      async () => {
-        while (next < candidates.length) {
+    Array.from({ length: readers }, async () => {
+      while (next < candidates.length) {
+        cancelled(signal);
+        const c = candidates[next++];
+        try {
+          const result = await analyze(c.file, c.language, options);
           cancelled(signal);
-          const c = candidates[next++];
-          try {
-            const bytes = await fs.readFile(c.file);
-            cancelled(signal);
-            if (bytes.length > options.maxFileSizeBytes) {
-              warnings.push(`Skipped oversized file: ${c.file}`);
-              continue;
-            }
-            if (looksBinary(bytes)) continue;
-            const text = decode(bytes);
-            files.push({
-              projectName: project.name,
-              relativePath: c.relative,
-              extension: extension(c.file) || "[no extension]",
-              language: c.language.name,
-              category: c.language.category,
-              bytes: bytes.length,
-              tokens: tokenCount(text, options.tokenizerEncoding),
-              lines: analyzeLines(text, c.language),
-            });
-          } catch (e) {
-            cancelled(signal);
-            warnings.push(`Skipped ${c.file}: ${String(e)}`);
-          } finally {
-            processed++;
-            if (
-              processed === 1 ||
-              processed % 25 === 0 ||
-              processed === candidates.length
-            )
-              progress?.({
-                project: project.name,
-                path: c.relative,
-                processed,
-                discovered: candidates.length,
-              });
+          if (result.kind === "oversized") {
+            warnings.push(`Skipped oversized file: ${c.file}`);
+            continue;
           }
+          if (result.kind === "binary") continue;
+          files.push({
+            projectName: project.name,
+            relativePath: c.relative,
+            extension: extension(c.file) || "[no extension]",
+            language: c.language.name,
+            category: c.language.category,
+            bytes: result.bytes,
+            tokens: result.tokens,
+            lines: result.lines,
+          });
+        } catch (e) {
+          cancelled(signal);
+          warnings.push(`Skipped ${c.file}: ${String(e)}`);
+        } finally {
+          processed++;
+          if (
+            processed === 1 ||
+            processed % 25 === 0 ||
+            processed === candidates.length
+          )
+            progress?.({
+              project: project.name,
+              path: c.relative,
+              processed,
+              discovered: candidates.length,
+            });
         }
-      },
-    ),
+      }
+    }),
   );
   cancelled(signal);
   return projectMetrics(

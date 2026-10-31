@@ -1,3 +1,5 @@
+import os from "node:os";
+import path from "node:path";
 import { parentPort, workerData } from "node:worker_threads";
 import type {
   Settings,
@@ -7,6 +9,7 @@ import type {
   GitProject,
 } from "../shared/contracts";
 import { scanProject } from "../services/scanner";
+import { AnalyzerPool } from "../services/pool";
 import { analyzeHistory, gitTotals } from "../services/history";
 import { buildAi } from "../ai/builder";
 import type { AgentEnvironment } from "../ai/adapters";
@@ -56,29 +59,43 @@ async function execute() {
     if (work.kind === "scan") {
       if (!projects.length)
         throw new Error("No enabled projects. Add or enable a project first.");
-      const results = [];
-      for (let i = 0; i < projects.length; i++) {
-        update({
-          project: projects[i].name,
-          projectIndex: i,
-          projectCount: projects.length,
-          completed: 0,
-          total: null,
-        });
-        results.push(
-          await scanProject(
-            projects[i],
-            work.settings.scanOptions,
-            signal,
-            (p) =>
-              update({
-                stage: "Analyzing files",
-                path: p.path,
-                completed: p.processed,
-                total: p.discovered,
-              }),
+      const results = [],
+        pool = new AnalyzerPool(
+          path.join(__dirname, "analyzer.cjs"),
+          Math.min(
+            work.settings.scanOptions.maxDegreeOfParallelism,
+            Math.max(1, os.availableParallelism() - 1),
+            8,
           ),
         );
+      try {
+        for (let i = 0; i < projects.length; i++) {
+          update({
+            project: projects[i].name,
+            projectIndex: i,
+            projectCount: projects.length,
+            completed: 0,
+            total: null,
+          });
+          results.push(
+            await scanProject(
+              projects[i],
+              work.settings.scanOptions,
+              signal,
+              (p) =>
+                update({
+                  stage: "Analyzing files",
+                  path: p.path,
+                  completed: p.processed,
+                  total: p.discovered,
+                }),
+              pool.analyze,
+              pool.size,
+            ),
+          );
+        }
+      } finally {
+        await pool.close();
       }
       parentPort?.postMessage({ type: "result", value: { projects: results } });
     } else if (work.kind === "history") {
