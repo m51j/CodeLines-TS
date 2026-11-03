@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "js-tiktoken": "^1.0.21",
-    "lucide-react": "^0.548.0",
+    "lucide-react": "^1.60.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "recharts": "^3.3.0",
