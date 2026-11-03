@@ -1,4 +1,12 @@
-import { app, BrowserWindow, ipcMain, dialog, shell, session } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  dialog,
+  shell,
+  session,
+  nativeTheme,
+} from "electron";
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs/promises";
@@ -29,18 +37,31 @@ import type {
   HistorySnapshot,
   GitProject,
   WindowState,
+  WidgetOptions,
 } from "../shared/contracts";
+import { createWidget, type WidgetController } from "./widget";
+import { widgetSummary } from "../widget/summary";
 let window: BrowserWindow;
 const windowState = (): WindowState => ({
   maximized: window.isMaximized(),
   focused: window.isFocused(),
 });
 let store: Store;
+let widget: WidgetController | undefined;
+let quitting = false;
+/** Background operations are widget refreshes; they never block settings changes. */
 const active = new Map<
   string,
-  { worker: Worker; kind: string; cancelled: boolean; partial: GitProject[] }
+  {
+    worker: Worker;
+    kind: string;
+    cancelled: boolean;
+    partial: GitProject[];
+    background: boolean;
+  }
 >();
-const reservedLanes = new Set<string>();
+/** Lane → whether a background operation holds it. */
+const reservedLanes = new Map<string, boolean>();
 let mutationInProgress = false;
 const mutationChannels = new Set(["save", "add", "import", "migrate"]);
 const operationSchema = z.object({
@@ -72,7 +93,9 @@ const handle = (channel: string, handler: (...args: unknown[]) => unknown) =>
         mutationInProgress = true;
         acquired = true;
       }
-      return { ok: true, value: await handler(...args) };
+      const value = await handler(...args);
+      if (mutating) widget?.publish();
+      return { ok: true, value };
     } catch (error) {
       return {
         ok: false,
@@ -109,7 +132,10 @@ function adoptSettings(next: Settings) {
   store.settings = next;
 }
 function assertIdle() {
-  if (active.size || reservedLanes.size)
+  if (
+    [...active.values()].some((a) => !a.background) ||
+    [...reservedLanes.values()].some((background) => !background)
+  )
     throw new Error(
       "Wait for the current operation or cancel it before changing settings.",
     );
@@ -126,6 +152,23 @@ function localNow(): string {
     String(a % 60).padStart(2, "0")
   );
 }
+async function cancelOperation(id: string) {
+  const op = active.get(id);
+  if (!op) return;
+  op.cancelled = true;
+  // Listen before signalling so a fast exit is never missed.
+  const exited = new Promise<void>((resolve) => {
+    const timer = setTimeout(() => {
+      void op.worker.terminate().finally(resolve);
+    }, 1000);
+    op.worker.once("exit", () => {
+      clearTimeout(timer);
+      resolve();
+    });
+  });
+  op.worker.postMessage("cancel");
+  await exited;
+}
 async function run(raw: unknown): Promise<OperationResult> {
   if (mutationInProgress)
     throw new Error(
@@ -133,6 +176,39 @@ async function run(raw: unknown): Promise<OperationResult> {
     );
   const request = operationSchema.parse(raw),
     settings = editorSettings(request.settings);
+  // A refresh the user asks for replaces a widget refresh already under way.
+  if (request.kind === "ai")
+    for (const [id, a] of active)
+      if (a.background && a.kind === "ai") await cancelOperation(id);
+  return start(request, settings, false);
+}
+/** Starts a widget refresh with the saved settings unless AI usage is busy or off. */
+function refreshInBackground() {
+  const settings = structuredClone(store.settings);
+  if (
+    mutationInProgress ||
+    !settings.aiUsage.enabled ||
+    reservedLanes.has("ai") ||
+    [...active.values()].some((a) => a.kind === "ai")
+  )
+    return;
+  void start(
+    { id: randomUUID(), kind: "ai", settings },
+    settings,
+    true,
+  ).catch(() => {});
+}
+/** Tells the widget, and the main window when it did not ask, about new state. */
+function stateChanged(background: boolean) {
+  widget?.publish();
+  if (background && window && !window.isDestroyed())
+    window.webContents.send("codelines:stateChanged", store.state());
+}
+async function start(
+  request: z.infer<typeof operationSchema>,
+  settings: Settings,
+  background: boolean,
+): Promise<OperationResult> {
   const lane = request.kind === "ai" ? "ai" : "analysis";
   if (reservedLanes.has(lane))
     throw new Error("A conflicting operation is already running.");
@@ -147,14 +223,17 @@ async function run(raw: unknown): Promise<OperationResult> {
     throw new Error("Git history is disabled.");
   if (request.kind === "ai" && !settings.aiUsage.enabled)
     throw new Error("AI usage is disabled.");
-  reservedLanes.add(lane);
+  reservedLanes.set(lane, background);
   if (request.kind === "history") settings.lastGitHistory = null;
-  adoptSettings(settings);
-  try {
-    await store.save();
-  } catch (error) {
-    reservedLanes.delete(lane);
-    throw error;
+  // Background refreshes run with the saved settings, so there is nothing to adopt.
+  if (!background) {
+    adoptSettings(settings);
+    try {
+      await store.save();
+    } catch (error) {
+      reservedLanes.delete(lane);
+      throw error;
+    }
   }
   const worker = new Worker(path.join(__dirname, "worker.cjs"), {
     workerData: {
@@ -177,6 +256,7 @@ async function run(raw: unknown): Promise<OperationResult> {
     kind: request.kind,
     cancelled: false,
     partial: [] as GitProject[],
+    background,
   };
   active.set(request.id, operation);
   return new Promise((resolve) => {
@@ -188,6 +268,7 @@ async function run(raw: unknown): Promise<OperationResult> {
       active.delete(request.id);
       reservedLanes.delete(lane);
       void worker.terminate();
+      if (status === "completed") stateChanged(background);
       resolve({
         id: request.id,
         status,
@@ -291,6 +372,8 @@ async function run(raw: unknown): Promise<OperationResult> {
                   store.daily,
                   value.ai.combined,
                   store.settings.projects,
+                  undefined,
+                  value.ai.activity ?? null,
                 );
                 try {
                   await store.saveDaily();
@@ -341,6 +424,25 @@ async function setup() {
       ),
   );
   await store.load();
+  widget = createWidget({
+    directory: store.directory,
+    icon: path.join(__dirname, "CodeLines.ico"),
+    settings: () => store.settings,
+    data: () => {
+      const theme = store.settings.theme;
+      return widgetSummary(
+        store,
+        Date.now(),
+        theme === "Dark" || (theme === "System" && nativeTheme.shouldUseDarkColors),
+      );
+    },
+    openMain,
+    refresh: refreshInBackground,
+    change: (patch) =>
+      changeWidget(patch).catch((e: unknown) => {
+        store.warnings.push("Widget settings could not be saved: " + String(e));
+      }),
+  });
   handle("windowState", windowState);
   handle("windowAction", (raw) => {
     const action = z.enum(["minimize", "toggleMaximize", "close"]).parse(raw);
@@ -358,6 +460,7 @@ async function setup() {
     assertIdle();
     adoptSettings(editorSettings(value));
     await store.save();
+    await widget?.apply(store.settings);
     return store.state();
   });
   handle("add", async () => {
@@ -432,25 +535,7 @@ async function setup() {
     );
   });
   handle("run", run);
-  handle("cancel", async (id) => {
-    const key = z.uuid().parse(id),
-      op = active.get(key);
-    if (op) {
-      op.cancelled = true;
-      // Listen before signalling so a fast exit is never missed.
-      const exited = new Promise<void>((resolve) => {
-        const timer = setTimeout(() => {
-          void op.worker.terminate().finally(resolve);
-        }, 1000);
-        op.worker.once("exit", () => {
-          clearTimeout(timer);
-          resolve();
-        });
-      });
-      op.worker.postMessage("cancel");
-      await exited;
-    }
-  });
+  handle("cancel", (id) => cancelOperation(z.uuid().parse(id)));
   handle("export", async (raw) => {
     const r = z
       .object({
@@ -533,6 +618,9 @@ async function setup() {
         ),
     }),
   );
+  // Started with Windows for the widget: the main window waits in the tray.
+  const startHidden =
+    process.argv.includes("--widget") && store.settings.widget.enabled;
   window = new BrowserWindow({
     width: 1440,
     height: 940,
@@ -541,7 +629,7 @@ async function setup() {
     frame: false,
     backgroundColor: "#0b1120",
     title: "CodeLines",
-    show: process.env.CODELINES_TEST !== "1",
+    show: process.env.CODELINES_TEST !== "1" && !startHidden,
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,
@@ -559,6 +647,12 @@ async function setup() {
   window.on("unmaximize", publishWindowState);
   window.on("focus", publishWindowState);
   window.on("blur", publishWindowState);
+  // With the widget on, closing the window keeps CodeLines in the tray.
+  window.on("close", (event) => {
+    if (quitting || !widget?.isActive()) return;
+    event.preventDefault();
+    window.hide();
+  });
   window.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   const guardNavigation = (event: Electron.Event, url: string) => {
     if (url !== (process.env.CODELINES_DEV_URL ?? pathToFileURL(entry).href))
@@ -569,6 +663,22 @@ async function setup() {
   await (process.env.CODELINES_DEV_URL
     ? window.loadURL(process.env.CODELINES_DEV_URL)
     : window.loadFile(entry));
+  await widget?.apply(store.settings);
+}
+function openMain() {
+  if (!window || window.isDestroyed()) return;
+  if (window.isMinimized()) window.restore();
+  window.show();
+  window.focus();
+}
+/** Widget changes made outside Settings (the tray menu) save and apply at once. */
+async function changeWidget(patch: Partial<WidgetOptions>) {
+  store.settings.widget = { ...store.settings.widget, ...patch };
+  await store.save();
+  await widget?.apply(store.settings);
+  // Nothing else would show the main window once the widget that kept it in the tray is gone.
+  if (!store.settings.widget.enabled) openMain();
+  stateChanged(true);
 }
 app.setName("CodeLines");
 // Preserve the existing Chromium profile independently of the product name.
@@ -579,10 +689,7 @@ app.setPath(
 );
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
-  app.on("second-instance", () => {
-    window?.show();
-    window?.focus();
-  });
+  app.on("second-instance", openMain);
   app
     .whenReady()
     .then(setup)
@@ -590,8 +697,11 @@ else {
       dialog.showErrorBox("CodeLines could not start", String(e));
       app.quit();
     });
-  app.on("window-all-closed", () => app.quit());
+  app.on("window-all-closed", () => {
+    if (!widget?.isActive()) app.quit();
+  });
   app.on("before-quit", () => {
+    quitting = true;
     for (const o of active.values()) void o.worker.terminate();
   });
 }

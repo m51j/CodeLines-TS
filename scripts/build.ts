@@ -4,7 +4,7 @@ import { mkdir, copyFile, writeFile } from "node:fs/promises";
 import "./licenses";
 await mkdir("dist", { recursive: true });
 await viteBuild();
-for (const name of ["main", "preload", "worker", "analyzer"])
+for (const name of ["main", "preload", "widget-preload", "worker", "analyzer"])
   await build({
     entryPoints: [`src/main/${name}.ts`],
     outfile: `dist/${name}.cjs`,
@@ -30,6 +30,7 @@ await writeFile(
     report.outputFiles[0].text,
 );
 await copyFile("src/renderer/styles.css", "dist/report.css");
+await copyFile("assets/CodeLines.ico", "dist/CodeLines.ico");
 await copyFile("LICENSE", "dist/LICENSE");
 await copyFile("THIRD-PARTY-NOTICES.md", "dist/THIRD-PARTY-NOTICES.md");
 await copyFile(

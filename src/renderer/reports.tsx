@@ -41,6 +41,7 @@ import {
   type Column,
 } from "./components";
 import { compact, palette } from "./format";
+import { Ticker, popStyle } from "./motion";
 const agentColors: Record<string, string> = Object.fromEntries(
   Object.keys(agentLabels).map((id, i) => [id, palette[i % palette.length]]),
 );
@@ -404,17 +405,23 @@ function Heat({
                 : `repeat(${columns},minmax(17px,1fr))`,
             }}
           >
-            {cells.map((c) => (
+            {cells.map((c, i) => (
               <UsageHint
                 key={c.key}
-                className="heat-cell"
+                className="heat-cell heat-pop"
                 title={
                   calendar
                     ? c.key
                     : `${weekdays[Number(c.key.split(":")[0])]} ${String(c.key.split(":")[1]).padStart(2, "0")}:00`
                 }
                 detail={c.detail}
-                style={{ background: color(shade(c.value)) }}
+                style={{
+                  background: color(shade(c.value)),
+                  // Calendars fill week columns top to bottom; hour grids fill rows.
+                  ...(calendar
+                    ? popStyle(Math.floor(i / 7), i % 7, weeks)
+                    : popStyle(i % columns, Math.floor(i / columns), columns)),
+                }}
               />
             ))}
           </div>
@@ -755,6 +762,8 @@ export function Reports({ result }: { result: AiResult }) {
         )}
         <div
           role="tabpanel"
+          key={tab}
+          className="pane-in"
           id={`${navigationId}-report-${tab}`}
           aria-labelledby={`${navigationId}-tab-${tab}`}
         >
@@ -769,7 +778,9 @@ export function Reports({ result }: { result: AiResult }) {
                   <div className="report-metrics">
                     <div className="tile report-hero">
                       <span>Real tokens</span>
-                      <strong>{compact(total)}</strong>
+                      <strong>
+                        <Ticker value={compact(total)} />
+                      </strong>
                       <small>
                         {number(total)} tokens · Input + cache + output
                       </small>
@@ -843,7 +854,7 @@ export function Reports({ result }: { result: AiResult }) {
                           </UsageHint>
                         ) : (
                           <strong title={String(metric.value)}>
-                            {metric.value}
+                            <Ticker value={metric.value} />
                           </strong>
                         )}
                         <small>{metric.detail}</small>

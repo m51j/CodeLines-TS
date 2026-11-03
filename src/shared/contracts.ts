@@ -48,6 +48,13 @@ export const aiOptionsSchema = z.object({
   extraClaudeRoots: z.array(z.string().max(32760)),
 });
 export type AiOptions = z.infer<typeof aiOptionsSchema>;
+export const widgetOptionsSchema = z.object({
+  enabled: z.boolean(),
+  alwaysOnTop: z.boolean(),
+  startWithWindows: z.boolean(),
+  refreshMinutes: z.number().int().min(1).max(240),
+});
+export type WidgetOptions = z.infer<typeof widgetOptionsSchema>;
 export interface Lines {
   physicalLines: number;
   blankLines: number;
@@ -163,6 +170,7 @@ export interface Settings {
   lastGitHistory: HistorySnapshot | null;
   aiUsage: AiOptions;
   dailyLog: { refreshAiAfterScan: boolean };
+  widget: WidgetOptions;
 }
 export interface DailyEntry extends Omit<Lines, "mixedLines"> {
   projectId: string;
@@ -195,6 +203,8 @@ export interface DailyDay {
     total: AiAmount;
     byAgent: Record<string, AiAmount>;
     projects: ProjectUsage[];
+    /** Active minutes; days recorded before active time existed omit it. */
+    minutes?: number;
   } | null;
 }
 export interface DailyLog {
@@ -306,11 +316,21 @@ export interface AgentStatus {
   error?: string;
   elapsed: number;
 }
+/**
+ * Active minutes: the gaps between consecutive records of one session, ignoring
+ * gaps longer than five minutes. Sessions are keyed "agent::session".
+ */
+export interface AiActivity {
+  byDay: Record<string, number>;
+  bySession: Record<string, number>;
+}
 export interface AiResult {
   generatedAt: string;
   combined: AgentPayload | null;
   claude: ClaudePayload | null;
   agents: AgentStatus[];
+  /** Reports saved before active time existed omit it. */
+  activity?: AiActivity | null;
 }
 export interface ProjectUsage {
   projectId: string;
@@ -390,10 +410,68 @@ export interface DesktopApi {
   }): Promise<string | null>;
   openReport(): Promise<void>;
   onProgress(callback: (event: Progress) => void): () => void;
+  /** State changed outside this window, e.g. by a background widget refresh. */
+  onStateChanged(callback: (state: AppState) => void): () => void;
+}
+export type WidgetRange = "today" | "d30" | "all";
+export type WidgetTab = "overview" | "projects" | "total";
+export interface WidgetView {
+  tab: WidgetTab;
+  range: WidgetRange;
+}
+export interface WidgetTotals {
+  tokens: number;
+  minutes: number;
+  requests: number;
+  sessions: number;
+}
+export interface WidgetProject {
+  name: string;
+  minutes: number;
+  tokens: number;
+  sessions: number;
+}
+/** Everything the desktop widget shows, computed in the main process. */
+export interface WidgetData {
+  generatedAt: string | null;
+  aiEnabled: boolean;
+  /** Today's date in the clock the AI report uses. */
+  today: string;
+  dark: boolean;
+  ranges: Record<WidgetRange, WidgetTotals>;
+  streak: { current: number; best: number };
+  /** Active days only, oldest first. */
+  days: { date: string; tokens: number; minutes: number }[];
+  projects: Record<WidgetRange, WidgetProject[]>;
+  total: {
+    firstDay: string | null;
+    activeDays: number;
+    record: { date: string; tokens: number } | null;
+  };
+  code: {
+    projects: number;
+    files: number;
+    codeLines: number;
+    physicalLines: number;
+    scannedAt: string;
+    /** Code lines gained since the previous scan day; null without one. */
+    codeLinesDelta: number | null;
+  } | null;
+}
+export type WidgetMove = "drag" | "resize" | "stop";
+export interface WidgetApi {
+  load(): Promise<{ data: WidgetData; view: WidgetView }>;
+  onData(callback: (data: WidgetData) => void): () => void;
+  /** "stop" resolves true when the pointer moved, so the press was not a click. */
+  move(mode: WidgetMove): Promise<boolean>;
+  openApp(): Promise<void>;
+  menu(): Promise<void>;
+  setView(view: WidgetView): Promise<void>;
 }
 declare global {
   interface Window {
     codelines: DesktopApi;
+    codelinesWidget?: WidgetApi;
     CODELINES_REPORT?: AiResult;
   }
 }

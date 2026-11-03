@@ -55,11 +55,21 @@ export function useWorkspaceState() {
       },
       (e: unknown) => setError(e),
     );
-    return window.codelines.onProgress((p) => {
+    const offProgress = window.codelines.onProgress((p) => {
       if (p.id !== activeId.current) return;
       setProgress(p);
       if (p.partial) setPartial(p.partial);
     });
+    // A widget refresh or tray change: keep pending edits, take everything else.
+    const offState = window.codelines.onStateChanged((s) => {
+      if (latest.current.busy) return;
+      setState(s);
+      setDraft((d) => d && { ...d, widget: s.settings.widget });
+    });
+    return () => {
+      offProgress();
+      offState();
+    };
   }, [apply, setError]);
   useEffect(() => {
     const theme = draft?.theme;
@@ -198,6 +208,27 @@ export function useWorkspaceState() {
     },
     [change, setError],
   );
+  /** Widget options apply and persist immediately, like the theme. */
+  const setWidget = useCallback(
+    async (patch: Partial<Settings["widget"]>) => {
+      const saved = latest.current.state?.settings;
+      if (!saved) return;
+      const widget = { ...saved.widget, ...patch };
+      change((s) => {
+        s.widget = widget;
+      });
+      try {
+        const next = await window.codelines.save({ ...saved, widget });
+        setState(next);
+      } catch (e) {
+        change((s) => {
+          s.widget = saved.widget;
+        });
+        setError(e);
+      }
+    },
+    [change, setError],
+  );
   const exportData = useCallback(
     async (
       kind: ExportKind,
@@ -247,6 +278,7 @@ export function useWorkspaceState() {
     save,
     saveThen,
     setTheme,
+    setWidget,
     exportData,
     cancel,
   };

@@ -968,6 +968,105 @@ try {
     .poll(() => nativeWindow.evaluate((w) => w.isFocused()))
     .toBe(true);
   await expect(titlebar).not.toHaveClass(/titlebar-inactive/);
+  // Desktop widget: turned on from Settings, sandboxed, fed by the main process,
+  // and it keeps CodeLines in the tray once the main window closes.
+  await page
+    .getByRole("navigation", { name: "Main navigation" })
+    .getByRole("button", { name: "Settings", exact: true })
+    .click();
+  const widgetOpened = desktop.waitForEvent("window", {
+    predicate: (p) => p.url().endsWith("widget.html"),
+  });
+  await page
+    .getByRole("checkbox", {
+      name: "Show the widget on the desktop",
+      exact: true,
+    })
+    .check();
+  const widgetPage = await widgetOpened;
+  await expect
+    .poll(() =>
+      page.evaluate(
+        async () => (await window.codelines.load()).settings.widget.enabled,
+      ),
+    )
+    .toBe(true);
+  const widgetWindow = await desktop.browserWindow(widgetPage);
+  expect(
+    await widgetWindow.evaluate((w) => {
+      const prefs = (
+        w.webContents as unknown as {
+          getLastWebPreferences(): Record<string, unknown>;
+        }
+      ).getLastWebPreferences();
+      return {
+        resizable: w.isResizable(),
+        alwaysOnTop: w.isAlwaysOnTop(),
+        contextIsolation: prefs.contextIsolation,
+        nodeIntegration: prefs.nodeIntegration,
+        sandbox: prefs.sandbox,
+      };
+    }),
+  ).toMatchObject({
+    resizable: true,
+    alwaysOnTop: false,
+    contextIsolation: true,
+    nodeIntegration: false,
+    sandbox: true,
+  });
+  await expect(widgetPage.locator(".w-box")).toBeVisible();
+  await expect(widgetPage.locator(".w-cell").first()).toBeAttached();
+  await expect(
+    widgetPage.locator(".w-stat .ticker").first(),
+  ).not.toHaveText("—");
+  expect(
+    await widgetPage.evaluate(() => ({
+      app: typeof (window as { codelines?: unknown }).codelines,
+      widget: typeof window.codelinesWidget,
+    })),
+  ).toEqual({ app: "undefined", widget: "object" });
+  await widgetPage
+    .getByRole("tab", { name: "Projects", exact: true })
+    .click();
+  await widgetPage.getByRole("tab", { name: "Total", exact: true }).click();
+  await expect(widgetPage.getByText(/Tokens since|Total tokens/)).toBeVisible();
+  expect(
+    (await widgetPage.evaluate(() => window.codelinesWidget!.load())).view,
+  ).toEqual({ tab: "total", range: "today" });
+  for (const theme of ["Light", "Dark"]) {
+    await chooseTheme(page, theme);
+    await expect
+      .poll(() =>
+        widgetPage.evaluate(() => document.documentElement.dataset.theme),
+      )
+      .toBe(theme.toLowerCase());
+    await widgetPage.getByRole("tab", { name: "Overview", exact: true }).click();
+    // Let the pane, heatmap wave and color transitions finish.
+    await widgetPage.evaluate(() =>
+      Promise.all(document.getAnimations().map((a) => a.finished)),
+    );
+    await capture(widgetPage, {
+      path: path.join(
+        out,
+        `${packaged ? "packaged" : "built"}-widget-${theme.toLowerCase()}.png`,
+      ),
+    });
+  }
+  // Closing the main window only hides it while the widget is on.
+  await page.evaluate(() => window.codelines.windowAction("close"));
+  await expect
+    .poll(() => nativeWindow.evaluate((w) => !w.isDestroyed() && !w.isVisible()))
+    .toBe(true);
+  expect(await widgetWindow.evaluate((w) => !w.isDestroyed())).toBe(true);
+  await nativeWindow.evaluate((w) => w.showInactive());
+  const widgetClosed = widgetPage.waitForEvent("close");
+  await page
+    .getByRole("checkbox", {
+      name: "Show the widget on the desktop",
+      exact: true,
+    })
+    .uncheck();
+  await widgetClosed;
   const invalidWindowAction = await page.evaluate(() =>
     window.codelines.windowAction("invalid" as "close").then(
       () => false,
@@ -1007,6 +1106,7 @@ try {
           "settings save/reload and post-scan AI refresh",
           "long project-path clipping and full tooltip",
           "Chromium forced offline",
+          "desktop widget from Settings: sandboxed, live data, saved view, themes, tray close",
         ],
         screenshots: out,
       },

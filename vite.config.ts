@@ -1,8 +1,18 @@
+import { resolve } from "node:path";
 import { defineConfig } from "vite";
 export default defineConfig({
   root: "src/renderer",
   base: "./",
-  build: { outDir: "../../dist/renderer", emptyOutDir: true },
+  build: {
+    outDir: "../../dist/renderer",
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, "src/renderer/index.html"),
+        widget: resolve(__dirname, "src/renderer/widget.html"),
+      },
+    },
+  },
   plugins: [
     {
       // The dev server's hot-reload socket is not needed in production builds.

@@ -5,6 +5,7 @@ import { agentLabels } from "../shared/agents";
 import { walk, cached, jsonLines, exists } from "./io";
 import { parseClaudeLine } from "./claude";
 import {
+  activeMinutes,
   aggregateAgents,
   aggregateClaude,
   fromClaude,
@@ -154,7 +155,9 @@ export async function buildAi(
   }
   cancelled(signal);
   progress?.("Combining all agents");
-  if (sources.length)
+  if (sources.length) {
     result.combined = aggregateAgents(sources, "All agents", options.useUtc);
+    result.activity = activeMinutes(sources, options.useUtc);
+  }
   return result;
 }
