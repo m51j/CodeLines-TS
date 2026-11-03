@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 1.1.0 — 2026-11-03
+
+Downloads are `CodeLines.Setup.1.1.0.exe`, `CodeLines.1.1.0.exe`, and `SHA256SUMS.txt` under [v1.1.0](https://github.com/m51j/CodeLines-TS/releases/tag/v1.1.0).
 
 ### Desktop widget and motion
 
