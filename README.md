@@ -37,6 +37,27 @@ CodeLines is an offline Windows desktop app for understanding your codebase and 
   <a href="docs/screenshots/ai-usage-overview.png">View the AI usage overview at full resolution</a>
 </p>
 
+## Desktop widget
+
+<p align="center">
+  <a href="docs/screenshots/desktop-widget.png">
+    <img src="docs/screenshots/desktop-widget-showcase.png" alt="CodeLines desktop widget in dark mode on a navy gradient background, showing tokens today, a 93-day streak, active time today, and an AI activity heatmap" width="1280" />
+  </a>
+</p>
+
+<p align="center">
+  <em>The desktop widget keeps today's AI activity in view without opening CodeLines.</em><br />
+  <a href="docs/screenshots/desktop-widget.png">View the widget at actual size</a>
+</p>
+
+Turn on **Show the widget on the desktop** in **Settings** to open a small translucent window that sits on your desktop:
+
+- **Overview:** tokens, active time, and your current streak for **Today**, **30d**, or **All**, above an activity heatmap that fills the space you give it.
+- **Projects:** time and tokens per project for the selected period.
+- **Total:** all-time AI usage alongside your code totals.
+
+Drag the widget to move it and drag its corner to resize it; its position, size, tab, and period are remembered. The widget refreshes AI usage in the background (every 5 minutes by default) and follows the app's light or dark theme. While it is on, closing the main window keeps CodeLines in the notification area; the tray menu opens CodeLines, shows or hides the widget, refreshes AI usage now, or quits. In **Settings** you can also keep the widget above other windows, change the refresh interval, and start CodeLines with Windows.
+
 ## Install
 
 Download the Windows x64 installer or portable executable from **[GitHub Releases](https://github.com/m51j/CodeLines-TS/releases)**. The installer preserves application data on uninstall. For the portable version, run the executable directly.
@@ -70,7 +91,7 @@ On Windows, you can also double-click `run.bat` to build and launch the app. To 
 npm run package
 ```
 
-Local builds produce `release/CodeLines Setup 1.0.0.exe`, `release/CodeLines 1.0.0.exe`, and `release/SHA256SUMS.txt`.
+Local builds produce `release/CodeLines Setup 1.1.0.exe`, `release/CodeLines 1.1.0.exe`, and `release/SHA256SUMS.txt`.
 
 See the [technical reference](docs/TECHNICAL.md) for development commands, tests, packaging, storage, imports, analysis rules, and architecture.
 
