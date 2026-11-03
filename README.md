@@ -9,6 +9,7 @@ CodeLines is an offline Windows desktop app for understanding your codebase and 
 - **Git changes:** explore committed activity and net changes over a selected period.
 - **Daily log:** track project growth and compare dates, projects, and languages.
 - **AI usage:** review tokens, sessions, models, activity, and API cost equivalents from local coding-agent records.
+- **Desktop widget:** turn it on in **Settings** for a small translucent window with today's tokens, active time, streak, a fitted activity heatmap, top projects and code totals. It refreshes in the background, stays in the notification area when CodeLines closes, and can start with Windows.
 - **Portable reports:** export CSV and JSON, or share a self-contained AI usage HTML report that opens offline.
 - **Desktop controls:** light, dark, and system themes, project import/export, and local data recovery.
 

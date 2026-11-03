@@ -1,4 +1,5 @@
 import type {
+  AiActivity,
   AgentPayload,
   AgentSession,
   ClaudePayload,
@@ -300,6 +301,45 @@ export function aggregateAgents(
     sessions,
   };
 }
+export const activeGapMs = 5 * 60 * 1000;
+/** Uses the same timestamp and duplicate filters as aggregateAgents. */
+export function activeMinutes(
+  sources: AgentSource[],
+  utc: boolean,
+): AiActivity {
+  const times = new Map<string, number[]>();
+  for (const source of sources) {
+    const seen = new Set<string>();
+    for (const r of source.records) {
+      if (!plausibleTs(r.ts)) continue;
+      if (r.request) {
+        if (seen.has(r.request)) continue;
+        seen.add(r.request);
+      }
+      const sid = source.id + "::" + (r.session || "unknown"),
+        list = times.get(sid);
+      if (list) list.push(r.ts);
+      else times.set(sid, [r.ts]);
+    }
+  }
+  const byDay: Record<string, number> = Object.create(null),
+    bySession: Record<string, number> = Object.create(null);
+  for (const [sid, list] of times) {
+    list.sort((a, b) => a - b);
+    let total = 0;
+    for (let i = 1; i < list.length; i++) {
+      const gap = list[i] - list[i - 1];
+      if (gap <= 0 || gap > activeGapMs) continue;
+      const day = dayParts(list[i], utc).day;
+      byDay[day] = (byDay[day] ?? 0) + gap / 60000;
+      total += gap / 60000;
+    }
+    if (total) bySession[sid] = round1(total);
+  }
+  for (const d of Object.keys(byDay)) byDay[d] = round1(byDay[d]);
+  return { byDay, bySession };
+}
+const round1 = (x: number) => Math.round(x * 10) / 10;
 export function payloadTotals(
   payload: AgentPayload,
   filter: (day: string, key: string) => boolean = () => true,

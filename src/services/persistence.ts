@@ -7,6 +7,7 @@ import {
   scanOptionsSchema,
   aiOptionsSchema,
   historyOptionsSchema,
+  widgetOptionsSchema,
   type Settings,
   type DailyLog,
   type AppState,
@@ -52,6 +53,10 @@ export function parseSettings(value: unknown): Settings {
     dailyLog: z
       .object({ refreshAiAfterScan: z.boolean() })
       .parse({ ...d.dailyLog, ...object.parse(o.dailyLog ?? {}) }),
+    widget: widgetOptionsSchema.parse({
+      ...d.widget,
+      ...object.parse(o.widget ?? {}),
+    }),
     theme: z.enum(["System", "Light", "Dark"]).parse(o.theme ?? "System"),
     schemaVersion: 1,
   } as Settings;

@@ -1,4 +1,5 @@
 import type {
+  AiActivity,
   AgentPayload,
   DailyLog,
   DailyDay,
@@ -113,6 +114,7 @@ export function recordAi(
   payload: AgentPayload,
   projects: Project[],
   now = new Date().toISOString(),
+  activity: AiActivity | null = null,
 ): void {
   const utc = payload.meta.tz === "utc",
     today = dayParts(Date.parse(now), utc).day,
@@ -143,10 +145,20 @@ export function recordAi(
       a.tokens < existing.total.tokens
     )
       continue;
+    const sameClock = existing?.tz === payload.meta.tz,
+      minutes = activity
+        ? Math.max(
+            activity.byDay[date] ?? 0,
+            sameClock && date !== today ? (existing?.minutes ?? 0) : 0,
+          )
+        : sameClock
+          ? existing?.minutes
+          : undefined;
     getDay(log, date).ai = {
       updatedAt: now,
       tz: payload.meta.tz,
       total: a,
+      ...(minutes === undefined ? {} : { minutes }),
       byAgent: Object.fromEntries(
         Object.entries(byAgent).map(([k, v]) => [k, amount(v)]),
       ),

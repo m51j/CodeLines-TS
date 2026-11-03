@@ -8,6 +8,8 @@ The AI usage parsing, aggregation, pricing behavior, and report feature set deri
 
 Frozen price data is copied from CodeLines' `ClaudePricing.cs` and `Agents/AgentPricing.cs`, with version `codelines-2026-10-05-v1`. Rates are preserved for calculation parity and are not represented as current provider prices. The original source attributes them to provider list rates. Future changes must use a new version with sources and tests.
 
+The desktop widget's interaction model and motion design are adapted from [claude-code-stats-widget](https://github.com/RodrigoRivera/claude-code-stats-widget) by Rodrigo Rivera, released under the MIT License. This covers the cursor-following drag and resize with click detection, the heatmap cell-fitting rule, quartile shading, the five-minute active-time rule, and the timing and easing of the pop wave, value tick, bar fill and pane entrance. The code is reimplemented in TypeScript and React; no files are copied.
+
 Runtime dependencies include Electron (MIT), React/React DOM (MIT), js-tiktoken (MIT), Zod (MIT), Recharts (MIT), and Lucide React (ISC). Full installed production dependency license texts are generated in `docs/THIRD-PARTY-LICENSES.txt` and included in the packaged application's `dist` directory. Electron's distribution also carries its own Chromium and other third-party license notices.
 
 The copied golden fixtures were generated from synthetic transcripts by CodeLines' fixture generator. They contain no live user transcripts. Test execution does not depend on a separate ccstats checkout.

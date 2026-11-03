@@ -9,8 +9,9 @@ const aiOptions = [
   { label: "Count each Claude request once (off = raw records)", key: "deduplicate" },
   { label: "Bucket AI usage in UTC", key: "useUtc" },
 ] as const;
+const refreshChoices = [1, 5, 15, 30, 60];
 export function SettingsPage() {
-  const { state, draft, busy, dirty, change, save, setDraft, act } =
+  const { state, draft, busy, dirty, change, save, setDraft, act, setWidget } =
     useWorkspace();
   return (
     <>
@@ -24,7 +25,11 @@ export function SettingsPage() {
         <button
           disabled={!!busy || !dirty}
           onClick={() =>
-            setDraft({ ...structuredClone(state.settings), theme: draft.theme })
+            setDraft({
+              ...structuredClone(state.settings),
+              theme: draft.theme,
+              widget: draft.widget,
+            })
           }
         >
           Discard edits
@@ -206,6 +211,73 @@ export function SettingsPage() {
               }
             />
           </Field>
+        </Card>
+        <Card
+          title="Desktop widget"
+          subtitle="Today's AI usage, streak and code totals in a small window on your desktop"
+        >
+          <div className="check-list">
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={draft.widget.enabled}
+                onChange={(e) => void setWidget({ enabled: e.target.checked })}
+              />
+              Show the widget on the desktop
+            </label>
+            <label className="check">
+              <input
+                type="checkbox"
+                disabled={!draft.widget.enabled}
+                checked={draft.widget.alwaysOnTop}
+                onChange={(e) =>
+                  void setWidget({ alwaysOnTop: e.target.checked })
+                }
+              />
+              Keep it above other windows
+            </label>
+            <label className="check">
+              <input
+                type="checkbox"
+                disabled={!draft.widget.enabled}
+                checked={draft.widget.startWithWindows}
+                onChange={(e) =>
+                  void setWidget({ startWithWindows: e.target.checked })
+                }
+              />
+              Start with Windows, showing only the widget
+            </label>
+          </div>
+          <div className="settings-grid">
+            <Field
+              label="Refresh AI usage"
+              help={
+                draft.aiUsage.enabled
+                  ? "Runs in the background while the widget is visible."
+                  : "Turn on the AI usage page to refresh it."
+              }
+            >
+              <select
+                disabled={!draft.widget.enabled}
+                value={draft.widget.refreshMinutes}
+                onChange={(e) =>
+                  void setWidget({ refreshMinutes: Number(e.target.value) })
+                }
+              >
+                {refreshChoices.map((m) => (
+                  <option key={m} value={m}>
+                    Every {m} {m === 1 ? "minute" : "minutes"}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
+          <p className="muted">
+            These options apply at once. While the widget is on, closing
+            CodeLines keeps it in the notification area; right-click the
+            widget or the tray icon for more. Drag to move it, drag its corner
+            to resize, click it to open CodeLines.
+          </p>
         </Card>
       </fieldset>
       <Card

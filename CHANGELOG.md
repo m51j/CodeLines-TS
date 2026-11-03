@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Desktop widget and motion
+
+- Add an optional desktop widget, turned on in Settings. It shows tokens, active time and streak for today, 30 days or all time, a heatmap sized to the window, per-project time and tokens, and all-time and code totals.
+- Refresh AI usage in the background while the widget is visible. Keep CodeLines in the notification area when the main window closes, with a tray menu and an optional start with Windows.
+- Record active time (gaps of up to five minutes between a session's records) in the AI report and the daily log.
+- Animate value changes, heatmap entry, usage bars, tab panels, details and tooltips across the app, the widget and the offline report, respecting reduced motion.
+
 ## 1.0.0 — 2026-10-23
 
 ### Naming and documentation refresh

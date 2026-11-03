@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type {
+  AppState,
   DesktopApi,
   Progress,
   IpcResponse,
@@ -37,6 +38,12 @@ const api: DesktopApi = {
       callback(value);
     ipcRenderer.on("codelines:progress", listener);
     return () => ipcRenderer.removeListener("codelines:progress", listener);
+  },
+  onStateChanged: (callback) => {
+    const listener = (_event: Electron.IpcRendererEvent, value: AppState) =>
+      callback(value);
+    ipcRenderer.on("codelines:stateChanged", listener);
+    return () => ipcRenderer.removeListener("codelines:stateChanged", listener);
   },
 };
 contextBridge.exposeInMainWorld("codelines", api);

@@ -48,6 +48,12 @@ export function defaults(): Settings {
       extraClaudeRoots: [],
     },
     dailyLog: { refreshAiAfterScan: true },
+    widget: {
+      enabled: false,
+      alwaysOnTop: false,
+      startWithWindows: false,
+      refreshMinutes: 5,
+    },
   };
 }
 export function upgradeExclusions(settings: Settings): void {

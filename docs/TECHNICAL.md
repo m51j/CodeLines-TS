@@ -52,7 +52,8 @@ Application data is stored under `%LOCALAPPDATA%\CodeLines-TS`:
 
 - `settings.json`: schema version 1, projects, settings, latest scan, latest complete history.
 - `daily-log.json`: legacy-compatible daily schema version 1.
-- `ai-report.json`: typed combined and Claude payloads plus adapter statuses.
+- `ai-report.json`: typed combined and Claude payloads, adapter statuses, and active minutes per day and session.
+- `widget.json`: the desktop widget's position, size, tab, and period.
 - `ai-usage/cache/`: versioned per-source caches; full rescan bypasses them.
 - `migration.json`, `migration-backups/`: import fingerprints and recoverable source and destination copies.
 
@@ -82,6 +83,8 @@ The latest scan of each project replaces that project's scan on the same local c
 
 AI facts use the selected local/UTC clock. Project usage is attributed by session start day and longest matching project root, including Git Bash/WSL paths. Historical AI totals cannot shrink when local source logs disappear; today is refreshed, and a day recorded under the other clock (local/UTC) is replaced. The “refresh AI usage after every scan” setting controls automatic post-scan refresh.
 
+Active time is the sum of gaps of at most five minutes between consecutive records of one session, assigned to the day of the later record. Each day stores its active minutes next to its AI totals, and like them the stored value does not shrink when source logs disappear.
+
 ## AI adapters and reports
 
 Supported: Claude Code, Codex (active and archived rollouts), Antigravity IDE, Antigravity, agy, ZCode, opencode, Kilo Code, Cline, Copilot Chat, Hermes, and LM Studio. Adapters read local JSON, JSONL, SQLite, and protobuf conversation records. Databases are opened read-only, with an isolated DB/WAL/SHM copy fallback for unavailable/locked stores.
@@ -91,6 +94,36 @@ Claude deduplication retains the greatest-output record for each request; raw mo
 Combined/per-agent navigation, Overview/Models/Time/Tables/Projects tabs, date ranges, grouping, activity calendar, token-class distribution, daily/model stacks, hour/weekday heatmaps, monthly tables, cost coverage, full breakdowns, project tables, heaviest sessions, and Claude app-card comparisons share one typed report model and React implementation. Tables sort, search, paginate, and retain keyboard-focusable scroll regions, sticky headers/project columns, selectable full paths, truncation, and full-path tooltips. Agent tabs show all-time token counts and remember each agent’s tab, range, grouping and custom dates while the report stays open. Quick ranges are anchored to that agent’s latest recorded day and clear custom dates; entering a custom date switches to the custom period. Activity calendars include month/day labels, heatmaps include hour/day axes, and hover/focus tooltips show exact metrics. Agent source statuses are collapsible and highlight failures. These controls and visuals are shared with the offline HTML export.
 
 Pricing version `codelines-2026-10-05-v1` contains frozen rates and fallback rules. Any future update must be explicit, versioned, sourced, and tested. See [attribution](../THIRD-PARTY-NOTICES.md).
+
+## Desktop widget
+
+**Settings → Desktop widget** turns on a frameless, transparent, sandboxed window loaded from `widget.html`. Its options apply immediately, like the theme. The widget has its own preload (`window.codelinesWidget`) and IPC channels (`codelines:widget:*`), checked against the widget's own web contents and page. It cannot call the main window's operations.
+
+The main process computes everything the widget shows with `widgetSummary` (`src/widget/summary.ts`). Inputs are the current AI report, the daily log and the latest scan, so days that agents have deleted stay on the heatmap. It pushes new data after every scan, AI refresh, and settings change.
+
+While the widget is visible, an AI refresh runs in the background every 1–60 minutes using the saved settings and the adapter caches. A refresh the user requests replaces one that is already running. Background refreshes never block settings changes. The main window then receives the new state without losing pending edits.
+
+While the widget is on:
+
+- closing the main window hides it to the notification area;
+- the tray menu opens CodeLines, shows or hides the widget, toggles *Always on top* and *Start with Windows*, refreshes, turns the widget off, or quits;
+- *Start with Windows* registers the installed or portable executable with `--widget`, which starts with only the widget visible.
+
+Interaction:
+
+- dragging moves the widget and the bottom-right corner resizes it;
+- a click without movement opens CodeLines;
+- position, size, tab and period persist in `widget.json`;
+- a saved position that no longer falls on a connected display resets to the primary display's bottom-right corner.
+
+The app and the widget share `src/renderer/motion.tsx` and the *Motion* section of `styles.css`:
+
+- a rise when a value changes;
+- a diagonal pop wave across heatmaps, whose cells keep their identity, so period changes only recolor them;
+- bars that fill on mount;
+- tab-panel, details and tooltip entrances.
+
+Every animation starts from a `from` keyframe, so content stays visible when Windows' reduced-motion setting disables animation.
 
 ## Exports
 

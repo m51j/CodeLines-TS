@@ -140,7 +140,13 @@ export function Analysis() {
           </button>
         ))}
       </div>
-      <div role="tabpanel" id={`${id}-panel`} aria-labelledby={`${id}-tab-${tab}`}>
+      <div
+        role="tabpanel"
+        key={tab}
+        className="pane-in"
+        id={`${id}-panel`}
+        aria-labelledby={`${id}-tab-${tab}`}
+      >
         <Card title={tab} subtitle={result.rootPath}>
           {tab === "Languages" && (
             <Table

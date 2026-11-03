@@ -6,6 +6,7 @@ import {
 } from "react";
 import { FolderSearch } from "lucide-react";
 import { number } from "./format";
+import { Ticker } from "./motion";
 export { number, signed, percent } from "./format";
 export type Tone = "accent" | "success" | "danger";
 /** Colors a signed delta: growth green, shrinkage red, zero neutral. */
@@ -50,7 +51,9 @@ export function Tiles({
       {items.map((i) => (
         <div className={"tile" + (i.tone ? " tone-" + i.tone : "")} key={i.label}>
           <span>{i.label}</span>
-          <strong title={i.title}>{i.value}</strong>
+          <strong title={i.title}>
+            <Ticker value={i.value} />
+          </strong>
           {i.detail && <small>{i.detail}</small>}
         </div>
       ))}

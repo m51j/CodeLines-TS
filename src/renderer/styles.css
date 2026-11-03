@@ -1670,3 +1670,91 @@ fieldset {
     margin-left: 0;
   }
 }
+
+/* Motion, adapted from claude-code-stats-widget (MIT). Every animation starts
+   from a "from" keyframe only, so content stays visible under reduced motion. */
+.ticker {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+.ticker.tick {
+  animation: tick 0.32s ease-out;
+}
+@keyframes tick {
+  from {
+    opacity: 0.2;
+    transform: translateY(3px);
+  }
+}
+.heat-pop {
+  animation: pop 0.35s cubic-bezier(0.2, 0.8, 0.3, 1.2) var(--pop-delay, 0ms)
+    both;
+  transition:
+    background-color 0.3s,
+    filter 0.3s,
+    box-shadow 0.12s;
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+.reports .heat-cell:hover,
+.reports .heat-cell:focus-visible {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--text) 70%, transparent);
+}
+.pane-in {
+  animation: pane-in 0.22s ease-out;
+}
+@keyframes pane-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.token-mix {
+  animation: fill-in 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+@keyframes fill-in {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+.fill-track {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-alt);
+  overflow: hidden;
+}
+.fill-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+details[open] > :not(summary) {
+  animation: drop 0.2s ease-out;
+}
+@keyframes drop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.report-hint {
+  animation: hint-in 0.1s ease-out;
+}
+@keyframes hint-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}

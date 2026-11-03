@@ -144,6 +144,7 @@ export const storedDaily = z.object({
           total: amount,
           byAgent: z.record(z.string(), amount),
           projects: z.array(projectUsage),
+          minutes: n.optional(),
         })
         .nullable()
         .default(null),
@@ -275,6 +276,13 @@ export const storedAi = z.object({
       error: z.string().optional(),
     }),
   ),
+  activity: z
+    .object({
+      byDay: z.record(z.string(), n),
+      bySession: z.record(z.string(), n),
+    })
+    .nullable()
+    .optional(),
 });
 export function legacyDuration(value: number | string): number {
   if (typeof value === "number") return value;
