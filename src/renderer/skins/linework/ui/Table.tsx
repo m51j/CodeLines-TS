@@ -149,7 +149,14 @@ export function Table<T>({
                   key={rk}
                   data-k={rk}
                   className={[sel ? "selected" : "", tot ? "total-row" : "", rowCls?.(r) ?? ""].join(" ")}
-                  aria-selected={onSelect ? !!sel : undefined}
+                  aria-selected={onSelect && !tot ? !!sel : undefined}
+                  onClick={
+                    onSelect && !tot
+                      ? (e) => {
+                          if (!(e.target as Element).closest("button,input,select,textarea,label,a")) onSelect(r);
+                        }
+                      : undefined
+                  }
                 >
                   {columns.map((c, j) => {
                     const v = c.value(r);

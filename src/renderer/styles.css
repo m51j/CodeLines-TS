@@ -884,6 +884,9 @@ tbody tr:hover:not(.selected) td,
 tbody tr:focus-within:not(.selected) td {
   background: var(--hover);
 }
+tbody tr[aria-selected] {
+  cursor: pointer;
+}
 tbody tr:last-child td {
   border-bottom: 0;
 }

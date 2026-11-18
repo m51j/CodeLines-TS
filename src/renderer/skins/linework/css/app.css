@@ -420,6 +420,7 @@ th button:hover .sort-ic.s-none { opacity: 0.4; }
 .table-scroll .num { text-align: right; }
 .table-scroll td.strong { color: var(--text); font-weight: 600; }
 .table-scroll tbody tr:hover td { background: color-mix(in oklab, var(--text) 3.5%, var(--surface)); }
+.table-scroll tr[aria-selected] { cursor: pointer; }
 .table-scroll tr.selected td { background: var(--sel-bg); color: var(--text); }
 .table-scroll tr.selected td.first { box-shadow: inset 3px 0 0 var(--accent-ui); }
 .table-scroll tr.total-row td { background: var(--surface-2); color: var(--text); font-weight: 650; border-top: 1px solid var(--line-strong); position: sticky; bottom: 0; z-index: 1; }
