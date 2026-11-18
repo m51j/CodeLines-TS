@@ -15,6 +15,7 @@ import {
   type AiResult,
 } from "../shared/contracts";
 import { defaults, upgradeExclusions } from "../domain/defaults";
+import { appearanceSchema } from "../shared/appearance";
 import { projectMetrics, snapshot } from "../domain/metrics";
 import {
   storedSnapshot,
@@ -58,6 +59,11 @@ export function parseSettings(value: unknown): Settings {
       ...object.parse(o.widget ?? {}),
     }),
     theme: z.enum(["System", "Light", "Dark"]).parse(o.theme ?? "System"),
+    // An appearance from a newer or hand-edited file falls back field by field.
+    appearance: appearanceSchema.parse({
+      ...d.appearance,
+      ...(o.appearance && typeof o.appearance === "object" ? o.appearance : {}),
+    }),
     schemaVersion: 1,
   } as Settings;
   if (s.lastSnapshot) {

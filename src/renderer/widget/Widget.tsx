@@ -1,9 +1,12 @@
+import { applyAppearance } from "../appearance/apply";
+import { widgetStyles } from "./styles";
 import {
   useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
+  type CSSProperties,
   type PointerEvent,
 } from "react";
 import type {
@@ -221,8 +224,12 @@ export function WidgetPanel({
         ) : view.tab === "projects" ? (
           <div className="w-list">
             {projects.length ? (
-              projects.map((p) => (
-                <div className="w-project" key={p.name}>
+              projects.map((p, i) => (
+                <div
+                  className="w-project"
+                  key={p.name}
+                  style={{ "--i": i } as CSSProperties}
+                >
                   <div>
                     <b title={p.name}>{p.name}</b>
                     <span>
@@ -294,7 +301,15 @@ export function WidgetApp() {
   }, [api]);
   useEffect(() => {
     if (data)
-      document.documentElement.dataset.theme = data.dark ? "dark" : "light";
+      applyAppearance(
+        { appearance: data.appearance, theme: data.dark ? "Dark" : "Light" },
+        widgetStyles,
+      );
+  }, [data]);
+  // New data after the first load: skins may play an arrival pulse on the box.
+  const arrivals = useRef(0);
+  useEffect(() => {
+    if (data && arrivals.current++ > 0) replay(box.current, "pulse");
   }, [data]);
   const changeView = useCallback(
     (next: WidgetView) => {

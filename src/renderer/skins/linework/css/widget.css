@@ -1,0 +1,117 @@
+/* ==========================================================================
+   Linework desktop widget: a translucent glass card that follows theme and
+   accent. Styles the shared WidgetPanel markup (src/renderer/widget/Widget.tsx),
+   in the widget window and in the live preview in Settings.
+   ========================================================================== */
+.w-box {
+  position: absolute; inset: 0; display: flex; flex-direction: column; gap: 10px; padding: 10px 14px 12px; overflow: hidden;
+  color: var(--text); user-select: none; cursor: default; outline: none;
+  font-family: var(--font-ui); font-size: 13px; line-height: 1.4;
+  background: color-mix(in oklab, var(--surface) 78%, transparent);
+  backdrop-filter: blur(22px) saturate(1.5);
+  border: 1px solid color-mix(in oklab, var(--line-strong) 85%, transparent);
+  border-radius: 16px; box-shadow: var(--shadow-3);
+  transition: box-shadow var(--dur-2);
+  /* Arrival: a pulse ring, and a sweep crossing the accent edge. */
+  animation: w-pulse 700ms var(--ease-out) 160ms;
+}
+.w-box::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--accent) 80%, transparent), transparent);
+}
+.w-box::after {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent) no-repeat;
+  background-size: 40% 100%; background-position: 160% 0;
+  animation: w-sweep 1.2s linear 2;
+}
+/* Hooks for a refresh state, should the widget ever mark one. */
+.w-box.pulse { animation: w-pulse 700ms var(--ease-out); }
+.w-box.refreshing::after { animation: w-sweep 1.2s linear infinite; }
+.w-box:focus-visible { box-shadow: var(--shadow-3), 0 0 0 2px var(--focus); }
+.w-box button { font: inherit; color: inherit; cursor: pointer; }
+
+/* ---- Top bar: two segmented controls with a sliding thumb (CSS only) ---- */
+.w-bar { flex: none; display: flex; justify-content: space-between; align-items: center; gap: 6px; margin: -2px -6px 0; }
+.w-seg {
+  --n: 3; --at: 0;
+  position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 2px; border-radius: 9px; isolation: isolate;
+  background: color-mix(in oklab, var(--surface-2) 70%, transparent);
+  border: 1px solid color-mix(in oklab, var(--line) 70%, transparent);
+}
+.w-seg::before {
+  content: ""; position: absolute; z-index: 0; top: 2px; bottom: 2px; left: 2px; width: calc((100% - 4px) / var(--n)); border-radius: 6px;
+  background: var(--surface);
+  box-shadow: var(--shadow-1), inset 0 -2px 0 color-mix(in oklab, var(--accent-ui) 80%, transparent);
+  transform: translateX(calc(var(--at) * 100%));
+  transition: transform var(--dur-2) var(--ease-out), opacity var(--dur-1);
+}
+:root[data-theme="dark"] .w-seg::before { background: var(--surface-3); }
+.w-seg:has(> button:nth-child(2):is([aria-selected="true"], [aria-pressed="true"])) { --at: 1; }
+.w-seg:has(> button:nth-child(3):is([aria-selected="true"], [aria-pressed="true"])) { --at: 2; }
+.w-seg:not(:has(> button:is([aria-selected="true"], [aria-pressed="true"])))::before { opacity: 0; }
+.w-seg button {
+  position: relative; z-index: 1; height: 22px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent;
+  color: var(--muted); font-size: 11.5px; font-weight: 600; white-space: nowrap; transition: color var(--dur-1);
+}
+.w-seg button:hover { color: var(--text); }
+.w-seg button:active { transform: scale(0.96); }
+.w-seg button[aria-selected="true"], .w-seg button[aria-pressed="true"] { color: var(--accent-ink); }
+
+/* ---- Panes ---- */
+.w-pane { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+.w-pane.pane-in { animation: w-pane 200ms var(--ease-out); }
+.w-stats { flex: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.w-stat { min-width: 0; display: flex; flex-direction: column; }
+.w-stat > span:first-child { display: block; font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.w-stat .ticker { font-family: var(--font-display); font-size: 21px; font-weight: 600; line-height: 1.15; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ticker { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+.ticker.tick { animation: w-tick 320ms var(--ease-out); }
+
+/* ---- Heatmap: cells pop in as a diagonal wave, then only recolour ---- */
+.w-heatbox { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.w-heat { display: grid; grid-auto-flow: column; padding: 2px; }
+.w-cell { border-radius: 3px; background: var(--heat-0); transition: background-color 320ms var(--ease-out), opacity 320ms, transform var(--dur-1) var(--ease-out); }
+.w-cell.l1 { background: var(--heat-1); }
+.w-cell.l2 { background: var(--heat-3); }
+.w-cell.l3 { background: var(--heat-4); }
+.w-cell.l4 { background: var(--heat-6); }
+.w-cell.future { opacity: 0.22; }
+.w-cell.out { opacity: 0.28; }
+.w-cell.today { outline: 1.5px solid var(--text); outline-offset: 1px; }
+.w-cell:hover { position: relative; z-index: 1; transform: scale(1.3); box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 3px var(--accent-ui); }
+.w-cell.heat-pop { animation: w-pop 380ms var(--ease-spring) var(--pop-delay, 0ms) both; }
+
+/* ---- Projects: bars fill one after another ---- */
+.w-list { flex: 1; min-height: 0; display: grid; gap: 9px; overflow: auto; padding-right: 4px; align-content: start; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+.w-project > div { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 12px; min-width: 0; }
+.w-project b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.w-project span { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.w-project .fill-track { display: block; height: 5px; margin-top: 4px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
+.w-project .fill-track i { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width 620ms var(--ease-out); }
+.w-project:nth-child(2) .fill-track i { transition-delay: 50ms; }
+.w-project:nth-child(3) .fill-track i { transition-delay: 100ms; }
+.w-project:nth-child(4) .fill-track i { transition-delay: 150ms; }
+.w-project:nth-child(5) .fill-track i { transition-delay: 200ms; }
+.w-project:nth-child(6) .fill-track i { transition-delay: 250ms; }
+.w-project:nth-child(7) .fill-track i { transition-delay: 300ms; }
+.w-project:nth-child(8) .fill-track i { transition-delay: 350ms; }
+.w-project:nth-child(n + 9) .fill-track i { transition-delay: 400ms; }
+
+/* ---- Total ---- */
+.w-big { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+.w-big > span { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.w-big .w-big-value { font-family: var(--font-display); font-size: 34px; font-weight: 600; line-height: 1.05; color: var(--accent-ink); font-variant-numeric: tabular-nums; }
+.w-foot { margin: auto 0 0; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.w-empty { margin: auto; padding: 10px; text-align: center; font-size: 12.5px; color: var(--muted); }
+
+/* The window has no frame, so this corner resizes it. */
+.w-grip { position: absolute; right: 3px; bottom: 3px; width: 15px; height: 15px; color: var(--muted); cursor: nwse-resize; transition: color var(--dur-1); }
+.w-grip:hover { color: var(--accent-ink); }
+
+@keyframes w-pulse { 0% { box-shadow: var(--shadow-3), 0 0 0 0 var(--accent-glow); } 100% { box-shadow: var(--shadow-3), 0 0 0 14px transparent; } }
+@keyframes w-sweep { from { background-position: -60% 0; } to { background-position: 160% 0; } }
+@keyframes w-pop { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: none; } }
+@keyframes w-pane { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes w-tick { from { opacity: 0.15; transform: translateY(40%); } to { opacity: 1; transform: none; } }
+@media (max-width: 330px) { .w-seg button { font-size: 11px; padding: 0 5px; } }

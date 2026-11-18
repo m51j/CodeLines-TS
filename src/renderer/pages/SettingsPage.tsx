@@ -3,6 +3,7 @@ import { scopeLabel } from "../format";
 import { scopes, type Settings } from "../../shared/contracts";
 import { agentLabels } from "../../shared/agents";
 import { useWorkspace } from "../workspace";
+import { AppearanceCard } from "../skins/classic/AppearanceCard";
 const aiOptions = [
   { label: "Show AI usage page", key: "enabled" },
   { label: "Refresh when first opened in this session", key: "autoRefreshOnOpen" },
@@ -28,6 +29,7 @@ export function SettingsPage() {
             setDraft({
               ...structuredClone(state.settings),
               theme: draft.theme,
+              appearance: draft.appearance,
               widget: draft.widget,
             })
           }
@@ -42,6 +44,7 @@ export function SettingsPage() {
           Save settings
         </button>
       </div>
+      <AppearanceCard />
       <fieldset disabled={!!busy}>
         <Card
           title="Analysis defaults"

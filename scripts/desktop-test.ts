@@ -1074,6 +1074,74 @@ try {
     ),
   );
   expect(invalidWindowAction).toBe(true);
+  // Skins: each one opens on the saved appearance, offers every page through its
+  // own navigation and window controls, and follows theme and accent changes.
+  for (const skin of ["Instrument", "Linework"] as const) {
+    console.log(`Desktop UI: ${skin} skin`);
+    await page.evaluate(async (skin) => {
+      const s = (await window.codelines.load()).settings;
+      await window.codelines.save({
+        ...s,
+        theme: "Dark",
+        appearance: { ...s.appearance, skin, accents: { [skin]: "#2e86f0" } },
+      });
+    }, skin);
+    await page.reload();
+    await page.waitForFunction(() => !!window.codelines);
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.dataset.skin))
+      .toBe(skin.toLowerCase());
+    expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
+    expect(
+      await page.evaluate(() =>
+        document.documentElement.style.getPropertyValue("--accent"),
+      ),
+    ).toMatch(/^#[0-9a-f]{6}$/);
+    const skinTitlebar = page.getByRole("banner", { name: "Application title bar" });
+    await expect(skinTitlebar).toBeVisible({ timeout: 10000 });
+    expect(
+      await skinTitlebar.evaluate((el) =>
+        getComputedStyle(el).getPropertyValue("-webkit-app-region"),
+      ),
+    ).toBe("drag");
+    await expect(
+      page.getByRole("group", { name: "Window controls" }).getByRole("button", {
+        name: "Close window",
+      }),
+    ).toBeVisible();
+    const nav = page.getByRole("navigation", { name: "Main navigation" });
+    for (const name of [
+      "Dashboard",
+      "Projects",
+      "Analysis",
+      "Code changes",
+      "Daily log",
+      "AI usage",
+      "Settings",
+    ]) {
+      await nav
+        .getByRole("button", { name: new RegExp("^" + name) })
+        .first()
+        .click();
+      await expect(
+        page.getByRole("heading", { name, exact: true }).first(),
+      ).toBeVisible();
+    }
+    await capture(page, {
+      path: path.join(out, `${packaged ? "packaged" : "built"}-${skin.toLowerCase()}-settings.png`),
+    });
+  }
+  await page.evaluate(async () => {
+    const s = (await window.codelines.load()).settings;
+    await window.codelines.save({
+      ...s,
+      appearance: { ...s.appearance, skin: "Classic", accents: {} },
+    });
+  });
+  await page.reload();
+  await page.waitForFunction(() => !!window.codelines);
+  await expect(page.getByRole("heading", { name: "Dashboard", exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
   const closed = page.waitForEvent("close");
   await page.getByRole("button", { name: "Close window", exact: true }).click();
   await closed;
@@ -1107,6 +1175,7 @@ try {
           "long project-path clipping and full tooltip",
           "Chromium forced offline",
           "desktop widget from Settings: sandboxed, live data, saved view, themes, tray close",
+          "Instrument and Linework skins: saved appearance, accent, title bar, seven-page navigation",
         ],
         screenshots: out,
       },

@@ -1,5 +1,10 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { IpcResponse, WidgetApi, WidgetData } from "../shared/contracts";
+import type {
+  DesktopApi,
+  IpcResponse,
+  WidgetApi,
+  WidgetData,
+} from "../shared/contracts";
 async function invoke<T>(channel: string, ...args: unknown[]): Promise<T> {
   const response = (await ipcRenderer.invoke(
     "codelines:widget:" + channel,
@@ -10,6 +15,7 @@ async function invoke<T>(channel: string, ...args: unknown[]): Promise<T> {
   return response.value;
 }
 const api: WidgetApi = {
+  boot: ipcRenderer.sendSync("codelines:boot") as DesktopApi["boot"],
   load: () => invoke("load"),
   onData: (callback) => {
     const listener = (_event: Electron.IpcRendererEvent, value: WidgetData) =>

@@ -1,0 +1,58 @@
+/* CodeLines "Instrument" — what the real (frameless Electron) app adds to the prototype's styles. */
+
+/* ================= frameless window: drag by the title bar ================= */
+.titlebar { -webkit-app-region: drag; }
+.titlebar button, .titlebar a, .titlebar input, .titlebar select, .titlebar [role="button"], .titlebar .nav-btn, .titlebar .winctl { -webkit-app-region: no-drag; }
+/* Overlays sit above the title bar; they must not be part of the drag region. */
+.pop, .pal-back, .toasts, .toast, .tip { -webkit-app-region: no-drag; }
+.titlebar .nav { -webkit-app-region: no-drag; }
+.nav-ind { pointer-events: none; }
+
+/* ================= boot loader (lives on <body> so it can outlast the loading screen) ================= */
+.loader.is-boot { position: fixed; z-index: 90; -webkit-app-region: drag; }
+.loader.is-boot .loader-box { -webkit-app-region: no-drag; }
+.titlebar.loader-winctl { position: fixed; top: 0; right: 0; left: 0; z-index: 91; height: 46px; padding: 0; justify-content: flex-end; background: transparent; border: 0; }
+.titlebar.loader-winctl .winctl { opacity: 0.7; transition: opacity var(--dur-3); }
+.titlebar.loader-winctl .winctl:hover { opacity: 1; }
+.loader-msg.is-error { color: var(--danger); font-weight: 600; max-width: 60ch; }
+
+/* ================= navigation ================= */
+.nav-btn .ico { flex: none; }
+.nav-btn.is-entering { max-width: 0; padding: 0; opacity: 0; margin-left: -2px; }
+
+/* ================= toasts ================= */
+.toasts { z-index: 85; }
+.toast.is-danger .ico { color: var(--danger); }
+
+/* ================= appearance: skin picker and motion ================= */
+.skins { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.skin-opt {
+  display: flex; flex-direction: column; gap: 6px; padding: 7px 7px 8px; border: 1px solid var(--line); border-radius: var(--r-3); background: var(--surface); color: var(--ink-2);
+  text-align: left; cursor: pointer; font-size: var(--fs-1); font-weight: 600; transition: border-color var(--dur-2), transform var(--dur-1), box-shadow var(--dur-3), color var(--dur-2);
+}
+.skin-opt:hover:not(:disabled) { border-color: var(--line-2); color: var(--ink); box-shadow: var(--el-1); }
+.skin-opt:active:not(:disabled) { transform: scale(0.97); }
+.skin-opt[aria-checked="true"] { border-color: var(--accent); color: var(--ink); box-shadow: 0 0 0 1px var(--accent); }
+.skin-opt:disabled { opacity: 0.55; cursor: default; }
+.skin-thumb { position: relative; display: block; height: 42px; border-radius: 6px; background: var(--p-bg); border: 1px solid var(--p-line); overflow: hidden; }
+.skin-thumb i { position: absolute; height: 4px; border-radius: 2px; background: var(--p-ink); opacity: 0.85; }
+.skin-thumb i:nth-child(1) { left: 8px; top: 10px; width: 46%; background: var(--p-accent); opacity: 1; }
+.skin-thumb i:nth-child(2) { left: 16px; top: 19px; width: 52%; }
+.skin-thumb i:nth-child(3) { left: 8px; top: 28px; width: 32%; }
+.skin-thumb::after { content: ""; position: absolute; right: 7px; top: 8px; bottom: 8px; width: 24%; border-radius: 4px; background: var(--p-surface); border: 1px solid var(--p-line); }
+.skin-name { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.skin-name .ico { color: var(--accent-text); }
+.look-reset { margin-left: 2px; }
+.pop-look { width: 410px; }
+
+/* ================= misc ================= */
+.split-fill { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.split-fill > * { flex: 1; }
+.alerts { display: flex; flex-direction: column; gap: 10px; }
+.mast-text { min-width: 0; }
+.dt-pager[hidden] { display: none; }
+.field-error.is-shake { animation: none; }
+.ai-agent-empty { min-height: 40px; }
+.inline-field .select { min-width: 160px; }
+.compare-bar .select { min-width: 150px; }
+.settings-bar.is-dirty { border-color: var(--accent-line); }

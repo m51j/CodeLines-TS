@@ -41,6 +41,7 @@ import type {
 } from "../shared/contracts";
 import { createWidget, type WidgetController } from "./widget";
 import { widgetSummary } from "../widget/summary";
+import { skinInfo, type AppearanceBoot } from "../shared/appearance";
 let window: BrowserWindow;
 const windowState = (): WindowState => ({
   maximized: window.isMaximized(),
@@ -72,12 +73,17 @@ const operationSchema = z.object({
   settings: z.unknown(),
 });
 const entry = path.join(__dirname, "renderer", "index.html");
+/** The page the main window may load; URL() adds the "/" a bare dev origin loads as. */
+const trustedUrl = () =>
+  process.env.CODELINES_DEV_URL
+    ? new URL(process.env.CODELINES_DEV_URL).href
+    : pathToFileURL(entry).href;
 function checkSender(event: Electron.IpcMainInvokeEvent) {
   const url = event.senderFrame?.url;
   if (
     event.sender !== window.webContents ||
     !url ||
-    url !== (process.env.CODELINES_DEV_URL ?? pathToFileURL(entry).href)
+    url !== trustedUrl()
   )
     throw new Error("Untrusted desktop request");
 }
@@ -415,6 +421,17 @@ async function standalone(): Promise<string> {
   ]);
   return reportHtml(store.ai, script, css);
 }
+/** What a window needs before its first paint; read synchronously by both preloads. */
+const boot = (): AppearanceBoot => ({
+  appearance: store.settings.appearance,
+  theme: store.settings.theme,
+});
+const isDark = () => {
+  const theme = store.settings.theme;
+  return theme === "Dark" || (theme === "System" && nativeTheme.shouldUseDarkColors);
+};
+const windowBackground = () =>
+  skinInfo[store.settings.appearance.skin].window[isDark() ? "dark" : "light"];
 async function setup() {
   store = new Store(
     process.env.CODELINES_DATA_DIR ??
@@ -428,14 +445,7 @@ async function setup() {
     directory: store.directory,
     icon: path.join(__dirname, "CodeLines.ico"),
     settings: () => store.settings,
-    data: () => {
-      const theme = store.settings.theme;
-      return widgetSummary(
-        store,
-        Date.now(),
-        theme === "Dark" || (theme === "System" && nativeTheme.shouldUseDarkColors),
-      );
-    },
+    data: () => widgetSummary(store, Date.now(), isDark()),
     openMain,
     refresh: refreshInBackground,
     change: (patch) =>
@@ -455,11 +465,18 @@ async function setup() {
       setImmediate(() => window.close());
     }
   });
+  ipcMain.on("codelines:boot", (event) => {
+    event.returnValue = boot();
+  });
+  nativeTheme.on("updated", () => {
+    if (window && !window.isDestroyed()) window.setBackgroundColor(windowBackground());
+  });
   handle("load", () => store.state());
   handle("save", async (value) => {
     assertIdle();
     adoptSettings(editorSettings(value));
     await store.save();
+    window.setBackgroundColor(windowBackground());
     await widget?.apply(store.settings);
     return store.state();
   });
@@ -627,7 +644,7 @@ async function setup() {
     minWidth: 900,
     minHeight: 620,
     frame: false,
-    backgroundColor: "#0b1120",
+    backgroundColor: windowBackground(),
     title: "CodeLines",
     show: process.env.CODELINES_TEST !== "1" && !startHidden,
     webPreferences: {
@@ -655,7 +672,7 @@ async function setup() {
   });
   window.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   const guardNavigation = (event: Electron.Event, url: string) => {
-    if (url !== (process.env.CODELINES_DEV_URL ?? pathToFileURL(entry).href))
+    if (url !== trustedUrl())
       event.preventDefault();
   };
   window.webContents.on("will-navigate", guardNavigation);

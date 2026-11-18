@@ -1,4 +1,6 @@
 import { z } from "zod";
+import type { Appearance, AppearanceBoot } from "./appearance";
+export type { AppearanceBoot };
 export const scopes = [
   "SourceOnly",
   "SourceAndConfiguration",
@@ -165,6 +167,8 @@ export interface Settings {
   projects: Project[];
   scanOptions: ScanOptions;
   theme: "System" | "Light" | "Dark";
+  /** Skin, accent, motion and density; the light/dark choice stays in theme. */
+  appearance: Appearance;
   lastSnapshot: Snapshot | null;
   gitHistory: HistoryOptions;
   lastGitHistory: HistorySnapshot | null;
@@ -386,6 +390,8 @@ export interface WindowState {
   focused: boolean;
 }
 export interface DesktopApi {
+  /** The saved appearance at the moment the window opened, for the first paint. */
+  boot: AppearanceBoot;
   getWindowState(): Promise<WindowState>;
   windowAction(action: WindowAction): Promise<void>;
   onWindowState(callback: (state: WindowState) => void): () => void;
@@ -438,6 +444,8 @@ export interface WidgetData {
   /** Today's date in the clock the AI report uses. */
   today: string;
   dark: boolean;
+  /** The main window's skin and accent, so the widget matches it. */
+  appearance: Appearance;
   ranges: Record<WidgetRange, WidgetTotals>;
   streak: { current: number; best: number };
   /** Active days only, oldest first. */
@@ -460,6 +468,7 @@ export interface WidgetData {
 }
 export type WidgetMove = "drag" | "resize" | "stop";
 export interface WidgetApi {
+  boot: AppearanceBoot;
   load(): Promise<{ data: WidgetData; view: WidgetView }>;
   onData(callback: (data: WidgetData) => void): () => void;
   /** "stop" resolves true when the pointer moved, so the press was not a click. */

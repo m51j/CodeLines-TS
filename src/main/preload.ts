@@ -16,6 +16,7 @@ async function invoke<T>(channel: string, ...args: unknown[]): Promise<T> {
   return response.value;
 }
 const api: DesktopApi = {
+  boot: ipcRenderer.sendSync("codelines:boot") as DesktopApi["boot"],
   getWindowState: () => invoke("codelines:windowState"),
   windowAction: (action) => invoke("codelines:windowAction", action),
   onWindowState: (callback) => {

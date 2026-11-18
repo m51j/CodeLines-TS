@@ -1,0 +1,136 @@
+/* CodeLines "Instrument" — design tokens. Everything visual is driven from here:
+   colour, type, spacing, radius, elevation and motion. Themes only re-assign tokens. */
+
+/* Registered as colours so an accent change interpolates through every derived tint. */
+@property --accent { syntax: "<color>"; inherits: true; initial-value: #f0602b; }
+@property --on-accent { syntax: "<color>"; inherits: true; initial-value: #121110; }
+@property --accent-text { syntax: "<color>"; inherits: true; initial-value: #b3401a; }
+
+:root {
+  /* ---- type ---- */
+  --font-ui: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-display: Bahnschrift, "DIN Alternate", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Cascadia Code", "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  --fs-0: 0.6875rem;  /* 11 — eyebrows, axis labels */
+  --fs-1: 0.75rem;    /* 12 — secondary text */
+  --fs-2: 0.8125rem;  /* 13 — body */
+  --fs-3: 0.9375rem;  /* 15 — panel titles */
+  --fs-4: 1.125rem;   /* 18 — section titles */
+  --fs-5: 1.5rem;     /* 24 — small readouts */
+  --fs-6: 1.9375rem;  /* 31 — readouts */
+  --fs-7: 2.625rem;   /* 42 — page titles */
+  --fs-8: 4.25rem;    /* 68 — hero readout */
+  --lh-tight: 1.08;
+  --lh-body: 1.5;
+
+  /* ---- spacing (4 px grid) ---- */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px; --sp-7: 32px; --sp-8: 44px; --sp-9: 64px;
+
+  /* ---- radius ---- */
+  --r-1: 4px; --r-2: 7px; --r-3: 10px; --r-4: 14px; --r-5: 20px; --r-pill: 999px;
+
+  /* ---- motion ---- */
+  --dur-1: 90ms;   /* press */
+  --dur-2: 160ms;  /* hover, small state */
+  --dur-3: 240ms;  /* popovers, tabs, rows */
+  --dur-4: 320ms;  /* pages, panels */
+  --dur-5: 520ms;  /* data morphs, bars */
+  --dur-6: 900ms;  /* first-load only */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
+
+  /* ---- density ---- */
+  --row-h: 38px; --cell-x: 13px; --ctl-h: 34px; --panel-pad: 18px;
+
+  /* ---- accent family (overwritten by JS from the chosen colour, per theme) ---- */
+  --accent: #f0602b;
+  --on-accent: #121110;
+  --accent-text: #b3401a;
+  --accent-soft: color-mix(in oklab, var(--accent) 14%, var(--surface));
+  --accent-soft-2: color-mix(in oklab, var(--accent) 24%, var(--surface));
+  --accent-line: color-mix(in oklab, var(--accent) 48%, var(--line));
+  --focus: var(--accent-text);
+  transition: --accent var(--dur-4) var(--ease-out), --on-accent var(--dur-4) var(--ease-out), --accent-text var(--dur-4) var(--ease-out);
+}
+:root[data-density="compact"] { --row-h: 30px; --cell-x: 10px; --ctl-h: 30px; --panel-pad: 14px; }
+
+/* ================= Light: "Paper" ================= */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --bg: oklch(0.968 0.006 85);
+  --chrome: oklch(0.944 0.008 85);
+  --surface: oklch(0.995 0.003 85);
+  --surface-2: oklch(0.962 0.007 85);
+  --surface-3: oklch(0.932 0.009 85);
+  --ink: oklch(0.21 0.015 270);
+  --ink-2: oklch(0.39 0.015 270);
+  --ink-3: oklch(0.49 0.012 270);
+  --line: oklch(0.9 0.008 85);
+  --line-2: oklch(0.82 0.01 85);
+  --success: oklch(0.5 0.13 160);
+  --danger: oklch(0.52 0.19 22);
+  --warning: oklch(0.5 0.115 75);
+  --info: oklch(0.5 0.13 250);
+  --desk-a: oklch(0.9 0.02 85); --desk-b: oklch(0.84 0.03 250);
+  --shadow: 0.22 0.02 270;
+  --el-1: 0 1px 0 oklch(var(--shadow) / 0.03), 0 1px 3px oklch(var(--shadow) / 0.05);
+  --el-2: 0 2px 4px oklch(var(--shadow) / 0.05), 0 10px 24px -8px oklch(var(--shadow) / 0.14);
+  --el-3: 0 4px 10px oklch(var(--shadow) / 0.07), 0 20px 48px -12px oklch(var(--shadow) / 0.24);
+  --el-4: 0 12px 28px oklch(var(--shadow) / 0.12), 0 40px 100px -24px oklch(var(--shadow) / 0.38);
+  /* categorical series — 12 agents / languages */
+  --s1: oklch(0.56 0.17 265); --s2: oklch(0.62 0.13 172); --s3: oklch(0.6 0.17 305); --s4: oklch(0.655 0.14 82);
+  --s5: oklch(0.63 0.12 228); --s6: oklch(0.6 0.2 14); --s7: oklch(0.63 0.16 135); --s8: oklch(0.5 0.09 55);
+  --s9: oklch(0.64 0.18 342); --s10: oklch(0.52 0.08 200); --s11: oklch(0.645 0.19 42); --s12: oklch(0.6 0.04 265);
+  --mix-a: oklch(0.97 0.01 85); --mix-b: oklch(0.2 0.02 270);
+  /* token classes */
+  --tk-input: oklch(0.58 0.16 255); --tk-cw: oklch(0.6 0.17 305); --tk-cr: oklch(0.62 0.11 182); --tk-out: oklch(0.655 0.14 78);
+  --heat-0: oklch(0.945 0.008 85);
+  --grid-dot: oklch(0.21 0.015 270 / 0.07);
+}
+
+/* ================= Dark: "Graphite" ================= */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: oklch(0.168 0.008 270);
+  --chrome: oklch(0.136 0.008 270);
+  --surface: oklch(0.208 0.01 270);
+  --surface-2: oklch(0.244 0.012 270);
+  --surface-3: oklch(0.29 0.014 270);
+  --ink: oklch(0.955 0.005 85);
+  --ink-2: oklch(0.8 0.01 270);
+  --ink-3: oklch(0.69 0.012 270);
+  --line: oklch(0.29 0.012 270);
+  --line-2: oklch(0.38 0.014 270);
+  --success: oklch(0.8 0.15 160);
+  --danger: oklch(0.76 0.15 20);
+  --warning: oklch(0.83 0.13 80);
+  --info: oklch(0.78 0.11 250);
+  --desk-a: oklch(0.2 0.02 270); --desk-b: oklch(0.12 0.03 250);
+  --shadow: 0 0 0;
+  --el-1: 0 1px 0 oklch(1 0 0 / 0.03) inset, 0 1px 2px oklch(var(--shadow) / 0.3);
+  --el-2: 0 2px 4px oklch(var(--shadow) / 0.3), 0 12px 28px -8px oklch(var(--shadow) / 0.55);
+  --el-3: 0 4px 12px oklch(var(--shadow) / 0.4), 0 24px 56px -12px oklch(var(--shadow) / 0.7);
+  --el-4: 0 12px 28px oklch(var(--shadow) / 0.5), 0 40px 100px -24px oklch(var(--shadow) / 0.8);
+  --s1: oklch(0.72 0.15 265); --s2: oklch(0.78 0.13 172); --s3: oklch(0.74 0.15 305); --s4: oklch(0.84 0.13 85);
+  --s5: oklch(0.8 0.11 228); --s6: oklch(0.72 0.17 14); --s7: oklch(0.82 0.16 135); --s8: oklch(0.66 0.09 55);
+  --s9: oklch(0.78 0.15 342); --s10: oklch(0.68 0.08 200); --s11: oklch(0.76 0.17 42); --s12: oklch(0.72 0.04 265);
+  --mix-a: oklch(0.96 0.01 85); --mix-b: oklch(0.2 0.02 270);
+  --tk-input: oklch(0.72 0.14 255); --tk-cw: oklch(0.74 0.15 305); --tk-cr: oklch(0.78 0.12 182); --tk-out: oklch(0.84 0.13 80);
+  --heat-0: oklch(0.255 0.012 270);
+  --grid-dot: oklch(1 0 0 / 0.055);
+}
+
+/* ================= Reduced motion: the OS setting or the in-app toggle =================
+   JS mirrors both into data-motion, so there is one code path. Movement is removed;
+   state changes keep a very short cross-fade so nothing pops abruptly. */
+:root[data-motion="reduce"] { --dur-1: 1ms; --dur-2: 1ms; --dur-3: 1ms; --dur-4: 1ms; --dur-5: 1ms; --dur-6: 1ms; }
+:root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after {
+  animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important; transition-delay: 0ms !important; scroll-behavior: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion]) *, :root:not([data-motion]) *::before, :root:not([data-motion]) *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
+/* The theme / skin change reveal (a circle from the pressed control) lives in appearance/base.css. */
