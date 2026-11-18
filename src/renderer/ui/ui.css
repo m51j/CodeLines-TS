@@ -1,0 +1,133 @@
+/* ==========================================================================
+   Shared dropdowns and date pickers (src/renderer/ui). Structure only: every colour,
+   radius and shadow comes from the --ui-* tokens each skin maps from its own palette.
+   Selectors are doubled (.ui-pop .x) so a skin's global button / input rules never win.
+   ========================================================================== */
+.ui-sr {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+.ui-ico { flex: none; stroke-width: var(--ui-icon-stroke, 1.8); }
+
+/* ---- the button that opens a list or a calendar ---- */
+button.ui-trigger {
+  all: unset;
+  box-sizing: border-box; position: relative; display: inline-flex; align-items: center; gap: 8px;
+  min-width: 0; max-width: 100%; height: var(--ui-ctl-h); padding: 0 10px 0 11px;
+  border: 1px solid var(--ui-border-strong); border-radius: var(--ui-radius);
+  background: var(--ui-surface); color: var(--ui-text);
+  font: inherit; font-size: var(--ui-font-size); font-weight: var(--ui-trigger-weight, 500); line-height: 1.2;
+  white-space: nowrap; cursor: pointer; user-select: none; -webkit-app-region: no-drag;
+  transition: border-color 120ms ease, box-shadow 160ms ease, background-color 120ms ease;
+}
+button.ui-trigger:hover:not(:disabled) { border-color: color-mix(in oklab, var(--ui-text) 28%, var(--ui-border-strong)); background: var(--ui-surface); }
+button.ui-trigger:focus-visible { outline: none; border-color: var(--ui-focus); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ui-accent) 26%, transparent); }
+button.ui-trigger[aria-expanded="true"] { border-color: var(--ui-focus); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ui-accent) 18%, transparent); }
+button.ui-trigger:disabled { opacity: 0.55; cursor: default; }
+button.ui-trigger[aria-invalid="true"] { border-color: var(--ui-danger); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ui-danger) 18%, transparent); }
+.ui-trigger > .ui-ico { color: var(--ui-muted); }
+.ui-select-value { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ui-select-value.is-placeholder { color: var(--ui-muted); }
+.ui-select-chev { margin-left: auto; transition: transform 160ms ease; }
+.ui-trigger[aria-expanded="true"] .ui-select-chev { transform: rotate(180deg); }
+.ui-date-trigger { font-variant-numeric: tabular-nums; }
+
+/* ---- floating panel ---- */
+.ui-pop {
+  position: fixed; z-index: 1000; box-sizing: border-box; outline: none; -webkit-app-region: no-drag;
+  color: var(--ui-text); font-size: var(--ui-font-size); line-height: 1.35;
+  background: var(--ui-pop-bg, var(--ui-surface)); -webkit-backdrop-filter: var(--ui-pop-filter, none); backdrop-filter: var(--ui-pop-filter, none);
+  border: 1px solid var(--ui-border-strong); border-radius: var(--ui-radius-pop); box-shadow: var(--ui-shadow);
+}
+.ui-pop *, .ui-pop *::before, .ui-pop *::after { box-sizing: border-box; }
+
+/* ---- listbox ---- */
+.ui-listbox { max-height: min(340px, 60vh); max-width: min(440px, calc(100vw - 16px)); overflow: auto; padding: 4px; }
+.ui-pop .ui-option {
+  display: flex; align-items: center; gap: 8px; min-height: 30px; padding: 5px 10px 5px 6px;
+  border-radius: calc(var(--ui-radius) - 2px); cursor: pointer; white-space: nowrap;
+}
+.ui-pop .ui-option.is-active { background: var(--ui-hover); }
+.ui-pop .ui-option.is-selected { color: var(--ui-accent-text); font-weight: 600; }
+.ui-pop .ui-option[aria-disabled="true"] { opacity: 0.45; cursor: default; }
+.ui-option-check { display: grid; place-items: center; width: 16px; flex: none; color: var(--ui-accent-text); }
+.ui-option-text { display: flex; flex-direction: column; min-width: 0; }
+.ui-option-text > span { overflow: hidden; text-overflow: ellipsis; }
+.ui-option-text small { font-size: 0.86em; font-weight: 400; color: var(--ui-muted); }
+
+/* ---- buttons inside panels ---- */
+.ui-pop button { all: unset; box-sizing: border-box; cursor: pointer; font: inherit; }
+.ui-pop button:focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 1px; }
+.ui-pop .ui-btn {
+  display: inline-flex; align-items: center; justify-content: center; height: 28px; padding: 0 12px;
+  border: 1px solid var(--ui-border-strong); border-radius: calc(var(--ui-radius) - 1px); font-weight: 600; font-size: 0.95em;
+}
+.ui-pop .ui-btn:hover { background: var(--ui-hover); }
+.ui-pop .ui-btn.is-primary { background: var(--ui-accent); border-color: transparent; color: var(--ui-on-accent); }
+.ui-pop .ui-btn.is-primary:hover { filter: brightness(1.06); background: var(--ui-accent); }
+
+/* ---- date range picker ---- */
+.ui-drp { display: flex; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px); overflow: auto; }
+.ui-drp-presets {
+  display: flex; flex-direction: column; gap: 1px; width: 148px; flex: none; padding: 8px;
+  border-right: 1px solid var(--ui-border);
+}
+.ui-pop .ui-drp-preset { padding: 7px 10px; border-radius: calc(var(--ui-radius) - 2px); white-space: nowrap; }
+.ui-pop .ui-drp-preset:hover { background: var(--ui-hover); }
+.ui-pop .ui-drp-preset[aria-pressed="true"] { background: var(--ui-accent-soft); color: var(--ui-accent-text); font-weight: 600; }
+.ui-drp-main { display: flex; flex-direction: column; min-width: 0; }
+.ui-drp-fields { display: flex; align-items: flex-end; gap: 8px; padding: 12px 14px 4px; }
+.ui-drp-field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; font-size: 0.86em; color: var(--ui-muted); font-weight: 600; }
+.ui-pop .ui-input {
+  all: unset; box-sizing: border-box; width: 100%; height: 30px; padding: 0 9px;
+  border: 1px solid var(--ui-border-strong); border-radius: calc(var(--ui-radius) - 1px); background: var(--ui-surface); color: var(--ui-text);
+  font: inherit; font-size: var(--ui-font-size); font-weight: 400; font-variant-numeric: tabular-nums; cursor: text;
+}
+.ui-pop .ui-input::placeholder { color: var(--ui-muted); opacity: 0.7; }
+.ui-pop .ui-input:focus-visible, .ui-pop .ui-input:focus { outline: none; border-color: var(--ui-focus); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ui-accent) 22%, transparent); }
+.ui-pop .ui-input[aria-invalid="true"] { border-color: var(--ui-danger); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ui-danger) 16%, transparent); }
+.ui-drp-dash { padding-bottom: 7px; color: var(--ui-muted); }
+.ui-drp-cals { position: relative; display: flex; flex-wrap: wrap; gap: 4px 20px; padding: 10px 14px 6px; }
+.ui-drp-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; padding: 10px 14px;
+  border-top: 1px solid var(--ui-border);
+}
+.ui-drp-hint { color: var(--ui-muted); font-size: 0.92em; font-variant-numeric: tabular-nums; }
+
+/* ---- calendar ---- */
+.ui-cal { width: calc(7 * 34px); }
+.ui-cal-title { height: 28px; display: grid; place-items: center; font-weight: 650; }
+.ui-cal-grid { display: flex; flex-direction: column; gap: 2px; }
+.ui-cal-row { display: grid; grid-template-columns: repeat(7, 34px); }
+.ui-cal-head span { height: 24px; display: grid; place-items: center; font-size: 0.82em; font-weight: 600; color: var(--ui-muted); }
+.ui-cell, .ui-day-blank { height: 32px; display: grid; place-items: center; }
+.ui-cell.is-in-range { background: var(--ui-accent-soft); }
+.ui-cell.is-in-range.is-start { border-radius: 999px 0 0 999px; }
+.ui-cell.is-in-range.is-end { border-radius: 0 999px 999px 0; }
+.ui-cell.is-in-range.is-start.is-end { border-radius: 999px; }
+.ui-cal-row .ui-cell.is-in-range:first-child:not(.is-start) { border-radius: 8px 0 0 8px; }
+.ui-cal-row .ui-cell.is-in-range:last-child:not(.is-end) { border-radius: 0 8px 8px 0; }
+.ui-pop .ui-day {
+  width: 32px; height: 32px; display: grid; place-items: center; border-radius: 999px;
+  font-variant-numeric: tabular-nums; transition: background-color 90ms ease;
+}
+.ui-pop .ui-day:hover { background: var(--ui-hover); }
+.ui-pop .ui-day.is-today { box-shadow: inset 0 0 0 1px var(--ui-accent); font-weight: 700; }
+.ui-pop .ui-day.is-in-range:hover { background: color-mix(in oklab, var(--ui-accent) 22%, transparent); }
+.ui-pop .ui-day.is-edge, .ui-pop .ui-day.is-edge:hover { background: var(--ui-accent); color: var(--ui-on-accent); font-weight: 650; }
+.ui-pop .ui-day.is-disabled { color: var(--ui-muted); opacity: 0.4; cursor: default; }
+.ui-pop .ui-day.is-disabled:hover { background: transparent; }
+.ui-pop .ui-cal-nav {
+  position: absolute; top: 10px; z-index: 1; width: 28px; height: 28px; display: grid; place-items: center;
+  border-radius: calc(var(--ui-radius) - 2px); color: var(--ui-muted);
+}
+.ui-pop .ui-cal-nav:hover:not(:disabled) { background: var(--ui-hover); color: var(--ui-text); }
+.ui-pop .ui-cal-nav:disabled { opacity: 0.3; cursor: default; }
+.ui-cal-nav.is-prev { left: 12px; }
+.ui-cal-nav.is-next { right: 12px; }
+.ui-dp .ui-drp-cals { padding: 10px 12px 12px; }
+
+@media (max-width: 640px) {
+  .ui-drp { flex-direction: column; }
+  .ui-drp-presets { flex-direction: row; flex-wrap: wrap; width: auto; border-right: 0; border-bottom: 1px solid var(--ui-border); }
+}
+:root[data-motion="reduce"] .ui-trigger, :root[data-motion="reduce"] .ui-select-chev, :root[data-motion="reduce"] .ui-day { transition: none; }

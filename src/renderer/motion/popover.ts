@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, type RefObject } from "react";
 import { clamp, play } from "./core";
+import { hasOpenLayer, inFloatingLayer } from "../ui/floating";
 
 /** A popover placed under its trigger; closes on Escape or a press outside. */
 export function usePopover(
@@ -22,10 +23,12 @@ export function usePopover(
     play(box, [{ opacity: 0, transform: "translateY(-6px) scale(0.97)" }, { opacity: 1, transform: "none" }], { duration: 180 });
     box.querySelector<HTMLElement>('[tabindex="0"], button:not(:disabled), input')?.focus();
     const down = (e: PointerEvent) => {
+      // A dropdown or calendar opened from inside this popover is not "outside".
+      if (hasOpenLayer() || inFloatingLayer(e.target)) return;
       if (!box.contains(e.target as Node) && !t?.contains(e.target as Node)) close.current();
     };
     const key = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && !hasOpenLayer()) {
         close.current();
         t?.focus();
       }

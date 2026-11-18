@@ -55,6 +55,15 @@
   transition: --accent var(--dur-4) var(--ease-out), --on-accent var(--dur-4) var(--ease-out), --accent-text var(--dur-4) var(--ease-out);
 }
 :root[data-density="compact"] { --row-h: 30px; --cell-x: 10px; --ctl-h: 30px; --panel-pad: 14px; }
+/* Shared dropdowns and date pickers (ui/ui.css) read these. */
+:root {
+  --ui-surface: var(--surface); --ui-hover: var(--surface-2); --ui-text: var(--ink); --ui-muted: var(--ink-3);
+  --ui-border: var(--line); --ui-border-strong: var(--line-2);
+  --ui-accent: var(--accent); --ui-accent-soft: var(--accent-soft); --ui-accent-text: var(--accent-text); --ui-on-accent: var(--on-accent);
+  --ui-focus: var(--focus); --ui-danger: var(--danger);
+  --ui-radius: var(--r-3); --ui-radius-pop: var(--r-4); --ui-shadow: var(--el-3); --ui-ctl-h: var(--ctl-h);
+  --ui-font-size: var(--fs-2); --ui-trigger-weight: 600; --ui-icon-stroke: 1.8;
+}
 
 /* ================= Light: "Paper" ================= */
 :root, :root[data-theme="light"] {

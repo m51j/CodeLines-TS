@@ -1,6 +1,7 @@
 import { Check, Monitor, Moon, Sun } from "lucide-react";
 import type { CSSProperties } from "react";
 import { Card, Field } from "../../components";
+import { Select } from "../../ui/Select";
 import { useAppearanceControls, type AppearanceControls } from "../../appearance/controls";
 import type { Skin } from "../../../shared/appearance";
 /** Small pictures of each skin, drawn from its own palette. */
@@ -85,29 +86,31 @@ export function ThemeChoices({ c }: Part) {
 }
 export function MotionSelect({ c }: Part) {
   return (
-    <select
+    <Select
       aria-label="Motion"
       value={c.appearance.motion}
       disabled={c.busy}
-      onChange={(e) => c.setMotion(e.target.value as typeof c.appearance.motion)}
-    >
-      <option value="System">Follow Windows</option>
-      <option value="Full">Full</option>
-      <option value="Reduce">Reduced</option>
-    </select>
+      onChange={c.setMotion}
+      options={[
+        { value: "System", label: "Follow Windows" },
+        { value: "Full", label: "Full" },
+        { value: "Reduce", label: "Reduced" },
+      ]}
+    />
   );
 }
 export function DensitySelect({ c }: Part) {
   return (
-    <select
+    <Select
       aria-label="Density"
       value={c.appearance.density}
       disabled={c.busy}
-      onChange={(e) => c.setDensity(e.target.value as typeof c.appearance.density)}
-    >
-      <option>Comfortable</option>
-      <option>Compact</option>
-    </select>
+      onChange={c.setDensity}
+      options={[
+        { value: "Comfortable", label: "Comfortable" },
+        { value: "Compact", label: "Compact" },
+      ]}
+    />
   );
 }
 /** Accent swatches, a custom color, the hex field and, unless `compact`, the contrast readout. */

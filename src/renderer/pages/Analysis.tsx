@@ -3,6 +3,7 @@ import { Download } from "lucide-react";
 import { Card, Empty, Table, Tiles, tabKeys } from "../components";
 import { categories, categoryLabel, number, tileNumber } from "../format";
 import { useWorkspace } from "../workspace";
+import { Select } from "../ui/Select";
 import {
   categoryColumns,
   fileColumns,
@@ -42,32 +43,27 @@ export function Analysis() {
       <div className="toolbar section-toolbar">
         <label>
           Project
-          <select
+          <Select
             aria-label="Analysis project"
             value={result.projectId}
-            onChange={(e) => setSelected(e.target.value)}
-          >
-            {results.map((p) => (
-              <option value={p.projectId} key={p.projectId}>
-                {p.projectName}
-              </option>
-            ))}
-          </select>
+            onChange={setSelected}
+            options={results.map((p) => ({
+              value: p.projectId,
+              label: p.projectName,
+            }))}
+          />
         </label>
         <label>
           Category
-          <select
+          <Select
             aria-label="Analysis category"
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="all">All categories</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {categoryLabel(c)}
-              </option>
-            ))}
-          </select>
+            onChange={setCategory}
+            options={[
+              { value: "all", label: "All categories" },
+              ...categories.map((c) => ({ value: c, label: categoryLabel(c) })),
+            ]}
+          />
         </label>
         <div className="spacer" />
         <button

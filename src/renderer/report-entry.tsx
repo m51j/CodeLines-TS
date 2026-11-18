@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { Reports } from "./reports";
 import { useState } from "react";
+import { Select } from "./ui/Select";
 function Standalone() {
   const [theme, setTheme] = useState("System");
   const dark =
@@ -18,15 +19,12 @@ function Standalone() {
             {new Date(window.CODELINES_REPORT!.generatedAt).toLocaleString()}
           </p>
         </div>
-        <select
+        <Select
           aria-label="Report theme"
           value={theme}
-          onChange={(e) => setTheme(e.target.value)}
-        >
-          {["System", "Light", "Dark"].map((t) => (
-            <option key={t}>{t}</option>
-          ))}
-        </select>
+          onChange={setTheme}
+          options={["System", "Light", "Dark"].map((t) => ({ value: t, label: t }))}
+        />
       </header>
       <Reports result={window.CODELINES_REPORT!} />
       <footer>

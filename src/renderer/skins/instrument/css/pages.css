@@ -72,9 +72,7 @@
   position: sticky; top: 0; z-index: 6; display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; padding: 8px 10px; margin: 0 -10px;
   background: color-mix(in oklab, var(--bg) 82%, transparent); backdrop-filter: blur(14px) saturate(1.2); border: 1px solid transparent; border-radius: var(--r-4);
 }
-.ai-dates { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.ai-dates label { display: flex; align-items: center; gap: 6px; color: var(--ink-2); font-weight: 600; font-size: var(--fs-1); }
-.ai-dates input { width: 144px; }
+.ai-range { min-width: 190px; }
 .ai-facts { font-size: var(--fs-1); font-family: var(--font-mono); }
 .ai-notes ul { display: grid; gap: 7px; padding: 4px 4px 8px 26px; color: var(--ink-2); list-style: disc; }
 .ai-pane { min-width: 0; }

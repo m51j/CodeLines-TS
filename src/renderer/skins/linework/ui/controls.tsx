@@ -1,8 +1,9 @@
 /** Linework's building blocks: readouts, sheets, notices, fields, checkboxes and tiles. */
-import { useLayoutEffect, useRef, type ReactNode, type SelectHTMLAttributes } from "react";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { ease, play, useCount } from "../../../motion/core";
 import { Icon } from "../icons";
 import { tileNumber } from "./fmt";
+import { Select as UiSelect, type SelectProps } from "../../../ui/Select";
 
 export { LinesInput } from "../../../components";
 
@@ -167,13 +168,9 @@ export function Check({
   );
 }
 
-export function Select({ children, ...props }: SelectHTMLAttributes<HTMLSelectElement> & { children: ReactNode }) {
-  return (
-    <span className="select">
-      <select {...props}>{children}</select>
-      <Icon name="chevdown" />
-    </span>
-  );
+/** The shared themed dropdown with Linework's control styling. */
+export function Select<T extends string>({ className, ...props }: SelectProps<T>) {
+  return <UiSelect {...props} className={"select" + (className ? " " + className : "")} />;
 }
 
 export interface TileItem {

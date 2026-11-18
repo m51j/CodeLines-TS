@@ -246,18 +246,6 @@ kbd {
 .btn.sm { height: 28px; padding: 0 10px; font-size: var(--fs-12); border-radius: 8px; }
 .btn .ic { width: 15px; height: 15px; }
 
-.select { position: relative; display: inline-flex; align-items: center; min-width: 0; }
-.select select { flex: 1; }
-.select select {
-  appearance: none; height: var(--ctl-h); padding: 0 32px 0 11px; border: 1px solid var(--line-strong); border-radius: 9px;
-  background: var(--surface); color: var(--text); font-size: var(--fs-13); min-width: 0; max-width: 100%;
-  transition: border-color var(--dur-1), box-shadow var(--dur-2);
-}
-.select select:hover:not(:disabled) { border-color: color-mix(in oklab, var(--text) 25%, var(--line-strong)); }
-.select select:focus-visible { outline: none; border-color: var(--accent-ui); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 25%, transparent); }
-.select select:disabled { opacity: 0.5; cursor: not-allowed; }
-.select .ic { position: absolute; right: 9px; width: 14px; height: 14px; pointer-events: none; color: var(--muted); }
-.select option { background: var(--surface); color: var(--text); }
 .input, textarea {
   height: var(--ctl-h); padding: 0 11px; border: 1px solid var(--line-strong); border-radius: 9px; background: var(--surface); color: var(--text);
   font-size: var(--fs-13); transition: border-color var(--dur-1), box-shadow var(--dur-2); min-width: 0;
@@ -1044,14 +1032,7 @@ td.project-cell .row-link:hover strong { color: var(--accent-ink); text-decorati
 .deck .tabs button { height: 36px; }
 .deck .tabs-ink { bottom: 1px; }
 .deck-sep { width: 1px; height: 24px; background: var(--line); }
-.date-fields { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
-.date-fields label { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-12); color: var(--muted); }
-.date-fields input {
-  height: 30px; padding: 0 8px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--text); font-size: var(--fs-12);
-  transition: border-color var(--dur-1), box-shadow var(--dur-2);
-}
-.date-fields input:focus-visible { outline: none; border-color: var(--accent-ui); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 22%, transparent); }
-.date-fields input[aria-invalid="true"] { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+.deck .deck-range { margin-left: auto; min-width: 190px; --ui-ctl-h: 32px; }
 .date-error { display: flex; align-items: center; gap: 8px; margin: 10px 0; padding: 9px 13px; border-radius: 10px; font-size: var(--fs-13); font-weight: 600; color: var(--danger); background: var(--danger-soft); border: 1px solid color-mix(in oklab, var(--danger) 35%, transparent); }
 .footnote { display: flex; align-items: center; gap: 8px; margin: 12px 2px 4px; font-size: var(--fs-12); color: var(--muted); }
 .footnote .ic { width: 14px; height: 14px; }
@@ -1109,7 +1090,7 @@ td.project-cell .row-link:hover strong { color: var(--accent-ink); text-decorati
   .two-col, .settings-layout { grid-template-columns: minmax(0, 1fr); }
   .settings-index { display: none; }
   .mix-grid { grid-template-columns: minmax(0, 1fr); }
-  .date-fields { margin-left: 0; }
+  .deck .deck-range { margin-left: 0; }
 }
 @container page (max-width: 720px) {
   .ai-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }

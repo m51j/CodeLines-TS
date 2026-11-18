@@ -56,19 +56,16 @@ kbd {
 .btn-danger.is-solid:hover:not(:disabled) { background: color-mix(in oklab, var(--danger) 86%, var(--ink)); }
 .btn-sm { height: 28px; padding: 0 10px; font-size: var(--fs-1); border-radius: var(--r-2); }
 .btn-icon { width: var(--ctl-h); padding: 0; }
-input[type="text"], input[type="search"], input[type="number"], input[type="date"], textarea, select {
+input[type="text"], input[type="search"], input[type="number"], textarea {
   height: var(--ctl-h); padding: 0 11px; border: 1px solid var(--line-2); border-radius: var(--r-3); background: var(--surface); color: var(--ink);
   min-width: 0; max-width: 100%; transition: border-color var(--dur-2), box-shadow var(--dur-2), background-color var(--dur-2);
 }
-input:hover, textarea:hover, select:hover { border-color: var(--ink-3); }
-input:focus-visible, textarea:focus-visible, select:focus-visible { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 26%, transparent); border-radius: var(--r-3); }
-input:disabled, textarea:disabled, select:disabled { opacity: 0.55; cursor: default; }
+input:hover, textarea:hover { border-color: var(--ink-3); }
+input:focus-visible, textarea:focus-visible { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 26%, transparent); border-radius: var(--r-3); }
+input:disabled, textarea:disabled { opacity: 0.55; cursor: default; }
 input[aria-invalid="true"] { border-color: var(--danger); box-shadow: 0 0 0 3px color-mix(in oklab, var(--danger) 18%, transparent); }
 input[type="number"] { font-variant-numeric: tabular-nums; }
 textarea { height: auto; padding: 9px 11px; resize: vertical; width: 100%; line-height: 1.6; }
-.select { position: relative; display: inline-flex; min-width: 0; }
-.select select { appearance: none; padding-right: 30px; width: 100%; cursor: pointer; font-weight: 600; text-overflow: ellipsis; }
-.select .ico { position: absolute; right: 9px; top: 50%; translate: 0 -50%; pointer-events: none; color: var(--ink-3); }
 .check { display: inline-flex; align-items: center; gap: 9px; cursor: pointer; min-height: 28px; }
 .check input {
   appearance: none; width: 18px; height: 18px; margin: 0; padding: 0; flex: none; display: grid; place-items: center; cursor: pointer;

@@ -1,4 +1,4 @@
-import type { Category, HistoryOptions, Scope } from "../shared/contracts";
+import { scopes, type Category, type HistoryOptions, type Scope } from "../shared/contracts";
 export const number = (v: number | null | undefined) =>
   v === null || v === undefined ? "—" : Math.round(v).toLocaleString("en-US");
 export const signed = (v: number | null | undefined) =>
@@ -56,3 +56,6 @@ export const palette = [
 ];
 export const lines = (parts: (string | false | null | undefined)[]) =>
   parts.filter(Boolean).join(" · ");
+/** Dropdown options shared by every skin's scan controls and settings. */
+export const scopeOptions = scopes.map((s) => ({ value: s, label: scopeLabel(s) }));
+export const tokenizerOptions = (["o200k_base", "cl100k_base"] as const).map((t) => ({ value: t, label: t }));

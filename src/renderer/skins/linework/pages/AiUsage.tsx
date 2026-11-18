@@ -17,10 +17,12 @@ import { Seg, Tabs } from "../ui/Choice";
 import { Disclosure, EmptyState } from "../ui/controls";
 import { agentColor, compact, date, number, percent, seriesColor } from "../ui/fmt";
 import { AgentSources, type Ctx, type Selection } from "./ai/shared";
+import { DateRangePicker } from "../../../ui/DateRangePicker";
+import { resolveRange, todayIn } from "../../../ui/dates";
 import { Models, Overview, Projects, Tables, Time } from "./ai/Sections";
 
 const notScanned = Object.entries(agentLabels).map(([id, label]) => ({ id, label, state: "NotFound" as const, records: 0, elapsed: 0 }));
-const defaults: Selection = { tab: "Overview", range: 0, group: "agent", since: "", until: "" };
+const defaults: Selection = { tab: "Overview", preset: "all", group: "agent", since: "", until: "" };
 const sectionTabs: Selection["tab"][] = ["Overview", "Models", "Time", "Tables", "Projects"];
 
 export function AiUsage() {
@@ -61,7 +63,7 @@ function Reports({ result }: { result: AiResult }) {
     all = agent === "all";
   const sel = selections[agent] ?? defaults;
   const update = (patch: Partial<Selection>) => setSelections((p) => ({ ...p, [agent]: { ...(p[agent] ?? defaults), ...patch } }));
-  const invalid = !!(sel.since && sel.until && sel.since > sel.until);
+  const invalid = !!(!sel.preset && sel.since && sel.until && sel.since > sel.until);
 
   const allTime = useMemo(() => {
     const t: Record<string, number> = { all: 0 };
@@ -74,9 +76,11 @@ function Reports({ result }: { result: AiResult }) {
     return t;
   }, [result]);
   const model = useMemo(() => reportModel(result, agent), [result, agent]);
+  const today = todayIn(model.utc),
+    bounds = resolveRange(sel, today);
   const view = useMemo(
-    () => (invalid ? null : selectReport(model, { range: sel.range, since: sel.since, until: sel.until, group: all ? sel.group : "model" })),
-    [model, sel.range, sel.since, sel.until, sel.group, all, invalid],
+    () => (invalid ? null : selectReport(model, { range: 0, since: bounds.since, until: bounds.until, group: all ? sel.group : "model" })),
+    [model, bounds.since, bounds.until, sel.group, all, invalid],
   );
   const ctx = useMemo<Ctx | null>(() => {
     if (!view) return null;
@@ -129,7 +133,6 @@ function Reports({ result }: { result: AiResult }) {
     if (!source.note || (!all && id !== agent)) continue;
     notes.set(source.note, [...(notes.get(source.note) ?? []), source.label]);
   }
-  const rangeValue = sel.since || sel.until ? "" : String(sel.range);
   const Section = { Overview, Models, Time, Tables, Projects }[sel.tab];
   return (
     <div className="ai">
@@ -211,12 +214,6 @@ function Reports({ result }: { result: AiResult }) {
           />
           <span className="deck-sep" aria-hidden="true" />
           <Seg
-            label="Report range"
-            value={rangeValue}
-            onChange={(v) => update({ range: Number(v), since: "", until: "" })}
-            options={["0", "90", "30", "7"].map((n) => ({ v: n, l: n === "0" ? "All" : n + "d" }))}
-          />
-          <Seg
             label="Group usage"
             hidden={!all}
             value={sel.group}
@@ -226,35 +223,17 @@ function Reports({ result }: { result: AiResult }) {
               { v: "model", l: "By model" },
             ]}
           />
-          <div className="date-fields">
-            <label>
-              From{" "}
-              <input
-                type="date"
-                aria-label="Report start date"
-                aria-invalid={invalid}
-                aria-describedby={invalid ? "lw-date-error" : undefined}
-                value={sel.since}
-                onChange={(e) => update({ since: e.target.value, range: 0 })}
-              />
-            </label>
-            <label>
-              To{" "}
-              <input
-                type="date"
-                aria-label="Report end date"
-                aria-invalid={invalid}
-                aria-describedby={invalid ? "lw-date-error" : undefined}
-                value={sel.until}
-                onChange={(e) => update({ until: e.target.value, range: 0 })}
-              />
-            </label>
-            {(sel.since || sel.until) && (
-              <button type="button" className="btn sm ghost" onClick={() => update({ since: "", until: "", range: 0 })}>
-                Clear dates
-              </button>
-            )}
-          </div>
+          <DateRangePicker
+            className="deck-range"
+            label="Report date range"
+            startLabel="Report start date"
+            endLabel="Report end date"
+            today={today}
+            value={sel}
+            onChange={update}
+            invalid={invalid}
+            describedBy={invalid ? "lw-date-error" : undefined}
+          />
         </div>
         {invalid && (
           <p className="date-error" id="lw-date-error" role="alert" ref={errorRef}>
@@ -291,7 +270,7 @@ function Reports({ result }: { result: AiResult }) {
         <div role="tabpanel" className="ai-section" id="lw-ai-section" aria-labelledby={"lw-ai-t-" + sel.tab} ref={section}>
           {invalid || !ctx ? null : !ctx.view.days.length ? (
             <EmptyState title="No usage in this range" art="search">
-              Choose another period or clear the dates to see usage.
+              Choose another period, or pick All time.
             </EmptyState>
           ) : (
             <Section key={agent + sel.tab} c={ctx} />

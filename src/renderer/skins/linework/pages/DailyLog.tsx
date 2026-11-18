@@ -13,6 +13,7 @@ import { Check, EmptyState, Field, Notice, Select, Sheet } from "../ui/controls"
 import { categoryLabel, langColor, money, number, percent, signed } from "../ui/fmt";
 import { currency } from "../../../../ai/aggregate";
 import { Delta, Table, type Col } from "../ui/Table";
+import { DatePicker } from "../../../ui/DatePicker";
 
 type Comparison = ReturnType<typeof compareDays>;
 const delta = <T,>(key: string, label: string, get: (r: T) => number | null | undefined): Col<T> => ({
@@ -153,18 +154,12 @@ export function DailyLog() {
           <Select
             aria-label="Daily log project"
             value={project}
-            onChange={(e) => {
-              setProject(e.target.value);
-              setAllAgents(e.target.value === "enabled");
+            onChange={(v) => {
+              setProject(v);
+              setAllAgents(v === "enabled");
             }}
-          >
-            <option value="enabled">All enabled projects</option>
-            {projects.map((p) => (
-              <option value={p.id} key={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </Select>
+            options={[{ value: "enabled", label: "All enabled projects" }, ...projects.map((p) => ({ value: p.id, label: p.name }))]}
+          />
         </Field>
         <div className="field">
           <span className="field-label">&nbsp;</span>
@@ -215,19 +210,11 @@ export function DailyLog() {
           </Sheet>
           <div className="compare-bar">
             <h2>Compare dates</h2>
-            <Select aria-label="Comparison date A" value={a} onChange={(e) => setDateA(e.target.value)}>
-              {dates.map((d) => (
-                <option key={d}>{d}</option>
-              ))}
-            </Select>
+            <DatePicker label="Comparison date A" className="select" value={a} available={dates} onChange={setDateA} />
             <span className="compare-arrow" aria-hidden="true" ref={arrow}>
               <Icon name="arrow" />
             </span>
-            <Select aria-label="Comparison date B" value={b} onChange={(e) => setDateB(e.target.value)}>
-              {dates.map((d) => (
-                <option key={d}>{d}</option>
-              ))}
-            </Select>
+            <DatePicker label="Comparison date B" className="select" value={b} available={dates} onChange={setDateB} />
           </div>
           {cmp.warning && <Notice>{cmp.warning}</Notice>}
           <div className="two-col">

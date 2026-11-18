@@ -10,9 +10,9 @@ import {
   Moon,
 } from "lucide-react";
 import type { Settings } from "../../../shared/contracts";
-import { scopes } from "../../../shared/contracts";
 import { Card } from "../../components";
-import { duration, lines, number, scopeLabel } from "../../format";
+import { duration, lines, number, scopeOptions, tokenizerOptions } from "../../format";
+import { Select } from "../../ui/Select";
 import { PageTransition } from "../../PageTransition";
 import { DesktopShell } from "../../TitleBar";
 import { useWorkspace } from "../../workspace";
@@ -129,38 +129,28 @@ function PageHeader({
       <div className="toolbar wrap header-actions">
         {scan && (
           <>
-            <select
+            <Select
               aria-label="Counting scope"
               disabled={!!busy}
               value={draft.scanOptions.countingScope}
-              onChange={(e) =>
+              options={scopeOptions}
+              onChange={(v) =>
                 change((s) => {
-                  s.scanOptions.countingScope = e.target
-                    .value as Settings["scanOptions"]["countingScope"];
+                  s.scanOptions.countingScope = v;
                 })
               }
-            >
-              {scopes.map((s) => (
-                <option key={s} value={s}>
-                  {scopeLabel(s)}
-                </option>
-              ))}
-            </select>
-            <select
+            />
+            <Select
               aria-label="Tokenizer"
               disabled={!!busy}
               value={draft.scanOptions.tokenizerEncoding}
-              onChange={(e) =>
+              options={tokenizerOptions}
+              onChange={(v) =>
                 change((s) => {
-                  s.scanOptions.tokenizerEncoding = e.target.value as
-                    | "o200k_base"
-                    | "cl100k_base";
+                  s.scanOptions.tokenizerEncoding = v;
                 })
               }
-            >
-              <option>o200k_base</option>
-              <option>cl100k_base</option>
-            </select>
+            />
             <button
               className="primary"
               disabled={!!busy || !draft.projects.some((p) => p.isEnabled)}

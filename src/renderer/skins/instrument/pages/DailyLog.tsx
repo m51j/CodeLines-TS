@@ -8,6 +8,7 @@ import { langColor, shortDate, type TipRow } from "../format";
 import { LineChart, type LinePoint } from "../charts";
 import { Button, Check, Select, Seg } from "../ui/controls";
 import { Empty, Notice, Panel, SwapIn } from "../ui/layout";
+import { DatePicker } from "../../../ui/DatePicker";
 import { toast } from "../ui/overlays";
 import { DataTable, type Column } from "../ui/Table";
 type Comparison = ReturnType<typeof compareDays>;
@@ -198,11 +199,11 @@ export function DailyLog() {
           </Panel>
           <div className="toolbar section-toolbar compare-bar">
             <h2>Compare dates</h2>
-            <Select label="Comparison date A" value={a} options={dates} onChange={(v) => set({ dateA: v })} />
+            <DatePicker label="Comparison date A" className="select" value={a} available={dates} onChange={(v) => set({ dateA: v })} />
             <span className="compare-arrow" aria-hidden="true">
               →
             </span>
-            <Select label="Comparison date B" value={b} options={dates} onChange={(v) => set({ dateB: v })} />
+            <DatePicker label="Comparison date B" className="select" value={b} available={dates} onChange={(v) => set({ dateB: v })} />
           </div>
           {comparison.warning && (
             <SwapIn key={comparison.warning} dir={0} y={-6} dur={240}>

@@ -241,6 +241,17 @@
   --texture: rgb(50 40 20 / 0.05);
 }
 
+/* ---- Shared dropdowns and date pickers (ui/ui.css) ------------------- */
+:root {
+  --ui-surface: var(--surface); --ui-hover: var(--hover); --ui-text: var(--text); --ui-muted: var(--muted);
+  --ui-border: var(--line); --ui-border-strong: var(--line-strong);
+  --ui-accent: var(--accent-fill); --ui-accent-soft: var(--accent-soft); --ui-accent-text: var(--accent-ink); --ui-on-accent: var(--on-accent);
+  --ui-focus: var(--accent-ui); --ui-danger: var(--danger);
+  --ui-radius: 9px; --ui-radius-pop: var(--r-lg); --ui-shadow: var(--shadow-3); --ui-ctl-h: var(--ctl-h);
+  --ui-pop-bg: var(--glass); --ui-pop-filter: blur(20px) saturate(1.5);
+  --ui-font-size: var(--fs-13); --ui-trigger-weight: 500; --ui-icon-stroke: 1.6;
+}
+
 /* ---- Density -------------------------------------------------------- */
 :root[data-density="compact"] {
   --row-h: 30px;

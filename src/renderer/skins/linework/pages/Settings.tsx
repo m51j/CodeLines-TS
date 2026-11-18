@@ -5,7 +5,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { agentLabels } from "../../../../shared/agents";
-import { scopes, type Settings, type WidgetView } from "../../../../shared/contracts";
+import type { WidgetView } from "../../../../shared/contracts";
 import { widgetSummary } from "../../../../widget/summary";
 import { useAppearanceControls } from "../../../appearance/controls";
 import { reduced } from "../../../motion/core";
@@ -15,7 +15,8 @@ import { AccentPicker, ContrastReadout, DensitySeg, MotionSeg, SkinPicker, Theme
 import { useShell } from "../context";
 import { Icon } from "../icons";
 import { Check, Field, Group, LinesInput, Select, Sheet } from "../ui/controls";
-import { agentColor, scopeLabel } from "../ui/fmt";
+import { agentColor } from "../ui/fmt";
+import { scopeOptions, tokenizerOptions } from "../../../format";
 
 const sections = [
   ["appearance", "Appearance"],
@@ -116,32 +117,27 @@ export function SettingsPage() {
               <div className="set-grid">
                 <Field label="Counting scope">
                   <Select
+                    aria-label="Counting scope"
                     value={draft.scanOptions.countingScope}
-                    onChange={(e) =>
+                    options={scopeOptions}
+                    onChange={(v) =>
                       change((s) => {
-                        s.scanOptions.countingScope = e.target.value as Settings["scanOptions"]["countingScope"];
+                        s.scanOptions.countingScope = v;
                       })
                     }
-                  >
-                    {scopes.map((s) => (
-                      <option key={s} value={s}>
-                        {scopeLabel(s)}
-                      </option>
-                    ))}
-                  </Select>
+                  />
                 </Field>
                 <Field label="Tokenizer">
                   <Select
+                    aria-label="Tokenizer"
                     value={draft.scanOptions.tokenizerEncoding}
-                    onChange={(e) =>
+                    options={tokenizerOptions}
+                    onChange={(v) =>
                       change((s) => {
-                        s.scanOptions.tokenizerEncoding = e.target.value as Settings["scanOptions"]["tokenizerEncoding"];
+                        s.scanOptions.tokenizerEncoding = v;
                       })
                     }
-                  >
-                    <option>o200k_base</option>
-                    <option>cl100k_base</option>
-                  </Select>
+                  />
                 </Field>
                 <Field label="Maximum file size (MB)" help="Larger files are skipped and listed as warnings.">
                   <input
@@ -285,16 +281,12 @@ export function SettingsPage() {
                     help={draft.aiUsage.enabled ? "Runs in the background while the widget is visible." : "Turn on the AI usage page to refresh it."}
                   >
                     <Select
+                      aria-label="Refresh AI usage"
                       disabled={!draft.widget.enabled}
-                      value={draft.widget.refreshMinutes}
-                      onChange={(e) => void setWidget({ refreshMinutes: Number(e.target.value) })}
-                    >
-                      {refreshChoices.map((m) => (
-                        <option key={m} value={m}>
-                          Every {m} {m === 1 ? "minute" : "minutes"}
-                        </option>
-                      ))}
-                    </Select>
+                      value={String(draft.widget.refreshMinutes)}
+                      onChange={(v) => void setWidget({ refreshMinutes: Number(v) })}
+                      options={refreshChoices.map((m) => ({ value: String(m), label: `Every ${m} ${m === 1 ? "minute" : "minutes"}` }))}
+                    />
                   </Field>
                 </div>
                 <p className="muted">

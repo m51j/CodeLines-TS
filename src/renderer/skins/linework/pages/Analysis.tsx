@@ -96,23 +96,15 @@ export function Analysis() {
     <>
       <div className="toolbar section-toolbar">
         <Field label="Project">
-          <Select aria-label="Analysis project" value={r.projectId} onChange={(e) => setSelected(e.target.value)}>
-            {results.map((p) => (
-              <option value={p.projectId} key={p.projectId}>
-                {p.projectName}
-              </option>
-            ))}
-          </Select>
+          <Select aria-label="Analysis project" value={r.projectId} onChange={setSelected} options={results.map((p) => ({ value: p.projectId, label: p.projectName }))} />
         </Field>
         <Field label="Category">
-          <Select aria-label="Analysis category" value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="all">All categories</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {categoryLabel(c)}
-              </option>
-            ))}
-          </Select>
+          <Select
+            aria-label="Analysis category"
+            value={category}
+            onChange={setCategory}
+            options={[{ value: "all", label: "All categories" }, ...categories.map((c) => ({ value: c, label: categoryLabel(c) }))]}
+          />
         </Field>
         <span className="spacer" />
         <button className="btn" type="button" disabled={!!busy} onClick={() => void exportData("analysis", "csv")}>

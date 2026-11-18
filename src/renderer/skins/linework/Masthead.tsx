@@ -4,12 +4,12 @@
  * slide), and the console with the scan or AI actions.
  */
 import { forwardRef } from "react";
-import { scopes, type Settings } from "../../../shared/contracts";
 import type { PageDef } from "../../pages";
 import { useWorkspace } from "../../workspace";
 import { Icon } from "./icons";
 import { Select } from "./ui/controls";
-import { date, scopeLabel } from "./ui/fmt";
+import { date } from "./ui/fmt";
+import { scopeOptions, tokenizerOptions } from "../../format";
 
 export const Masthead = forwardRef<HTMLElement, { page: PageDef; index: number }>(function Masthead({ page, index }, ref) {
   const { state, draft, busy, change, execute, exportData, setError } = useWorkspace();
@@ -48,18 +48,13 @@ export const Masthead = forwardRef<HTMLElement, { page: PageDef; index: number }
               aria-label="Counting scope"
               disabled={!!busy}
               value={draft.scanOptions.countingScope}
-              onChange={(e) =>
+              options={scopeOptions}
+              onChange={(v) =>
                 change((s) => {
-                  s.scanOptions.countingScope = e.target.value as Settings["scanOptions"]["countingScope"];
+                  s.scanOptions.countingScope = v;
                 })
               }
-            >
-              {scopes.map((s) => (
-                <option key={s} value={s}>
-                  {scopeLabel(s)}
-                </option>
-              ))}
-            </Select>
+            />
           </label>
           <label className="console-field">
             <span>Tokenizer</span>
@@ -67,15 +62,13 @@ export const Masthead = forwardRef<HTMLElement, { page: PageDef; index: number }
               aria-label="Tokenizer"
               disabled={!!busy}
               value={draft.scanOptions.tokenizerEncoding}
-              onChange={(e) =>
+              options={tokenizerOptions}
+              onChange={(v) =>
                 change((s) => {
-                  s.scanOptions.tokenizerEncoding = e.target.value as Settings["scanOptions"]["tokenizerEncoding"];
+                  s.scanOptions.tokenizerEncoding = v;
                 })
               }
-            >
-              <option>o200k_base</option>
-              <option>cl100k_base</option>
-            </Select>
+            />
           </label>
           <button
             className={"btn primary scan-btn" + (busy?.kind === "scan" ? " running" : "")}

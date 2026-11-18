@@ -93,22 +93,5 @@ export function initSimpleTips(): () => void {
     layerEl = tipEl = null;
   };
 }
-/** Positions a floating element next to an anchor, flipping above when there is no room below. */
-export function place(el: HTMLElement, anchor: Element, placement = "bottom-start", gap = 8) {
-  const a = anchor.getBoundingClientRect();
-  const w = el.offsetWidth,
-    ht = el.offsetHeight,
-    vw = innerWidth,
-    vh = innerHeight;
-  let [side] = placement.split("-");
-  const align = placement.split("-")[1];
-  if (side === "bottom" && a.bottom + gap + ht > vh - 8 && a.top - gap - ht > 8) side = "top";
-  if (side === "top" && a.top - gap - ht < 8) side = "bottom";
-  let x = align === "end" ? a.right - w : align === "center" ? a.left + a.width / 2 - w / 2 : a.left;
-  let y = side === "top" ? a.top - gap - ht : a.bottom + gap;
-  x = clamp(x, 8, Math.max(8, vw - w - 8));
-  y = clamp(y, 8, Math.max(8, vh - ht - 8));
-  el.style.left = x + "px";
-  el.style.top = y + "px";
-  el.style.transformOrigin = `${clamp(a.left + a.width / 2 - x, 0, w)}px ${side === "top" ? ht : 0}px`;
-}
+/** Positions a floating element next to an anchor (shared with the dropdowns and date pickers). */
+export { place } from "../../ui/floating";

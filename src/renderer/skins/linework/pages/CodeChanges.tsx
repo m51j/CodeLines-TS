@@ -114,20 +114,14 @@ export function CodeChanges() {
           <Select
             aria-label="History period"
             disabled={!!busy}
-            value={custom ? "custom" : draft.gitHistory.days}
-            onChange={(e) =>
+            value={custom ? "custom" : String(draft.gitHistory.days)}
+            onChange={(v) =>
               change((s) => {
-                s.gitHistory.days = e.target.value === "custom" ? 90 : Number(e.target.value);
+                s.gitHistory.days = v === "custom" ? 90 : Number(v);
               })
             }
-          >
-            {presets.map((n) => (
-              <option value={n} key={n}>
-                {n} days
-              </option>
-            ))}
-            <option value="custom">Custom</option>
-          </Select>
+            options={[...presets.map((n) => ({ value: String(n), label: `${n} days` })), { value: "custom", label: "Custom" }]}
+          />
         </Field>
         {custom && (
           <Field label="Custom days (1–36500)">
@@ -152,15 +146,16 @@ export function CodeChanges() {
             aria-label="History mode"
             disabled={!!busy}
             value={draft.gitHistory.mode}
-            onChange={(e) =>
+            onChange={(v) =>
               change((s) => {
-                s.gitHistory.mode = e.target.value as "Activity" | "NetChange";
+                s.gitHistory.mode = v;
               })
             }
-          >
-            <option value="Activity">Activity</option>
-            <option value="NetChange">{modeLabel("NetChange")}</option>
-          </Select>
+            options={[
+              { value: "Activity", label: "Activity" },
+              { value: "NetChange", label: modeLabel("NetChange") },
+            ]}
+          />
         </Field>
         <button
           className="btn primary"

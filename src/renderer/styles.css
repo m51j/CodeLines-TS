@@ -62,6 +62,32 @@
   --rail-card-title: #dbe5f7;
   --shadow: none;
 }
+/* Shared dropdowns and date pickers (ui/ui.css) read these. */
+:root {
+  --ui-surface: var(--surface);
+  --ui-hover: var(--hover);
+  --ui-text: var(--text);
+  --ui-muted: var(--muted);
+  --ui-border: var(--border);
+  --ui-border-strong: var(--border);
+  --ui-accent: var(--accent);
+  --ui-accent-soft: var(--accent-soft);
+  --ui-accent-text: var(--accent);
+  --ui-on-accent: #fff;
+  --ui-focus: var(--accent);
+  --ui-danger: var(--danger);
+  --ui-radius: 7px;
+  --ui-radius-pop: 10px;
+  --ui-shadow: 0 12px 36px #0f172a2e, 0 2px 6px #0f172a14;
+  --ui-ctl-h: 38px;
+  --ui-font-size: 13px;
+  --ui-trigger-weight: 400;
+  --ui-icon-stroke: 2;
+}
+:root[data-theme="dark"] {
+  --ui-on-accent: #0b1120;
+  --ui-shadow: 0 16px 40px #0000008c, 0 0 0 1px #ffffff08;
+}
 * {
   box-sizing: border-box;
 }
@@ -70,7 +96,6 @@ body {
 }
 button,
 input,
-select,
 textarea {
   font: inherit;
 }
@@ -114,7 +139,6 @@ button.primary:hover:not(:disabled) {
   background: color-mix(in srgb, var(--accent) 92%, var(--text));
 }
 input,
-select,
 textarea {
   border: 1px solid var(--border);
   background: var(--surface);
@@ -131,9 +155,6 @@ textarea {
   width: 100%;
   min-height: 82px;
 }
-select {
-  padding-right: 22px;
-}
 input[type="checkbox"] {
   accent-color: var(--accent);
   width: 16px;
@@ -145,7 +166,6 @@ input[type="number"] {
   width: 150px;
 }
 input:disabled,
-select:disabled,
 textarea:disabled {
   opacity: 0.6;
 }
@@ -419,9 +439,8 @@ small {
   width: 22px;
   height: 22px;
 }
-.cl-popover select {
-  min-height: 32px;
-  padding-block: 5px;
+.cl-popover .ui-trigger {
+  --ui-ctl-h: 32px;
 }
 .cl-popover .accent-ratios {
   font-size: 11px;
@@ -1026,7 +1045,7 @@ th.path-column {
   font-weight: 600;
 }
 .field input:not([type="checkbox"]),
-.field select {
+.field .ui-trigger {
   width: 100%;
 }
 .check {
@@ -1568,23 +1587,9 @@ fieldset {
   background: var(--accent-soft);
   font-weight: 650;
 }
-.reports .report-date-fields {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
+.reports .report-range {
   margin-left: auto;
-}
-.reports .report-date-fields label {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 12px;
-  color: var(--muted);
-}
-.reports .report-date-fields input {
-  min-width: 0;
-  width: 148px;
+  min-width: 200px;
 }
 .reports .report-date-error {
   color: var(--warning);
@@ -1832,7 +1837,7 @@ fieldset {
   }
 }
 @media (max-width: 600px) {
-  .reports .report-date-fields {
+  .reports .report-range {
     margin-left: 0;
   }
   .reports .report-heading h2 span {

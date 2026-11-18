@@ -6,11 +6,13 @@ import { costText } from "../../../../../ai/aggregate";
 import { Disclosure } from "../../ui/controls";
 import { agentColor, number } from "../../ui/fmt";
 import { ShareCell, Table, type Col } from "../../ui/Table";
+import type { PresetId } from "../../../../ui/dates";
 
 export type View = ReturnType<typeof selectReport>;
 export interface Selection {
   tab: "Overview" | "Models" | "Time" | "Tables" | "Projects";
-  range: number;
+  /** A named range resolved against today, or "" for the custom since/until days. */
+  preset: PresetId | "";
   group: "agent" | "model";
   since: string;
   until: string;

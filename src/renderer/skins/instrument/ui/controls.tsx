@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { Icon, type IconName } from "../icons";
+import { Select as UiSelect } from "../../../ui/Select";
 const cx = (...parts: (string | false | null | undefined)[]) => parts.filter(Boolean).join(" ");
 export interface ButtonProps {
   label?: ReactNode;
@@ -183,19 +184,18 @@ export function Select<T extends string | number>({
   id?: string;
 }) {
   return (
-    <span className={cx("select", className)}>
-      <select id={id} aria-label={label} disabled={disabled} value={String(value)} onChange={(e) => onChange(e.target.value)}>
-        {options.map((o) => {
-          const [v, l] = Array.isArray(o) ? o : [o, String(o)];
-          return (
-            <option key={String(v)} value={String(v)}>
-              {l}
-            </option>
-          );
-        })}
-      </select>
-      <Icon name="chevron" size={14} />
-    </span>
+    <UiSelect
+      id={id}
+      aria-label={label}
+      disabled={disabled}
+      className={cx("select", className)}
+      value={String(value)}
+      onChange={onChange}
+      options={options.map((o) => {
+        const [v, l] = Array.isArray(o) ? o : [o, String(o)];
+        return { value: String(v), label: l };
+      })}
+    />
   );
 }
 export function Check({

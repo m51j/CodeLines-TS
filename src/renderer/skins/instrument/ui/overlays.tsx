@@ -11,6 +11,7 @@ import {
 import { createPortal } from "react-dom";
 import { play } from "../../../motion/core";
 import { place, tip } from "../overlay";
+import { hasOpenLayer, inFloatingLayer } from "../../../ui/floating";
 import { Icon, type IconName } from "../icons";
 /** Open/close state for one anchored popover: `toggle(e.currentTarget)` from its button. */
 export function usePopover() {
@@ -73,11 +74,11 @@ export function Popover({
     if (!anchor) return;
     const down = (e: PointerEvent) => {
       const t = e.target as Element;
-      if (el.current?.contains(t) || anchor.contains(t) || t.closest?.(".pop")) return;
+      if (el.current?.contains(t) || anchor.contains(t) || t.closest?.(".pop") || hasOpenLayer() || inFloatingLayer(t)) return;
       closeRef.current();
     };
     const key = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && !hasOpenLayer()) {
         e.stopPropagation();
         closeRef.current();
       }

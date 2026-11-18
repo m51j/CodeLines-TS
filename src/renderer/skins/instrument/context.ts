@@ -1,6 +1,7 @@
 /** What the Instrument shell offers its pages, and the selections pages keep between visits. */
 import { createContext, useContext } from "react";
 import type { Page } from "../../pages";
+import type { PresetId } from "../../ui/dates";
 export interface SkinApi {
   go: (page: Page) => void;
   /** The AI usage report's agent tab ("all" or an agent id); the palette can open one. */
@@ -16,7 +17,8 @@ export function useSkin(): SkinApi {
 }
 export interface AiSelection {
   tab: "Overview" | "Models" | "Time" | "Tables" | "Projects";
-  range: number;
+  /** A named range resolved against today, or "" for the custom since/until days. */
+  preset: PresetId | "";
   group: "agent" | "model";
   since: string;
   until: string;
