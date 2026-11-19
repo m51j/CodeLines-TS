@@ -14,6 +14,11 @@ Downloads are `CodeLines-Setup-1.2.0.exe`, `CodeLines-1.2.0-portable.exe`, and `
 - Name release files without spaces (`CodeLines-Setup-<version>.exe`, `CodeLines-<version>-portable.exe`) so they match the update feed.
 - Versions before this one have no updater; install it by hand once.
 
+### Fixes
+
+- Fix the portable app showing "Untrusted desktop request" instead of the dashboard when the Windows temporary folder is a short 8.3 path (for example `C:\Users\JOHNSM~1\...`, common with long or non-English user names). Node encodes `~` in file URLs and Chromium does not, so the app rejected its own window; trusted pages now compare by file path.
+- Make the portable smoke test wait for the window on slow starts, and stop its cleanup from hiding the error that ended a run.
+
 ### Appearance
 
 - Add three skins: Linework (the new default), Classic and Instrument, each with its own accents, light and dark themes, motion and density settings. Settings saved before skins existed open in Linework; a saved skin is kept.

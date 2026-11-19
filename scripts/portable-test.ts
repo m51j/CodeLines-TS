@@ -60,6 +60,7 @@ const executable = path.resolve(
     stdio: "ignore",
   });
 let browser: Browser | undefined;
+const startup = 30000;
 try {
   const deadline = Date.now() + 45000;
   while (Date.now() < deadline) {
@@ -76,15 +77,21 @@ try {
     throw new Error(
       "Portable executable did not open its Chromium debugging endpoint",
     );
+  // The debugging port opens before the window exists, and a cold portable start (the wrapper
+  // unpacks the app first) is slow on CI runners, so wait for the page instead of assuming it.
   const context = browser.contexts()[0],
-    page = context.pages()[0];
+    page =
+      context.pages()[0] ??
+      (await context.waitForEvent("page", { timeout: startup }));
   await context.setOffline(true);
   await expect(
     page.getByRole("heading", { name: "Dashboard", exact: true }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: startup });
   expect(page.url()).toMatch(/^file:/);
-  await expect(page).toHaveTitle("CodeLines");
-  await expect(page.locator(".titlebar-brand")).toHaveText("CodeLines");
+  await expect(page).toHaveTitle("CodeLines", { timeout: startup });
+  await expect(page.locator(".titlebar-brand")).toHaveText("CodeLines", {
+    timeout: startup,
+  });
   await page
     .getByRole("button", { name: "Scan all projects", exact: true })
     .click();
@@ -129,7 +136,11 @@ try {
     child.once("exit", () => resolve());
     setTimeout(resolve, 5000);
   });
-  if (!path.resolve(root).startsWith(path.resolve(os.tmpdir()) + path.sep))
-    throw new Error("Unexpected temporary directory");
-  await fs.rm(root, { recursive: true, force: true, maxRetries: 5 });
+  // Compare resolved paths: on GitHub runners os.tmpdir() is an 8.3 short path (RUNNER~1) while
+  // root went through realpath. A mismatch skips the cleanup rather than throwing here, which
+  // would hide the error that ended the test.
+  const tmp = await fs.realpath(os.tmpdir());
+  if (root.startsWith(tmp + path.sep))
+    await fs.rm(root, { recursive: true, force: true, maxRetries: 5 });
+  else console.error(`Left unexpected temporary directory in place: ${root}`);
 }

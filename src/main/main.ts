@@ -43,6 +43,7 @@ import type {
 } from "../shared/contracts";
 import { createWidget, type WidgetController } from "./widget";
 import { createUpdater, type UpdaterController, type UpdaterLike } from "./updater";
+import { isTrustedUrl } from "./trusted-url";
 import { widgetSummary } from "../widget/summary";
 import { skinInfo, type AppearanceBoot } from "../shared/appearance";
 import { aboutLinks, aboutLinkKeys } from "../shared/about";
@@ -87,8 +88,7 @@ function checkSender(event: Electron.IpcMainInvokeEvent) {
   const url = event.senderFrame?.url;
   if (
     event.sender !== window.webContents ||
-    !url ||
-    url !== trustedUrl()
+    !isTrustedUrl(url, trustedUrl())
   )
     throw new Error("Untrusted desktop request");
 }
@@ -713,7 +713,7 @@ async function setup() {
   });
   window.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   const guardNavigation = (event: Electron.Event, url: string) => {
-    if (url !== trustedUrl())
+    if (!isTrustedUrl(url, trustedUrl()))
       event.preventDefault();
   };
   window.webContents.on("will-navigate", guardNavigation);
