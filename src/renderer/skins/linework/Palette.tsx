@@ -10,6 +10,7 @@ import { useWorkspace } from "../../workspace";
 import { useShell } from "./context";
 import { Icon, type IconName } from "./icons";
 import { pageIcons } from "./Rail";
+import { developer, openAboutLink, requestAbout } from "../../about";
 
 interface Item {
   group: string;
@@ -160,6 +161,11 @@ export function Palette({ mode, onClose, toggleRail }: { mode: "commands" | "sho
         off: !!busy || !ws.state.ai?.combined,
       },
       { group: "Help", label: "Keyboard shortcuts", icon: "keyboard", key: "?", run: () => shell.openPalette("shortcuts") },
+      { group: "Help", label: "About CodeLines", icon: "info", run: () => (requestAbout(), shell.go("Settings")) },
+      { group: "Help", label: "Open GitHub repository", icon: "branch", run: () => openAboutLink("repo", ws.setError) },
+      { group: "Help", label: "Report an issue", icon: "alert", run: () => openAboutLink("issues", ws.setError) },
+      { group: "Help", label: "Release notes", icon: "external", run: () => openAboutLink("releases", ws.setError) },
+      { group: "Help", label: `Visit ${developer.name} website`, icon: "external", run: () => openAboutLink("website", ws.setError) },
     ] satisfies Item[];
   }, [mode, shell, ws, draft, busy, dirty, c, win.maximized, control, toggleRail]);
 

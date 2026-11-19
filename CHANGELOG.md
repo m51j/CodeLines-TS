@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### About and help
+
+- Add an About section to Settings in every skin with the version, the developer (NEXTE, nex-te.com) and links to the GitHub repository, issues and release notes. Links open in the default browser; the app window itself stays offline.
+- Add Help entries to the command palette (About, GitHub repository, report an issue, release notes, NEXTE website) and a Help submenu to the tray menu.
+- Show the version, the developer and a GitHub link in Instrument's title-bar About popover.
+- Credit NEXTE in the installer and executable copyright line.
+
 ## 1.1.0 — 2026-11-03
 
 Downloads are `CodeLines.Setup.1.1.0.exe`, `CodeLines.1.1.0.exe`, and `SHA256SUMS.txt` under [v1.1.0](https://github.com/m51j/CodeLines-TS/releases/tag/v1.1.0).

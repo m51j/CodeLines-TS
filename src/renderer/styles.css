@@ -2077,3 +2077,52 @@ details[open] > :not(summary) {
 .accent-ratios {
   font-size: 12px;
 }
+/* About card */
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+.about-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+.about-block p {
+  margin: 0;
+}
+.about-app {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.about-app strong {
+  display: block;
+  font-size: 17px;
+}
+.about-app span,
+.about-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+.about-label {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.about-nexte {
+  color: var(--text);
+}
+.about-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.about-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

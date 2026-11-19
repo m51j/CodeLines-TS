@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { Appearance, AppearanceBoot } from "./appearance";
+import type { AboutLink } from "./about";
 export type { AppearanceBoot };
 export const scopes = [
   "SourceOnly",
@@ -392,6 +393,8 @@ export interface WindowState {
 export interface DesktopApi {
   /** The saved appearance at the moment the window opened, for the first paint. */
   boot: AppearanceBoot;
+  /** The installed CodeLines version, e.g. "1.1.0". */
+  version: string;
   getWindowState(): Promise<WindowState>;
   windowAction(action: WindowAction): Promise<void>;
   onWindowState(callback: (state: WindowState) => void): () => void;
@@ -415,6 +418,8 @@ export interface DesktopApi {
     allAgents?: boolean;
   }): Promise<string | null>;
   openReport(): Promise<void>;
+  /** Opens one of the fixed About pages in the default browser. */
+  openLink(link: AboutLink): Promise<void>;
   onProgress(callback: (event: Progress) => void): () => void;
   /** State changed outside this window, e.g. by a background widget refresh. */
   onStateChanged(callback: (state: AppState) => void): () => void;

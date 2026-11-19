@@ -1,7 +1,7 @@
 /**
  * Settings: a sticky save bar, a section index that follows the scroll, Appearance (skin,
  * theme, motion, density, accent with a live contrast readout), Analysis defaults, Git
- * history, AI usage with agents, the Desktop widget with a live preview, and local data.
+ * history, AI usage with agents, the Desktop widget with a live preview, local data and About.
  */
 import { useEffect, useMemo, useState } from "react";
 import { agentLabels } from "../../../../shared/agents";
@@ -17,6 +17,8 @@ import { Icon } from "../icons";
 import { Check, Field, Group, LinesInput, Select, Sheet } from "../ui/controls";
 import { agentColor } from "../ui/fmt";
 import { scopeOptions, tokenizerOptions } from "../../../format";
+import { appVersion, copyrightLine, developer, onAboutRequest, openAboutLink, type AboutLink } from "../../../about";
+import { NexteLogo } from "../../../ui/NexteLogo";
 
 const sections = [
   ["appearance", "Appearance"],
@@ -25,6 +27,7 @@ const sections = [
   ["ai", "AI usage"],
   ["widget", "Desktop widget"],
   ["data", "Local data & migration"],
+  ["about", "About"],
 ] as const;
 const aiOptions = [
   ["Show AI usage page", "enabled"],
@@ -35,7 +38,7 @@ const aiOptions = [
 const refreshChoices = [1, 5, 15, 30, 60];
 
 export function SettingsPage() {
-  const { state, draft, busy, dirty, change, save, setDraft, act, setWidget } = useWorkspace();
+  const { state, draft, busy, dirty, change, save, setDraft, act, setWidget, setError } = useWorkspace();
   const { scroller } = useShell();
   const c = useAppearanceControls();
   const [on, setOn] = useState<string>(sections[0][0]);
@@ -50,11 +53,27 @@ export function SettingsPage() {
         const s = document.getElementById("lw-set-" + id);
         if (s && s.getBoundingClientRect().top < 200) cur = id;
       }
+      // The last sections never reach the top; at the bottom of the page the last one is current.
+      if (el.scrollTop > 0 && el.scrollTop + el.clientHeight >= el.scrollHeight - 2) cur = sections[sections.length - 1][0];
       setOn(cur);
     };
     el.addEventListener("scroll", spy, { passive: true });
     return () => el.removeEventListener("scroll", spy);
   }, [scroller]);
+  useEffect(
+    () =>
+      onAboutRequest(() => {
+        setOn("about");
+        document.getElementById("lw-set-about")?.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "start" });
+      }),
+    [],
+  );
+  const link = (to: AboutLink, label: string, icon: "external" | "branch" | "alert" | "info") => (
+    <button className="btn" type="button" onClick={() => openAboutLink(to, setError)}>
+      <Icon name={icon} />
+      {label}
+    </button>
+  );
 
   const disabled = !!busy;
   return (
@@ -312,6 +331,46 @@ export function SettingsPage() {
               <Icon name="upload" />
               Import legacy CodeLines data
             </button>
+          </Sheet>
+          <Sheet className="set-sec" id="lw-set-about" title="About" sub="Free, open-source software for understanding your code and AI usage">
+            <div className="about-grid">
+              <div className="about-block">
+                <div className="brand">
+                  <svg className="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+                    <rect className="bm-bg" x="1" y="1" width="38" height="38" rx="11" />
+                    <path className="bm-l bm-1" d="M10 13h16" />
+                    <path className="bm-l bm-2" d="M15 20h15" />
+                    <path className="bm-l bm-3" d="M15 27h9" />
+                  </svg>
+                  <div className="brand-text">
+                    <strong>CodeLines</strong>
+                    <span>Version {appVersion()}</span>
+                  </div>
+                </div>
+                <p className="muted">Project intelligence, local by design: your source and usage stay on this computer.</p>
+              </div>
+              <div className="about-block">
+                <span className="about-label">Developed by</span>
+                <NexteLogo height={20} className="about-nexte" />
+                <p>
+                  <strong>{developer.name}</strong> ·{" "}
+                  <span lang="ar" dir="rtl">
+                    {developer.nameAr}
+                  </span>
+                </p>
+                <p className="muted">{developer.tagline}</p>
+                <div className="about-actions">{link("website", developer.site, "external")}</div>
+              </div>
+              <div className="about-block">
+                <span className="about-label">Open source</span>
+                <p className="muted">{copyrightLine}</p>
+                <div className="about-actions">
+                  {link("repo", "GitHub repository", "branch")}
+                  {link("issues", "Report an issue", "alert")}
+                  {link("releases", "Release notes", "info")}
+                </div>
+              </div>
+            </div>
           </Sheet>
         </div>
       </div>

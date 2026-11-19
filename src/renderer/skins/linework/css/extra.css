@@ -62,3 +62,13 @@
 
 /* Line chart: a day with no neighbours still shows as a point. */
 .lc-pt { stroke: var(--surface); stroke-width: 1.5; animation: pop 360ms var(--ease-spring) 500ms both; transform-box: fill-box; transform-origin: center; }
+
+/* Settings · About */
+.about-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; }
+.about-block { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.about-block p { margin: 0; }
+.about-block .brand { padding: 0; }
+.about-block .bm-l { animation: none; }
+.about-label { font-size: var(--fs-11); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.about-nexte { color: var(--text); }
+.about-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }

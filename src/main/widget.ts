@@ -7,6 +7,7 @@ import {
   nativeImage,
   nativeTheme,
   screen,
+  shell,
 } from "electron";
 import path from "node:path";
 import fs from "node:fs/promises";
@@ -20,6 +21,9 @@ import type {
 } from "../shared/contracts";
 import { fitBounds, widgetMinimum, type Rect } from "../widget/bounds";
 import { atomicWrite } from "../services/persistence";
+import { aboutLinks, developer, type AboutLink } from "../shared/about";
+/** The tray's Help links open in the default browser. */
+const openLink = (link: AboutLink) => void shell.openExternal(aboutLinks[link]).catch(() => undefined);
 const finite = z.number().finite();
 const viewSchema = z.object({
   tab: z.enum(["overview", "projects", "total"]),
@@ -223,6 +227,16 @@ export function createWidget(host: WidgetHost): WidgetController {
       {
         label: "Turn off widget",
         click: () => void host.change({ enabled: false }),
+      },
+      {
+        label: "Help",
+        submenu: [
+          { label: "CodeLines on GitHub", click: () => openLink("repo") },
+          { label: "Report an issue", click: () => openLink("issues") },
+          { label: "Release notes", click: () => openLink("releases") },
+          { type: "separator" },
+          { label: `${developer.name} website`, click: () => openLink("website") },
+        ],
       },
       { label: "Quit CodeLines", click: () => app.quit() },
     ]);

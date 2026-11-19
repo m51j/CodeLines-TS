@@ -119,3 +119,10 @@
 @container page (max-width: 900px) { .settings { grid-template-columns: minmax(0, 1fr); } .settings-index { position: static; flex-direction: row; flex-wrap: wrap; } }
 
 @container page (max-width: 700px) { .mast h1 { font-size: var(--fs-6); } }
+/* Settings · About */
+.about-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; }
+.about-block { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.about-block p { margin: 0; }
+.about-label { font: var(--fs-0) var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
+.about-nexte { color: var(--ink); }
+.about-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }

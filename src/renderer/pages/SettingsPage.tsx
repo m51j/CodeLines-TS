@@ -4,6 +4,7 @@ import { Select } from "../ui/Select";
 import { agentLabels } from "../../shared/agents";
 import { useWorkspace } from "../workspace";
 import { AppearanceCard } from "../skins/classic/AppearanceCard";
+import { AboutCard } from "../skins/classic/AboutCard";
 const aiOptions = [
   { label: "Show AI usage page", key: "enabled" },
   { label: "Refresh when first opened in this session", key: "autoRefreshOnOpen" },
@@ -295,6 +296,7 @@ export function SettingsPage() {
           Import legacy CodeLines data
         </button>
       </Card>
+      <AboutCard />
     </>
   );
 }

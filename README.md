@@ -105,4 +105,4 @@ See the [technical reference](docs/TECHNICAL.md) for development commands, tests
 
 ## License
 
-Copyright (c) 2026 m51j. Licensed under the [MIT License](LICENSE). See [third-party attribution](THIRD-PARTY-NOTICES.md) and [dependency license texts](docs/THIRD-PARTY-LICENSES.txt).
+Developed by [NEXTE](https://nex-te.com/). Copyright (c) 2026 m51j. Licensed under the [MIT License](LICENSE). See [third-party attribution](THIRD-PARTY-NOTICES.md) and [dependency license texts](docs/THIRD-PARTY-LICENSES.txt).

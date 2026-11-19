@@ -42,6 +42,7 @@ import type {
 import { createWidget, type WidgetController } from "./widget";
 import { widgetSummary } from "../widget/summary";
 import { skinInfo, type AppearanceBoot } from "../shared/appearance";
+import { aboutLinks, aboutLinkKeys } from "../shared/about";
 let window: BrowserWindow;
 const windowState = (): WindowState => ({
   maximized: window.isMaximized(),
@@ -468,6 +469,9 @@ async function setup() {
   ipcMain.on("codelines:boot", (event) => {
     event.returnValue = boot();
   });
+  ipcMain.on("codelines:version", (event) => {
+    event.returnValue = app.getVersion();
+  });
   nativeTheme.on("updated", () => {
     if (window && !window.isDestroyed()) window.setBackgroundColor(windowBackground());
   });
@@ -611,6 +615,10 @@ async function setup() {
     await fs.writeFile(selected.filePath, content, "utf8");
     return selected.filePath;
   });
+  // Fixed pages only, opened in the default browser: the app window itself never goes online.
+  handle("openLink", (key) =>
+    shell.openExternal(aboutLinks[z.enum(aboutLinkKeys).parse(key)]),
+  );
   handle("openReport", async () => {
     const file = path.join(store.directory, "ai-usage", "report.html");
     await fs.mkdir(path.dirname(file), { recursive: true });

@@ -1,4 +1,4 @@
-/** Settings: a section index with scroll-spy, appearance, analysis defaults, Git history, AI usage, widget, local data. */
+/** Settings: a section index with scroll-spy, appearance, analysis defaults, Git history, AI usage, widget, local data, about. */
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { scopes, type Settings } from "../../../../shared/contracts";
 import { agentLabels } from "../../../../shared/agents";
@@ -7,9 +7,11 @@ import { reduced } from "../../../motion/core";
 import { useWorkspace } from "../../../workspace";
 import { LookControls } from "../Appearance";
 import { agentColor } from "../format";
-import { Icon, type IconName } from "../icons";
+import { Icon, Logo, type IconName } from "../icons";
 import { Button, Check, Field, LinesInput, Select } from "../ui/controls";
 import { Panel } from "../ui/layout";
+import { appVersion, copyrightLine, developer, onAboutRequest, openAboutLink } from "../../../about";
+import { NexteLogo } from "../../../ui/NexteLogo";
 const aiOptions = [
   ["Show AI usage page", "enabled"],
   ["Refresh when first opened in this session", "autoRefreshOnOpen"],
@@ -17,7 +19,7 @@ const aiOptions = [
   ["Bucket AI usage in UTC", "useUtc"],
 ] as const;
 const refreshChoices = [1, 5, 15, 30, 60];
-type Section = "Appearance" | "Analysis defaults" | "Git history" | "AI usage" | "Desktop widget" | "Local data";
+type Section = "Appearance" | "Analysis defaults" | "Git history" | "AI usage" | "Desktop widget" | "Local data" | "About";
 const sections: [Section, IconName][] = [
   ["Appearance", "palette"],
   ["Analysis defaults", "analysis"],
@@ -25,6 +27,7 @@ const sections: [Section, IconName][] = [
   ["AI usage", "spark"],
   ["Desktop widget", "widget"],
   ["Local data", "folder"],
+  ["About", "info"],
 ];
 function Spy({ name, refs, children }: { name: Section; refs: RefObject<Partial<Record<Section, HTMLElement | null>>>; children: ReactNode }) {
   return (
@@ -40,7 +43,7 @@ function Spy({ name, refs, children }: { name: Section; refs: RefObject<Partial<
   );
 }
 export function SettingsPage() {
-  const { state, draft, busy, dirty, change, save, setDraft, act, setWidget } = useWorkspace();
+  const { state, draft, busy, dirty, change, save, setDraft, act, setWidget, setError } = useWorkspace();
   const refs = useRef<Partial<Record<Section, HTMLElement | null>>>({}),
     [current, setCurrent] = useState<Section>("Appearance");
   // Scroll-spy: the index follows the section in view.
@@ -48,20 +51,43 @@ export function SettingsPage() {
     const els = Object.values(refs.current).filter((x): x is HTMLElement => !!x);
     const root = els[0]?.closest<HTMLElement>(".view") ?? null;
     const seen = new Map<Element, boolean>();
+    let scroller: HTMLElement | null = null;
+    for (let p = els[0]?.parentElement; p && !scroller; p = p.parentElement)
+      if (/auto|scroll/.test(getComputedStyle(p).overflowY)) scroller = p;
+    const pick = () => {
+      // The last sections never reach the band; at the bottom of the page the last one is current.
+      if (scroller && scroller.scrollTop > 0 && scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2) {
+        setCurrent(sections[sections.length - 1][0]);
+        return;
+      }
+      const first = sections.find(([name]) => {
+        const el = refs.current[name];
+        return el && seen.get(el);
+      });
+      if (first) setCurrent(first[0]);
+    };
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) seen.set(e.target, e.isIntersecting);
-        const first = sections.find(([name]) => {
-          const el = refs.current[name];
-          return el && seen.get(el);
-        });
-        if (first) setCurrent(first[0]);
+        pick();
       },
       { root, rootMargin: "-120px 0px -55% 0px" },
     );
     els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
+    scroller?.addEventListener("scroll", pick, { passive: true });
+    return () => {
+      io.disconnect();
+      scroller?.removeEventListener("scroll", pick);
+    };
   }, []);
+  useEffect(
+    () =>
+      onAboutRequest(() => {
+        setCurrent("About");
+        refs.current.About?.scrollIntoView({ block: "start", behavior: reduced() ? "auto" : "smooth" });
+      }),
+    [],
+  );
   const sw = (label: string, checked: boolean, set: (s: Settings, v: boolean) => void, note?: string) => (
     <Check switch label={label} note={note} checked={checked} onChange={(v) => change((s) => set(s, v))} />
   );
@@ -286,6 +312,45 @@ export function SettingsPage() {
                   disabled={!!busy}
                   onClick={() => void act(() => window.codelines.migrate(), "Legacy data migration finished")}
                 />
+              </div>
+            </Panel>
+          </Spy>
+          <Spy name="About" refs={refs}>
+            <Panel title="About" subtitle="Free, open-source software for understanding your code and AI usage">
+              <div className="about-grid">
+                <div className="about-block">
+                  <div className="about-head">
+                    <Logo size={36} />
+                    <div>
+                      <strong>CodeLines</strong>
+                      <span>Version {appVersion()}</span>
+                    </div>
+                  </div>
+                  <p className="muted">Project intelligence, local by design: your source and usage stay on this computer.</p>
+                </div>
+                <div className="about-block">
+                  <span className="about-label">Developed by</span>
+                  <NexteLogo height={20} className="about-nexte" />
+                  <p>
+                    <strong>{developer.name}</strong> ·{" "}
+                    <span lang="ar" dir="rtl">
+                      {developer.nameAr}
+                    </span>
+                  </p>
+                  <p className="muted">{developer.tagline}</p>
+                  <div className="about-actions">
+                    <Button label={developer.site} icon="external" onClick={() => openAboutLink("website", setError)} />
+                  </div>
+                </div>
+                <div className="about-block">
+                  <span className="about-label">Open source</span>
+                  <p className="muted">{copyrightLine}</p>
+                  <div className="about-actions">
+                    <Button label="GitHub repository" icon="code" onClick={() => openAboutLink("repo", setError)} />
+                    <Button label="Report an issue" icon="alert" onClick={() => openAboutLink("issues", setError)} />
+                    <Button label="Release notes" icon="notes" onClick={() => openAboutLink("releases", setError)} />
+                  </div>
+                </div>
               </div>
             </Panel>
           </Spy>

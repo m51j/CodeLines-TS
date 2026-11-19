@@ -61,6 +61,7 @@
   "build": {
     "appId": "local.codelines.typescript",
     "productName": "CodeLines",
+    "copyright": "Copyright © 2026 m51j · Developed by NEXTE",
     "directories": {
       "output": "release"
     },

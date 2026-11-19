@@ -10,6 +10,8 @@ import { LookControls } from "./Appearance";
 import { progressFraction } from "./format";
 import { Icon, Logo, type IconName } from "./icons";
 import { Popover, usePopover } from "./ui/overlays";
+import { appVersion, developer, openAboutLink } from "../../about";
+import { NexteLogo } from "../../ui/NexteLogo";
 export const pageIcons: Record<Page, IconName> = {
   Dashboard: "dashboard",
   Projects: "folder",
@@ -115,6 +117,7 @@ function Nav({ current, visible, go }: { current: Page; visible: PageDef[]; go: 
   );
 }
 function About({ onClose }: { onClose: () => void }) {
+  const { setError } = useWorkspace();
   const keys: [string, string][] = [
     ["Ctrl K", "Command palette"],
     ["Alt 1 – 7", "Switch page"],
@@ -129,7 +132,7 @@ function About({ onClose }: { onClose: () => void }) {
         <Logo size={40} />
         <div>
           <strong>CodeLines</strong>
-          <span>Project intelligence</span>
+          <span>Project intelligence · v{appVersion()}</span>
         </div>
       </div>
       <p className="about-priv">
@@ -148,8 +151,16 @@ function About({ onClose }: { onClose: () => void }) {
           </div>
         ))}
       </dl>
+      <button type="button" className="about-dev" aria-label={`Developed by ${developer.name}. Opens ${developer.site} in your browser`} onClick={() => openAboutLink("website", setError)}>
+        <span>Developed by</span>
+        <NexteLogo height={13} />
+        <Icon name="external" size={13} />
+      </button>
       <p className="about-foot">
-        Local workspace · Instrument skin{" "}
+        <button type="button" className="btn btn-sm btn-ghost" onClick={() => openAboutLink("repo", setError)}>
+          <Icon name="code" size={14} />
+          <span>GitHub</span>
+        </button>
         <button type="button" className="btn btn-sm btn-ghost" onClick={onClose}>
           Close
         </button>
