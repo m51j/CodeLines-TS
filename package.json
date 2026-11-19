@@ -28,6 +28,7 @@
     "build": "tsx scripts/build.ts",
     "start": "electron .",
     "package": "npm run build && electron-builder --win nsis portable --x64 --publish never && npm run checksums",
+    "icon": "tsx scripts/icon.ts",
     "checksums": "tsx scripts/checksums.ts",
     "checksums:verify": "tsx scripts/checksums.ts --verify",
     "verify": "npm run typecheck && npm run lint && npm test && npm run build"

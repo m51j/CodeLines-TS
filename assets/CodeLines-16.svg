@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" role="img" aria-label="CodeLines">
+  <!-- The 16 px version of CodeLines.svg: pixel-aligned lines, no rules or cursor. -->
+  <rect x=".5" y=".5" width="15" height="15" rx="3.5" fill="#161a22" stroke="#3a4250"/>
+  <g fill="none" stroke-width="2">
+    <path d="M3 5h7" stroke="#f2683c"/>
+    <path d="M5 8h8" stroke="#ff8a5f"/>
+    <path d="M5 11h4" stroke="#f2683c"/>
+  </g>
+</svg>

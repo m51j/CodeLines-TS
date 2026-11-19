@@ -1,11 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="CodeLines">
+  <!-- Linework: three code lines and a cursor on an ink sheet with a ruled margin.
+       Line rows sit on whole pixels at 32 and 64 px; CodeLines-16/24.svg cover the small sizes. -->
   <defs>
-    <linearGradient id="background" x1="28" y1="20" x2="228" y2="236" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#6D8BFF"/>
-      <stop offset="1" stop-color="#405EDB"/>
+    <linearGradient id="ink" x1="0" y1="8" x2="0" y2="248" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#202632"/>
+      <stop offset="1" stop-color="#0e1117"/>
     </linearGradient>
+    <clipPath id="sheet">
+      <rect x="8" y="8" width="240" height="240" rx="56"/>
+    </clipPath>
   </defs>
-  <rect x="12" y="12" width="232" height="232" rx="52" fill="url(#background)"/>
-  <path d="M92 70 54 128l38 58M142 70l38 58-38 58" fill="none" stroke="#FFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="17"/>
-  <path d="M112 83v90M129 103v70M146 122v51" fill="none" stroke="#DCE7FF" stroke-linecap="round" stroke-width="12"/>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#ink)"/>
+  <g clip-path="url(#sheet)">
+    <path d="M8 52h240M8 100h240M8 148h240M8 196h240" stroke="#fff" stroke-opacity=".05" stroke-width="2"/>
+    <path d="M68 8v240" stroke="#f2683c" stroke-opacity=".28" stroke-width="2.5"/>
+  </g>
+  <rect x="9" y="9" width="238" height="238" rx="55" fill="none" stroke="#3a4250" stroke-width="2"/>
+  <g fill="none" stroke-linecap="round" stroke-width="24">
+    <path d="M48 76h112" stroke="#f2683c"/>
+    <path d="M88 124h120" stroke="#ff8a5f"/>
+    <path d="M88 172h64" stroke="#f2683c"/>
+  </g>
+  <circle cx="186" cy="172" r="12" fill="#ff8a5f"/>
 </svg>

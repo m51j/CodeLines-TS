@@ -81,6 +81,7 @@ settings.projects = [
 settings.gitHistory.enabled = true;
 settings.aiUsage.autoRefreshOnOpen = false;
 settings.dailyLog.refreshAiAfterScan = false;
+settings.appearance.skin = "Classic"; // the long UI suite below is written against Classic
 await fs.writeFile(path.join(data, "settings.json"), JSON.stringify(settings));
 const packaged = process.argv.includes("--packaged"),
   exe =

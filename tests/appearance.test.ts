@@ -19,11 +19,12 @@ function* colours(n: number) {
   }
 }
 describe("appearance settings", () => {
-  it("defaults to the Classic skin and loads files saved before skins existed", () => {
+  it("defaults to the Linework skin and loads files saved before skins existed", () => {
     const old = defaults() as unknown as Record<string, unknown>;
     delete old.appearance;
     const s = parseSettings(old);
     expect(s.appearance).toEqual(defaultAppearance());
+    expect(s.appearance.skin).toBe("Linework");
     expect(s.theme).toBe("System");
   });
   it("keeps a valid appearance and repairs invalid fields one by one", () => {
@@ -41,7 +42,7 @@ describe("appearance settings", () => {
     expect(s.appearance.motion).toBe("System");
     expect(s.appearance.density).toBe("Compact");
     expect(parseSettings({ ...defaults(), appearance: { skin: "Neon" } }).appearance.skin).toBe(
-      "Classic",
+      "Linework",
     );
     expect(parseSettings({ ...defaults(), appearance: "dark" }).appearance).toEqual(
       defaultAppearance(),

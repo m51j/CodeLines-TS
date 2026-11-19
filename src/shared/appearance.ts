@@ -8,7 +8,7 @@ export type Skin = (typeof skins)[number];
 export type Scheme = "light" | "dark";
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 export const appearanceSchema = z.object({
-  skin: z.enum(skins).catch("Classic"),
+  skin: z.enum(skins).catch("Linework"),
   /** The accent each skin uses; a missing entry means the skin's own default. */
   accents: z
     .object({
@@ -22,7 +22,7 @@ export const appearanceSchema = z.object({
 });
 export type Appearance = z.infer<typeof appearanceSchema>;
 export const defaultAppearance = (): Appearance => ({
-  skin: "Classic",
+  skin: "Linework",
   accents: {},
   motion: "System",
   density: "Comfortable",
