@@ -1,6 +1,6 @@
 # Publication checklist
 
-The repository preparation and local packaging commands do not push commits, change GitHub visibility, or publish a Release. Version 1.0.0 targets Windows x64 and remains unsigned. Current README screenshots are intentionally retained with their existing usage statistics and anonymized project names.
+The repository preparation and local packaging commands do not push commits, change GitHub visibility, or publish a Release. Version 1.0.0 targets Windows x64 and remains unsigned. README screenshots show the default Linework skin. They are captured with `npx tsx scripts/skin-shots.ts --skin Linework --theme Dark --scale 2 --widget 520x320` (and `--theme Light`), which scans this repository and synthetic AI usage records, so no personal projects or usage appear in them.
 
 ## Prepare the source
 

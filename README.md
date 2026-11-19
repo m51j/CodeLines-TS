@@ -11,43 +11,47 @@ CodeLines is an offline Windows desktop app for understanding your codebase and 
 - **AI usage:** review tokens, sessions, models, activity, and API cost equivalents from local coding-agent records.
 - **Desktop widget:** turn it on in **Settings** for a small translucent window with today's tokens, active time, streak, a fitted activity heatmap, top projects and code totals. It refreshes in the background, stays in the notification area when CodeLines closes, and can start with Windows.
 - **Portable reports:** export CSV and JSON, or share a self-contained AI usage HTML report that opens offline.
-- **Desktop controls:** light, dark, and system themes, project import/export, and local data recovery.
+- **Appearance:** three skins (Linework, the default, plus Classic and Instrument), light, dark, and system themes, accent colours, compact density, and reduced motion.
+- **Command palette:** in Linework and Instrument, press **Ctrl+K** to jump to any page, action, or setting.
+- **Desktop controls:** project import/export, local data recovery, and an About section with version and project links.
 
 ## Screenshots
 
+The screenshots show the default **Linework** skin with sample projects and synthetic AI usage data.
+
 <p align="center">
-  <a href="docs/screenshots/dashboard-anonymized.png">
-    <img src="docs/screenshots/dashboard-showcase.png" alt="CodeLines dashboard in a rounded frame on a navy gradient background, showing workspace totals, anonymized projects, and language distribution" width="1280" />
+  <a href="docs/screenshots/dashboard.png">
+    <img src="docs/screenshots/dashboard-showcase.png" alt="CodeLines dashboard in the Linework skin, dark theme, showing the workspace footprint terrain, project, file, source token and AI token totals, and the project overview table" width="1280" />
   </a>
 </p>
 
 <p align="center">
-  <em>Workspace dashboard with project metrics and language distribution. Project names have been replaced with generic labels for privacy.</em><br />
-  <a href="docs/screenshots/dashboard-anonymized.png">View the anonymized dashboard at full resolution</a>
+  <em>Workspace dashboard in the dark theme: the workspace footprint, headline totals, and a per-project overview.</em><br />
+  <a href="docs/screenshots/dashboard.png">View the dashboard at full resolution</a>
 </p>
 
 <p align="center">
-  <a href="docs/screenshots/ai-usage-overview.png">
-    <img src="docs/screenshots/ai-usage-showcase.png" alt="CodeLines AI usage overview in dark mode, showing token totals, API cost equivalents, sessions, and usage by agent" width="1280" />
+  <a href="docs/screenshots/ai-usage.png">
+    <img src="docs/screenshots/ai-usage-showcase.png" alt="CodeLines AI usage overview in the Linework skin, light theme, showing real token totals, API cost equivalent, model calls, sessions, active days, peaks, and usage by agent" width="1280" />
   </a>
 </p>
 
 <p align="center">
-  <em>AI usage overview with token totals, API cost equivalents, session statistics, and a breakdown by agent.</em><br />
-  <a href="docs/screenshots/ai-usage-overview.png">View the AI usage overview at full resolution</a>
+  <em>AI usage overview in the light theme: token totals, API cost equivalents, sessions, peaks, and a breakdown by agent.</em><br />
+  <a href="docs/screenshots/ai-usage.png">View the AI usage overview at full resolution</a>
 </p>
 
 ## Desktop widget
 
 <p align="center">
   <a href="docs/screenshots/desktop-widget.png">
-    <img src="docs/screenshots/desktop-widget-showcase.png" alt="CodeLines desktop widget in dark mode on a navy gradient background, showing tokens today, a 93-day streak, active time today, and an AI activity heatmap" width="1280" />
+    <img src="docs/screenshots/desktop-widget-showcase.png" alt="CodeLines desktop widget in the Linework skin, dark theme, showing tokens today, a 4-day streak, active time today, and an AI activity heatmap" width="1080" />
   </a>
 </p>
 
 <p align="center">
   <em>The desktop widget keeps today's AI activity in view without opening CodeLines.</em><br />
-  <a href="docs/screenshots/desktop-widget.png">View the widget at actual size</a>
+  <a href="docs/screenshots/desktop-widget.png">View the widget at full resolution</a>
 </p>
 
 Turn on **Show the widget on the desktop** in **Settings** to open a small translucent window that sits on your desktop:
@@ -56,7 +60,7 @@ Turn on **Show the widget on the desktop** in **Settings** to open a small trans
 - **Projects:** time and tokens per project for the selected period.
 - **Total:** all-time AI usage alongside your code totals.
 
-Drag the widget to move it and drag its corner to resize it; its position, size, tab, and period are remembered. The widget refreshes AI usage in the background (every 5 minutes by default) and follows the app's light or dark theme. While it is on, closing the main window keeps CodeLines in the notification area; the tray menu opens CodeLines, shows or hides the widget, refreshes AI usage now, or quits. In **Settings** you can also keep the widget above other windows, change the refresh interval, and start CodeLines with Windows.
+Drag the widget to move it and drag its corner to resize it; its position, size, tab, and period are remembered. The widget refreshes AI usage in the background (every 5 minutes by default) and follows the app's skin and light or dark theme. While it is on, closing the main window keeps CodeLines in the notification area; the tray menu opens CodeLines, shows or hides the widget, refreshes AI usage now, or quits. In **Settings** you can also keep the widget above other windows, change the refresh interval, and start CodeLines with Windows.
 
 ## Install
 

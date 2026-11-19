@@ -1,13 +1,14 @@
 /**
  * Screenshots every page of one skin in the real app, for visual review.
  *
- *   npx tsx scripts/skin-shots.ts --skin Instrument --theme Dark [--url http://127.0.0.1:5174] [--out dir] [--accent #2e86f0] [--compact] [--reduce]
+ *   npx tsx scripts/skin-shots.ts --skin Instrument --theme Dark [--url http://127.0.0.1:5174] [--out dir] [--accent #2e86f0] [--compact] [--reduce] [--scale 2] [--widget 480x300]
  *
  * Without --url it loads the built renderer (run `npm run build` first). With --url it loads
  * a running Vite dev server (`npx vite --port 5174 --strictPort`), so renderer edits show
  * without a rebuild; dist/main.cjs and the preloads must still be built.
  * The workspace scans this repository and the Claude fixtures, then visits each page through
  * the skin's own navigation (a nav landmark named "Main navigation" with one control per page).
+ * --scale renders at that device scale factor (sharper README images); --widget resizes the widget.
  */
 import { _electron, type Page } from "@playwright/test";
 import fs from "node:fs/promises";
@@ -123,7 +124,13 @@ const env: Record<string, string> = {
 };
 if (url) env.CODELINES_DEV_URL = url;
 delete env.ELECTRON_RUN_AS_NODE;
-const desktop = await _electron.launch({ args: ["."], env, timeout: 30000 });
+const scale = arg("scale"),
+  widgetSize = arg("widget")?.split("x").map(Number);
+const desktop = await _electron.launch({
+  args: [...(scale ? ["--force-device-scale-factor=" + scale] : []), "."],
+  env,
+  timeout: 30000,
+});
 const problems: string[] = [];
 async function capture(page: Page, file: string) {
   const base64 = await desktop.evaluate(async ({ BrowserWindow }, u) => {
@@ -199,6 +206,14 @@ try {
   });
   const widget = await opened;
   widget.on("pageerror", (e) => problems.push("widget error: " + e.message));
+  if (widgetSize)
+    await desktop.evaluate(
+      ({ BrowserWindow }, [u, w, h]) =>
+        BrowserWindow.getAllWindows()
+          .find((b) => b.webContents.getURL() === u)
+          ?.setSize(w as number, h as number),
+      [widget.url(), widgetSize[0], widgetSize[1]] as const,
+    );
   await widget.waitForTimeout(2000);
   await capture(widget, "90-widget.png");
   for (const tab of ["Projects", "Total"]) {

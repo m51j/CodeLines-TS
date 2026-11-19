@@ -9,6 +9,11 @@
 - Show the version, the developer and a GitHub link in Instrument's title-bar About popover.
 - Credit NEXTE in the installer and executable copyright line.
 
+### Documentation
+
+- Replace the README screenshots with the default Linework skin (dark dashboard, light AI usage and the desktop widget) and describe skins and the command palette.
+- Add `--scale` and `--widget` options to `scripts/skin-shots.ts` for sharp, reproducible README screenshots.
+
 ## 1.1.0 — 2026-11-03
 
 Downloads are `CodeLines.Setup.1.1.0.exe`, `CodeLines.1.1.0.exe`, and `SHA256SUMS.txt` under [v1.1.0](https://github.com/m51j/CodeLines-TS/releases/tag/v1.1.0).
