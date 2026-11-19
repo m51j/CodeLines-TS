@@ -2,6 +2,21 @@
 
 Development, packaging, storage, and analysis details for CodeLines. See the [README](../README.md) for installation and everyday use. The desktop application uses Electron, TypeScript, and React.
 
+## Updates and releases
+
+`src/main/updater.ts` wraps electron-updater with the GitHub provider set in `package.json` (`build.publish`). Packaging writes `resources/app-update.yml` into the app and `release/latest.yml` next to the installer. The updater checks 10 seconds after startup and every six hours while `settings.updates.autoCheck` is on; **Check for updates** in About, the command palette and the tray always works. The installed app downloads in the background and installs on **Restart to update** (a silent NSIS run that keeps the install folder) or when the app quits. The portable build, detected by `PORTABLE_EXECUTABLE_DIR`, only reports a new version and opens the release page. Updates are off in development and under `CODELINES_TEST=1`. Set `CODELINES_UPDATE_FEED` to a URL serving a `release/` folder (for example `npx http-server release`) to test the whole flow against a local generic feed.
+
+Update requests go through electron-updater's own `electron-updater` session. The request filter that keeps the app window offline applies only to the default session, so it does not block them.
+
+To publish a release, set `version` in `package.json`, add a `## <version> — <date>` section to `CHANGELOG.md`, commit, then push a matching tag:
+
+```powershell
+git tag v1.2.0
+git push origin v1.2.0
+```
+
+`.github/workflows/release.yml` checks the tag matches `package.json` and that CHANGELOG has notes for it. It runs the same audit, verification, packaging and packaged tests as the manual artifact workflow. Then a separate job with `contents: write` publishes the release: both executables, the installer `.blockmap`, `latest.yml` and `SHA256SUMS.txt`. Installed copies see a release once it is published (not a draft or prerelease). File names contain no spaces, so the names in `latest.yml` match the uploaded assets.
+
 ## Verify downloads
 
 Packaging also generates `release/SHA256SUMS.txt` for both executables. Run `npm run checksums:verify` to check a local build. To verify downloaded files without Node.js, place both executables and `SHA256SUMS.txt` in one folder and run this PowerShell command from that folder; it throws if a file is missing or its content differs:
@@ -137,7 +152,7 @@ CSV string cells are escaped and protected against spreadsheet formula injection
 
 ## Architecture
 
-`src/main/`: lifecycle, trusted IPC handlers, native dialogs, serialization, worker orchestration. The preload exposes only named operations. The renderer uses context isolation, Node integration off, sandboxing on, restricted navigation, denied permissions, and blocked external network requests.
+`src/main/`: lifecycle, trusted IPC handlers, native dialogs, serialization, worker orchestration. The preload exposes only named operations. The renderer uses context isolation, Node integration off, sandboxing on, restricted navigation, denied permissions, and blocked external network requests. The main-process updater is the only component that goes online.
 
 `src/shared/`: strict contracts, request validation, persisted schemas, structured failure envelopes. `src/domain/`: pure language/line/metric/daily/history calculations. `src/services/`: filesystem scanning, BPE, ignore matching, Git, persistence, migration, and exports. `src/ai/`: all adapters, cache, read-only SQLite access, protobuf, aggregation, and frozen rates. `src/reports/`: pure shared report selectors. `src/renderer/`: React UI, shared controls, reports, and theme tokens.
 

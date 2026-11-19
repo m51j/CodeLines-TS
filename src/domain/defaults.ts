@@ -56,6 +56,7 @@ export function defaults(): Settings {
       startWithWindows: false,
       refreshMinutes: 5,
     },
+    updates: { autoCheck: true },
   };
 }
 export function upgradeExclusions(settings: Settings): void {

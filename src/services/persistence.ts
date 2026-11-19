@@ -8,6 +8,7 @@ import {
   aiOptionsSchema,
   historyOptionsSchema,
   widgetOptionsSchema,
+  updateOptionsSchema,
   type Settings,
   type DailyLog,
   type AppState,
@@ -57,6 +58,10 @@ export function parseSettings(value: unknown): Settings {
     widget: widgetOptionsSchema.parse({
       ...d.widget,
       ...object.parse(o.widget ?? {}),
+    }),
+    updates: updateOptionsSchema.parse({
+      ...d.updates,
+      ...object.parse(o.updates ?? {}),
     }),
     theme: z.enum(["System", "Light", "Dark"]).parse(o.theme ?? "System"),
     // An appearance from a newer or hand-edited file falls back field by field.

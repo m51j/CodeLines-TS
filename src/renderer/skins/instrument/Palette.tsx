@@ -8,6 +8,7 @@ import { useSkin } from "./context";
 import { Icon, type IconName } from "./icons";
 import { pageIcons } from "./TitleBar";
 import { developer, openAboutLink, requestAbout } from "../../about";
+import { runUpdateAction } from "../../update";
 interface Item {
   group: string;
   label: string;
@@ -71,6 +72,7 @@ export function Palette({ visible, onClose }: { visible: PageDef[]; onClose: () 
       { group: "Help", label: "Open GitHub repository", hint: "Source code", icon: "code", run: () => openAboutLink("repo", ws.setError) },
       { group: "Help", label: "Report an issue", hint: "GitHub issues", icon: "alert", run: () => openAboutLink("issues", ws.setError) },
       { group: "Help", label: "Release notes", hint: "GitHub releases", icon: "notes", run: () => openAboutLink("releases", ws.setError) },
+      { group: "Help", label: "Check for updates", hint: "Shows the result in About", icon: "refresh", run: () => (runUpdateAction("check", ws.setError), requestAbout(), go("Settings")) },
       { group: "Help", label: `Visit ${developer.name} website`, hint: developer.site, icon: "external", run: () => openAboutLink("website", ws.setError) },
     );
     for (const p of state.settings.lastSnapshot?.projects ?? [])

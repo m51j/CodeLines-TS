@@ -7,6 +7,7 @@ import {
   verifyReleaseChecksums,
   writeReleaseChecksums,
 } from "../scripts/release-artifacts";
+import { releaseNotes } from "../scripts/release-notes";
 
 const roots: string[] = [];
 afterEach(async () => {
@@ -22,12 +23,12 @@ async function fixture() {
   return { root, files, manifest: path.join(root, "SHA256SUMS.txt") };
 }
 describe("release checksum integrity", () => {
-  it("uses the release version and filenames with spaces, and matches known SHA256 vectors", async () => {
+  it("uses the release version and the published filenames, and matches known SHA256 vectors", async () => {
     const { root, files, manifest } = await fixture();
     await writeReleaseChecksums(root, files);
     expect(await fs.readFile(manifest, "utf8")).toBe(
-      "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad  CodeLines Setup 2.3.4.exe\n" +
-        "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824  CodeLines 2.3.4.exe\n",
+      "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad  CodeLines-Setup-2.3.4.exe\n" +
+        "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824  CodeLines-2.3.4-portable.exe\n",
     );
     await verifyReleaseChecksums(root, files);
   });
@@ -55,5 +56,17 @@ describe("release checksum integrity", () => {
       "nonempty file",
     );
     await expect(fs.stat(manifest)).rejects.toThrow();
+  });
+});
+describe("release notes", () => {
+  const changelog =
+    "# Changelog\r\n\r\n## Unreleased\r\n\r\n- next\r\n\r\n## 1.2.0 — 2026-11-20\r\n\r\n### Updates\r\n\r\n- Add updates.\r\n\r\n## 1.1.0 — 2026-11-03\r\n\r\n- Old.\r\n";
+  it("take one version's CHANGELOG section, not its neighbours", () => {
+    expect(releaseNotes(changelog, "1.2.0")).toBe("### Updates\n\n- Add updates.\n");
+    expect(releaseNotes(changelog, "1.1.0")).toBe("- Old.\n");
+  });
+  it("refuse a version without a section, so a release never ships without notes", () => {
+    expect(() => releaseNotes(changelog, "1.3.0")).toThrow("no \"## 1.3.0\" section");
+    expect(() => releaseNotes(changelog, "1.2")).toThrow();
   });
 });

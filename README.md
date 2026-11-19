@@ -1,6 +1,6 @@
 # CodeLines
 
-CodeLines is an offline Windows desktop app for understanding your codebase and tracking AI coding activity. Analyze project size and languages, explore Git changes, compare daily progress, and review local AI usage in one workspace. Your projects and usage records stay on your computer; no account, API key, or backend service is required.
+CodeLines is an offline Windows desktop app for understanding your codebase and tracking AI coding activity. Analyze project size and languages, explore Git changes, compare daily progress, and review local AI usage in one workspace. Your projects and usage records stay on your computer; no account, API key, or backend service is required. The only thing CodeLines fetches from the internet is new versions of itself from GitHub Releases, and you can turn that off.
 
 ## Features
 
@@ -13,6 +13,7 @@ CodeLines is an offline Windows desktop app for understanding your codebase and 
 - **Portable reports:** export CSV and JSON, or share a self-contained AI usage HTML report that opens offline.
 - **Appearance:** three skins (Linework, the default, plus Classic and Instrument), light, dark, and system themes, accent colours, compact density, and reduced motion.
 - **Command palette:** in Linework and Instrument, press **Ctrl+K** to jump to any page, action, or setting.
+- **Automatic updates:** the installed app downloads new versions from GitHub Releases in the background and installs them when you restart. The portable app tells you when a new version is out.
 - **Desktop controls:** project import/export, local data recovery, and an About section with version and project links.
 
 ## Screenshots
@@ -70,6 +71,14 @@ Builds are unsigned, so Windows may identify the publisher as unknown. Each rele
 
 The installed app works offline. Install Git and make it available on PATH if you want to use the optional history feature.
 
+### Updates
+
+CodeLines checks [GitHub Releases](https://github.com/m51j/CodeLines-TS/releases) for a new version shortly after it starts and every six hours. The installed app downloads the update in the background, then shows **Restart to update**; if you don't restart, the update installs the next time CodeLines closes. The portable app can't replace itself, so it shows a **Download** button that opens the release page.
+
+**Settings → About → Updates** shows the current status, has a **Check for updates** button, and lets you turn off automatic checks. With them off, CodeLines makes no network requests unless you click **Check for updates**. An update check sends GitHub only what any download does (your IP address and an HTTP request for the release's `latest.yml`). Your projects and usage data are never sent. Each download is verified against the SHA-512 hash in `latest.yml` before it installs.
+
+Versions before 1.2.0 don't include the updater, so install 1.2.0 by hand once.
+
 ## Get started
 
 1. Add your project folders on the **Projects** page.
@@ -95,7 +104,7 @@ On Windows, you can also double-click `run.bat` to build and launch the app. To 
 npm run package
 ```
 
-Local builds produce `release/CodeLines Setup 1.1.0.exe`, `release/CodeLines 1.1.0.exe`, and `release/SHA256SUMS.txt`.
+Local builds produce `release/CodeLines-Setup-<version>.exe`, `release/CodeLines-<version>-portable.exe`, `release/latest.yml` (the update feed), and `release/SHA256SUMS.txt`.
 
 See the [technical reference](docs/TECHNICAL.md) for development commands, tests, packaging, storage, imports, analysis rules, and architecture.
 

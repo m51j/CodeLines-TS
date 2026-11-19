@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Automatic updates
+
+- Check GitHub Releases for a new version shortly after startup and every six hours. The installed app downloads updates in the background and installs them on **Restart to update**, or the next time it closes. The portable app shows a **Download** button that opens the release page.
+- Add an **Updates** block to About in every skin with the status, a download progress bar, **Check for updates**, and a switch to turn off automatic checks. Add **Check for updates** to the command palette and the tray's Help menu, a tray item to restart into a downloaded update, and a corner notice when one is ready.
+- Publish releases from a `v<version>` tag: the workflow tests and packages the app, then uploads the executables, `latest.yml`, the installer blockmap and checksums, with notes taken from this changelog.
+- Name release files without spaces (`CodeLines-Setup-<version>.exe`, `CodeLines-<version>-portable.exe`) so they match the update feed.
+- Versions before this one have no updater; install it by hand once.
+
 ### About and help
 
 - Add an About section to Settings in every skin with the version, the developer (NEXTE, nex-te.com) and links to the GitHub repository, issues and release notes. Links open in the default browser; the app window itself stays offline.

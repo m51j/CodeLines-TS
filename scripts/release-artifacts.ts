@@ -8,8 +8,8 @@ export function releaseFileNames(
   version: string,
 ): string[] {
   return [
-    `${productName} Setup ${version}.exe`,
-    `${productName} ${version}.exe`,
+    `${productName}-Setup-${version}.exe`,
+    `${productName}-${version}-portable.exe`,
   ];
 }
 

@@ -35,6 +35,6 @@ Read-only inspection of the actual legacy files confirmed the expected root shap
 
 ## Platform and scope
 
-Windows is the verified target. Domain/report calculations have no Electron dependency. SQLite is supplied by Electron's Node runtime; no native addon rebuild or external database service is required. Git is a read-only local optional dependency. Network requests are blocked in the production Electron session, and exported reports use a `connect-src 'none'` policy.
+Windows is the verified target. Domain/report calculations have no Electron dependency. SQLite is supplied by Electron's Node runtime; no native addon rebuild or external database service is required. Git is a read-only local optional dependency. Network requests are blocked in the production Electron session, and exported reports use a `connect-src 'none'` policy. The only network access is the main-process updater (electron-updater, in its own `electron-updater` session), which reads this repository's GitHub Releases and can be turned off in Settings.
 
 No private live transcripts or real repositories are used as test fixtures. The legacy .NET tests were inspected as specifications; the replacement's TypeScript and desktop tests exercise the port directly without building or modifying the source repository.

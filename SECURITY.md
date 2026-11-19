@@ -13,3 +13,7 @@ If private reporting is unavailable, open an issue titled **Private security rep
 ## Local data and exports
 
 The application reads selected local projects and supported agent stores. Data remains on the computer during normal offline analysis, but exported JSON, CSV, HTML, application data, and screenshots can contain project paths and usage information. Review them before sharing. Unsigned Windows binaries should be downloaded from a maintainer-published release or built from source; check the accompanying SHA256 manifest to detect altered or incomplete downloads.
+
+## Updates and network access
+
+The application window never makes network requests; the production session blocks everything except local files. The main process contacts GitHub only to check for and download updates, using electron-updater's own session: it reads `latest.yml` from the newest published release of this repository and, in the installed app, downloads the installer it names. No project or usage data is sent. A download installs only if its SHA-512 matches `latest.yml`, which is served over HTTPS from the same release. Builds are unsigned, so this check shows a download is complete and matches the release, not who published it. Releases are created only by the repository's tag-triggered workflow. Automatic checks can be turned off in **Settings → About → Updates**.

@@ -244,6 +244,26 @@ export function useWorkspaceState() {
     },
     [change, setError],
   );
+  /** Like setWidget: the update preference lives in About, outside the save bar, and applies at once. */
+  const setUpdates = useCallback(
+    async (patch: Partial<Settings["updates"]>) => {
+      const saved = latest.current.state?.settings;
+      if (!saved) return;
+      const updates = { ...saved.updates, ...patch };
+      change((s) => {
+        s.updates = updates;
+      });
+      try {
+        setState(await window.codelines.save({ ...saved, updates }));
+      } catch (e) {
+        change((s) => {
+          s.updates = saved.updates;
+        });
+        setError(e);
+      }
+    },
+    [change, setError],
+  );
   const exportData = useCallback(
     async (
       kind: ExportKind,
@@ -295,6 +315,7 @@ export function useWorkspaceState() {
     setTheme,
     setAppearance,
     setWidget,
+    setUpdates,
     exportData,
     cancel,
   };

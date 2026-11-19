@@ -11,6 +11,7 @@ import { Icon, Logo, type IconName } from "../icons";
 import { Button, Check, Field, LinesInput, Select } from "../ui/controls";
 import { Panel } from "../ui/layout";
 import { appVersion, copyrightLine, developer, onAboutRequest, openAboutLink } from "../../../about";
+import { runUpdateAction, updateView, useUpdateState } from "../../../update";
 import { NexteLogo } from "../../../ui/NexteLogo";
 const aiOptions = [
   ["Show AI usage page", "enabled"],
@@ -43,7 +44,8 @@ function Spy({ name, refs, children }: { name: Section; refs: RefObject<Partial<
   );
 }
 export function SettingsPage() {
-  const { state, draft, busy, dirty, change, save, setDraft, act, setWidget, setError } = useWorkspace();
+  const { state, draft, busy, dirty, change, save, setDraft, act, setWidget, setUpdates, setError } = useWorkspace();
+  const update = updateView(useUpdateState());
   const refs = useRef<Partial<Record<Section, HTMLElement | null>>>({}),
     [current, setCurrent] = useState<Section>("Appearance");
   // Scroll-spy: the index follows the section in view.
@@ -350,6 +352,30 @@ export function SettingsPage() {
                     <Button label="Report an issue" icon="alert" onClick={() => openAboutLink("issues", setError)} />
                     <Button label="Release notes" icon="notes" onClick={() => openAboutLink("releases", setError)} />
                   </div>
+                </div>
+                <div className="about-block">
+                  <span className="about-label">Updates</span>
+                  <p className="muted update-status" data-tone={update.tone}>
+                    {update.text}
+                  </p>
+                  {update.progress !== null && (
+                    <div className="ui-update-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(update.progress)}>
+                      <i style={{ width: `${update.progress}%` }} />
+                    </div>
+                  )}
+                  {update.action && (
+                    <div className="about-actions">
+                      <Button
+                        label={update.action.label}
+                        icon={({ check: "refresh", restart: "power", download: "download" } as const)[update.action.icon]}
+                        disabled={update.action.disabled}
+                        onClick={() => runUpdateAction(update.action!.kind, setError)}
+                      />
+                    </div>
+                  )}
+                  {update.canAutoCheck && (
+                    <Check switch label="Check for updates automatically" checked={draft.updates.autoCheck} onChange={(v) => void setUpdates({ autoCheck: v })} />
+                  )}
                 </div>
               </div>
             </Panel>

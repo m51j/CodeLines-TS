@@ -3,6 +3,7 @@ import { useAppearance } from "./appearance/useAppearance";
 import { visiblePages, type Page } from "./pages";
 import { loaders, shells } from "./skins";
 import { appStyles } from "./skins/styles";
+import { UpdateNotice } from "./ui/UpdateNotice";
 import { WorkspaceContext, useWorkspaceState, type Workspace } from "./workspace";
 // Only pure domain helpers are imported by the renderer. No Node or filesystem modules enter this bundle.
 export function App() {
@@ -26,6 +27,7 @@ export function App() {
   return (
     <WorkspaceContext.Provider value={ws}>
       <Shell page={current} visible={visible} setPage={setPage} />
+      <UpdateNotice onError={ws.setError} />
     </WorkspaceContext.Provider>
   );
 }

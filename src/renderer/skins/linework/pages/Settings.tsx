@@ -19,6 +19,7 @@ import { agentColor } from "../ui/fmt";
 import { scopeOptions, tokenizerOptions } from "../../../format";
 import { appVersion, copyrightLine, developer, onAboutRequest, openAboutLink, type AboutLink } from "../../../about";
 import { NexteLogo } from "../../../ui/NexteLogo";
+import { runUpdateAction, updateView, useUpdateState } from "../../../update";
 
 const sections = [
   ["appearance", "Appearance"],
@@ -36,9 +37,11 @@ const aiOptions = [
   ["Bucket AI usage in UTC", "useUtc"],
 ] as const;
 const refreshChoices = [1, 5, 15, 30, 60];
+const updateIcons = { check: "refresh", restart: "restore", download: "download" } as const;
 
 export function SettingsPage() {
-  const { state, draft, busy, dirty, change, save, setDraft, act, setWidget, setError } = useWorkspace();
+  const { state, draft, busy, dirty, change, save, setDraft, act, setWidget, setUpdates, setError } = useWorkspace();
+  const update = updateView(useUpdateState());
   const { scroller } = useShell();
   const c = useAppearanceControls();
   const [on, setOn] = useState<string>(sections[0][0]);
@@ -369,6 +372,28 @@ export function SettingsPage() {
                   {link("issues", "Report an issue", "alert")}
                   {link("releases", "Release notes", "info")}
                 </div>
+              </div>
+              <div className="about-block">
+                <span className="about-label">Updates</span>
+                <p className="muted update-status" data-tone={update.tone}>
+                  {update.text}
+                </p>
+                {update.progress !== null && (
+                  <div className="ui-update-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(update.progress)}>
+                    <i style={{ width: `${update.progress}%` }} />
+                  </div>
+                )}
+                {update.action && (
+                  <div className="about-actions">
+                    <button className="btn" type="button" disabled={update.action.disabled} onClick={() => runUpdateAction(update.action!.kind, setError)}>
+                      <Icon name={updateIcons[update.action.icon]} />
+                      {update.action.label}
+                    </button>
+                  </div>
+                )}
+                {update.canAutoCheck && (
+                  <Check label="Check for updates automatically" checked={draft.updates.autoCheck} onChange={(v) => void setUpdates({ autoCheck: v })} />
+                )}
               </div>
             </div>
           </Sheet>

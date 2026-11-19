@@ -12,6 +12,8 @@ npm run test:desktop
 
 For packaging changes, also run `npm run package`, `npm run test:desktop -- --packaged`, `npm run test:portable`, and `npm run checksums:verify` sequentially. Desktop tests use isolated temporary data and synthetic agent roots. Do not run packaging while a desktop test is using its executable.
 
+Releases are published by pushing a `v<version>` tag that matches `package.json`, after adding that version's section to `CHANGELOG.md`; see [Updates and releases](docs/TECHNICAL.md#updates-and-releases). Installed copies update themselves from the newest published release, so publish only builds that passed the release workflow.
+
 Keep changes focused and describe the problem, resulting behavior, and checks performed. Include a meaningful regression test for a bug when practical. Preserve independently generated fixtures and frozen pricing data unless the change explicitly updates their documented contract and provenance. Screenshots in contributions should use synthetic data.
 
 Use GitHub Issues for reproducible bugs or feature requests. For a bug, include the application version, Windows and Node versions where relevant, reproduction steps, expected and actual behavior, and sanitized error output. See SECURITY.md for security reports. Never attach your full settings, AI cache, or agent conversations.

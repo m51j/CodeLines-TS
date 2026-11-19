@@ -15,6 +15,7 @@ import { pathToFileURL } from "node:url";
 import { z } from "zod";
 import type {
   Settings,
+  UpdateState,
   WidgetData,
   WidgetOptions,
   WidgetView,
@@ -43,10 +44,13 @@ export interface WidgetHost {
   openMain(): void;
   refresh(): void;
   change(patch: Partial<WidgetOptions>): Promise<void>;
+  update: { state(): UpdateState; check(): void; install(): void };
 }
 export interface WidgetController {
   apply(settings: Settings): Promise<void>;
   publish(): void;
+  /** Rebuilds the tray menu, e.g. when an update finishes downloading. */
+  refreshMenu(): void;
   isActive(): boolean;
   window(): BrowserWindow | null;
 }
@@ -198,8 +202,17 @@ export function createWidget(host: WidgetHost): WidgetController {
   }
   function menu() {
     const s = host.settings(),
-      o = s.widget;
+      o = s.widget,
+      update = host.update.state();
+    const updateItems: Electron.MenuItemConstructorOptions[] =
+      update.status === "ready"
+        ? [{ label: `Restart to update to ${update.version}`, click: host.update.install }]
+        : update.status === "available" && update.manual
+          ? [{ label: `Download CodeLines ${update.version}`, click: host.update.install }]
+          : [];
     return Menu.buildFromTemplate([
+      ...updateItems,
+      ...(updateItems.length ? [{ type: "separator" as const }] : []),
       { label: "Open CodeLines", click: () => host.openMain() },
       {
         label: win?.isVisible() ? "Hide widget" : "Show widget",
@@ -234,6 +247,11 @@ export function createWidget(host: WidgetHost): WidgetController {
           { label: "CodeLines on GitHub", click: () => openLink("repo") },
           { label: "Report an issue", click: () => openLink("issues") },
           { label: "Release notes", click: () => openLink("releases") },
+          {
+            label: "Check for updates",
+            enabled: update.status !== "disabled" && update.status !== "checking",
+            click: host.update.check,
+          },
           { type: "separator" },
           { label: `${developer.name} website`, click: () => openLink("website") },
         ],
@@ -348,6 +366,7 @@ export function createWidget(host: WidgetHost): WidgetController {
   return {
     apply,
     publish,
+    refreshMenu: () => tray?.setContextMenu(menu()),
     isActive: () => !!applied?.enabled,
     window: () => win,
   };

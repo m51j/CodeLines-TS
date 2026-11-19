@@ -34,6 +34,7 @@
     "verify": "npm run typecheck && npm run lint && npm test && npm run build"
   },
   "dependencies": {
+    "electron-updater": "^6.8.11",
     "js-tiktoken": "^1.0.21",
     "lucide-react": "^0.548.0",
     "react": "^19.2.0",
@@ -71,6 +72,14 @@
       "package.json"
     ],
     "asar": true,
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "m51j",
+        "repo": "CodeLines-TS",
+        "releaseType": "release"
+      }
+    ],
     "win": {
       "icon": "assets/CodeLines.ico",
       "target": [
@@ -82,7 +91,11 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "deleteAppDataOnUninstall": false
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-portable.${ext}"
     }
   }
 }
