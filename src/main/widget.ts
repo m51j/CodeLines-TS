@@ -22,6 +22,7 @@ import type {
 } from "../shared/contracts";
 import { fitBounds, widgetMinimum, type Rect } from "../widget/bounds";
 import { atomicWrite } from "../services/persistence";
+import { isTrustedUrl } from "./trusted-url";
 import { aboutLinks, developer, type AboutLink } from "../shared/about";
 /** The tray's Help links open in the default browser. */
 const openLink = (link: AboutLink) => void shell.openExternal(aboutLinks[link]).catch(() => undefined);
@@ -105,7 +106,7 @@ export function createWidget(host: WidgetHost): WidgetController {
     if (
       !win ||
       event.sender !== win.webContents ||
-      event.senderFrame?.url !== url
+      !isTrustedUrl(event.senderFrame?.url, url)
     )
       throw new Error("Untrusted widget request");
   }
@@ -298,7 +299,7 @@ export function createWidget(host: WidgetHost): WidgetController {
     w.removeMenu();
     w.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
     const guard = (event: Electron.Event, target: string) => {
-      if (target !== url) event.preventDefault();
+      if (!isTrustedUrl(target, url)) event.preventDefault();
     };
     w.webContents.on("will-navigate", guard);
     w.webContents.on("will-redirect", guard);
