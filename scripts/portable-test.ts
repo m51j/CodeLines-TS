@@ -7,6 +7,7 @@ import os from "node:os";
 import { randomUUID } from "node:crypto";
 import { defaults } from "../src/domain/defaults";
 import manifest from "../package.json";
+import { releaseFileNames } from "./release-artifacts";
 const root = await fs.realpath(
     await fs.mkdtemp(path.join(os.tmpdir(), "codelines-portable-")),
   ),
@@ -30,6 +31,8 @@ settings.projects = [
 ];
 settings.aiUsage.autoRefreshOnOpen = false;
 settings.dailyLog.refreshAiAfterScan = false;
+// The checks below use Classic's title bar and status bar; skins have their own desktop tests.
+settings.appearance.skin = "Classic";
 await fs.writeFile(path.join(data, "settings.json"), JSON.stringify(settings));
 const server = createServer();
 await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -49,7 +52,7 @@ delete env.ELECTRON_RUN_AS_NODE;
 delete env.CODELINES_DEV_URL;
 const executable = path.resolve(
     manifest.build.directories.output,
-    `${manifest.build.productName} ${manifest.version}.exe`,
+    releaseFileNames(manifest.build.productName, manifest.version)[1],
   ),
   child = spawn(executable, [`--remote-debugging-port=${port}`], {
     env,

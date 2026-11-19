@@ -1,4 +1,5 @@
 import type { Settings } from "../shared/contracts";
+import { defaultAppearance } from "../shared/appearance";
 export const defaultExclusions = [
   ".git/",
   ".vs/",
@@ -36,6 +37,7 @@ export function defaults(): Settings {
       defaultExclusionsRevision: 1,
     },
     theme: "System",
+    appearance: defaultAppearance(),
     lastSnapshot: null,
     gitHistory: { enabled: false, days: 7, mode: "Activity" },
     lastGitHistory: null,
@@ -54,6 +56,7 @@ export function defaults(): Settings {
       startWithWindows: false,
       refreshMinutes: 5,
     },
+    updates: { autoCheck: true },
   };
 }
 export function upgradeExclusions(settings: Settings): void {

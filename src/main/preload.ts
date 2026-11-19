@@ -4,6 +4,7 @@ import type {
   DesktopApi,
   Progress,
   IpcResponse,
+  UpdateState,
   WindowState,
 } from "../shared/contracts";
 async function invoke<T>(channel: string, ...args: unknown[]): Promise<T> {
@@ -16,6 +17,8 @@ async function invoke<T>(channel: string, ...args: unknown[]): Promise<T> {
   return response.value;
 }
 const api: DesktopApi = {
+  boot: ipcRenderer.sendSync("codelines:boot") as DesktopApi["boot"],
+  version: ipcRenderer.sendSync("codelines:version") as string,
   getWindowState: () => invoke("codelines:windowState"),
   windowAction: (action) => invoke("codelines:windowAction", action),
   onWindowState: (callback) => {
@@ -33,6 +36,16 @@ const api: DesktopApi = {
   cancel: (id) => invoke("codelines:cancel", id),
   export: (request) => invoke("codelines:export", request),
   openReport: () => invoke("codelines:openReport"),
+  openLink: (link) => invoke("codelines:openLink", link),
+  getUpdateState: () => invoke("codelines:updateState"),
+  checkForUpdates: () => invoke("codelines:checkForUpdates"),
+  installUpdate: () => invoke("codelines:installUpdate"),
+  onUpdateState: (callback) => {
+    const listener = (_event: Electron.IpcRendererEvent, value: UpdateState) =>
+      callback(value);
+    ipcRenderer.on("codelines:updateState", listener);
+    return () => ipcRenderer.removeListener("codelines:updateState", listener);
+  },
   onProgress: (callback) => {
     const listener = (_event: Electron.IpcRendererEvent, value: Progress) =>
       callback(value);

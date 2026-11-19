@@ -81,6 +81,7 @@ settings.projects = [
 settings.gitHistory.enabled = true;
 settings.aiUsage.autoRefreshOnOpen = false;
 settings.dailyLog.refreshAiAfterScan = false;
+settings.appearance.skin = "Classic"; // the long UI suite below is written against Classic
 await fs.writeFile(path.join(data, "settings.json"), JSON.stringify(settings));
 const packaged = process.argv.includes("--packaged"),
   exe =
@@ -118,6 +119,27 @@ async function chooseTheme(page: Page, theme: string) {
       page.evaluate(async () => (await window.codelines.load()).settings.theme),
     )
     .toBe(theme);
+}
+/** The AI report's date range button (its name also carries the current range). */
+const rangeButton = (page: Page) =>
+  page.getByRole("button", { name: /^Report date range/ });
+/** Opens the range picker and picks a preset, which closes it. */
+async function pickRange(page: Page, preset: string) {
+  await rangeButton(page).click();
+  await page
+    .getByRole("dialog", { name: "Report date range" })
+    .getByRole("button", { name: preset, exact: true })
+    .click();
+  await expect(rangeButton(page)).toContainText(preset);
+}
+/** Opens the range picker and types custom days into its From / To fields. */
+async function typeRange(page: Page, since: string, until: string) {
+  await rangeButton(page).click();
+  const picker = page.getByRole("dialog", { name: "Report date range" });
+  await picker.getByLabel("Report start date").fill(since);
+  await picker.getByLabel("Report end date").fill(until);
+  await picker.getByRole("button", { name: "Done", exact: true }).click();
+  await expect(picker).toHaveCount(0);
 }
 async function capture(page: Page, options: { path: string }) {
   const base64 = await desktop.evaluate(async ({ BrowserWindow }, url) => {
@@ -530,17 +552,11 @@ try {
           .locator(".reports .tile strong")
           .first()
           .textContent();
-        await page
-          .getByRole("group", { name: "Report range", exact: true })
-          .getByRole("button", { name: "7d", exact: true })
-          .click();
+        await pickRange(page, "Today");
         await expect(
           page.locator(".reports .tile strong").first(),
         ).not.toHaveText(before ?? "");
-        await page
-          .getByRole("group", { name: "Report range", exact: true })
-          .getByRole("button", { name: "All", exact: true })
-          .click();
+        await pickRange(page, "All time");
         await page
           .getByRole("group", { name: "Group usage", exact: true })
           .getByRole("button", { name: "By model", exact: true })
@@ -573,10 +589,9 @@ try {
         await expect(
           page.getByRole("tab", { name: "Overview", exact: true }),
         ).toHaveAttribute("aria-selected", "true");
-        await page
-          .getByRole("group", { name: "Report range", exact: true })
-          .getByRole("button", { name: "30d", exact: true })
-          .click();
+        // The Claude fixtures are dated July to September 2026.
+        await typeRange(page, "2026-09-01", "2026-09-09");
+        await expect(rangeButton(page)).toContainText("Sep 1 – 9, 2026");
         await page.getByRole("tab", { name: "Tables", exact: true }).click();
         await expect(
           page.getByRole("heading", { name: "App card vs reality" }),
@@ -598,22 +613,29 @@ try {
           page.getByRole("button", { name: "By model", exact: true }),
         ).toHaveAttribute("aria-pressed", "true");
         await page.getByRole("tab", { name: /^Claude Code/ }).click();
-        await expect(
-          page.getByRole("button", { name: "30d", exact: true }),
-        ).toHaveAttribute("aria-pressed", "true");
-        await page.getByLabel("Report start date").fill("2099-01-02");
-        await page.getByLabel("Report end date").fill("2099-01-01");
+        await expect(rangeButton(page)).toContainText("Sep 1 – 9, 2026");
+        await rangeButton(page).click();
+        const picker = page.getByRole("dialog", { name: "Report date range" });
+        await picker.getByLabel("Report start date").fill("2099-01-02");
+        await picker.getByLabel("Report end date").fill("2099-01-01");
         await expect(page.getByRole("alert")).toContainText(
           "Start date must be on or before end date",
         );
-        await page.getByLabel("Report end date").fill("2099-01-03");
+        await picker.getByLabel("Report end date").fill("2099-01-03");
         await expect(
           page.getByText("No usage in this range", { exact: true }),
         ).toBeVisible();
-        await page.getByRole("button", { name: "7d", exact: true }).click();
-        await expect(page.getByLabel("Report start date")).toHaveValue("");
-        await expect(page.getByLabel("Report end date")).toHaveValue("");
-        await page.getByRole("button", { name: "All", exact: true }).click();
+        await picker.getByRole("button", { name: "Last 7 days", exact: true }).click();
+        await expect(picker).toHaveCount(0);
+        await expect(rangeButton(page)).toContainText("Last 7 days");
+        await expect(page.getByRole("alert")).toHaveCount(0);
+        // Escape closes the picker without changing the range.
+        await rangeButton(page).click();
+        await expect(picker).toBeVisible();
+        await page.keyboard.press("Escape");
+        await expect(picker).toHaveCount(0);
+        await expect(rangeButton(page)).toBeFocused();
+        await pickRange(page, "All time");
         await page.getByRole("tab", { name: "Overview", exact: true }).click();
         const cell = page.locator(".heat-cell").first();
         await cell.focus();
@@ -654,12 +676,15 @@ try {
         ).toBeVisible();
         const modelColors = await legendColors();
         console.log(`AI report interactions and colors: ${theme}`);
-        await page.getByRole("button", { name: "7d", exact: true }).click();
+        await typeRange(page, "2026-09-01", "2026-09-09");
+        await expect(
+          page.locator(".recharts-legend-item").first(),
+        ).toBeVisible();
         for (const [key, color] of Object.entries(await legendColors())) {
           expect(color).toBeTruthy();
           expect(color).toBe(modelColors[key]);
         }
-        await page.getByRole("button", { name: "All", exact: true }).click();
+        await pickRange(page, "All time");
         await page.getByRole("tab", { name: /^All agents/ }).click();
         await page.getByRole("tab", { name: "Time", exact: true }).click();
         await page
@@ -835,7 +860,7 @@ try {
     ).toBeVisible();
   }
   await report.getByRole("tab", { name: /^Claude Code/ }).click();
-  await report.getByRole("button", { name: "7d", exact: true }).click();
+  await typeRange(report, "2026-09-01", "2026-09-09");
   await report.getByRole("tab", { name: "Time", exact: true }).click();
   await report.getByRole("tab", { name: /^All agents/ }).click();
   await expect(
@@ -845,16 +870,23 @@ try {
   await expect(
     report.getByRole("tab", { name: "Time", exact: true }),
   ).toHaveAttribute("aria-selected", "true");
-  await expect(
-    report.getByRole("button", { name: "7d", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
+  await expect(rangeButton(report)).toContainText("Sep 1 – 9, 2026");
   await report.getByRole("tab", { name: "Overview", exact: true }).click();
-  await report.getByLabel("Report start date").fill("2099-01-02");
-  await report.getByLabel("Report end date").fill("2099-01-01");
+  await rangeButton(report).click();
+  const reportPicker = report.getByRole("dialog", { name: "Report date range" });
+  await reportPicker.getByLabel("Report start date").fill("2099-01-02");
+  await reportPicker.getByLabel("Report end date").fill("2099-01-01");
   await expect(report.getByRole("alert")).toContainText(
     "Start date must be on or before end date",
   );
-  await report.getByRole("button", { name: "All", exact: true }).click();
+  await reportPicker.getByRole("button", { name: "All time", exact: true }).click();
+  await expect(rangeButton(report)).toContainText("All time");
+  // The theme dropdown is a themed listbox, not the browser's.
+  await report.getByRole("combobox", { name: "Report theme" }).click();
+  await report.getByRole("option", { name: "Dark", exact: true }).click();
+  await expect(report.locator("html")).toHaveAttribute("data-theme", "dark");
+  await report.getByRole("combobox", { name: "Report theme" }).click();
+  await report.getByRole("option", { name: "System", exact: true }).click();
   await report.locator(".heat-cell").first().focus();
   await expect(report.getByRole("tooltip")).toContainText("Real tokens");
   await report.locator(".heat-cell").first().press("Escape");
@@ -1074,6 +1106,87 @@ try {
     ),
   );
   expect(invalidWindowAction).toBe(true);
+  // Skins: each one opens on the saved appearance, offers every page through its
+  // own navigation and window controls, and follows theme and accent changes.
+  for (const skin of ["Instrument", "Linework"] as const) {
+    console.log(`Desktop UI: ${skin} skin`);
+    await page.evaluate(async (skin) => {
+      const s = (await window.codelines.load()).settings;
+      await window.codelines.save({
+        ...s,
+        theme: "Dark",
+        appearance: { ...s.appearance, skin, accents: { [skin]: "#2e86f0" } },
+      });
+    }, skin);
+    await page.reload();
+    await page.waitForFunction(() => !!window.codelines);
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.dataset.skin))
+      .toBe(skin.toLowerCase());
+    expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe("dark");
+    expect(
+      await page.evaluate(() =>
+        document.documentElement.style.getPropertyValue("--accent"),
+      ),
+    ).toMatch(/^#[0-9a-f]{6}$/);
+    const skinTitlebar = page.getByRole("banner", { name: "Application title bar" });
+    await expect(skinTitlebar).toBeVisible({ timeout: 10000 });
+    expect(
+      await skinTitlebar.evaluate((el) =>
+        getComputedStyle(el).getPropertyValue("-webkit-app-region"),
+      ),
+    ).toBe("drag");
+    await expect(
+      page.getByRole("group", { name: "Window controls" }).getByRole("button", {
+        name: "Close window",
+      }),
+    ).toBeVisible();
+    const nav = page.getByRole("navigation", { name: "Main navigation" });
+    for (const name of [
+      "Dashboard",
+      "Projects",
+      "Analysis",
+      "Code changes",
+      "Daily log",
+      "AI usage",
+      "Settings",
+    ]) {
+      await nav
+        .getByRole("button", { name: new RegExp("^" + name) })
+        .first()
+        .click();
+      await expect(
+        page.getByRole("heading", { name, exact: true }).first(),
+      ).toBeVisible();
+      if (name === "AI usage") {
+        await pickRange(page, "Last 90 days");
+        await pickRange(page, "All time");
+      }
+    }
+    // Dropdowns open a themed listbox and support the keyboard.
+    const tokenizer = page.getByRole("combobox", { name: "Tokenizer" }).last();
+    const before = (await tokenizer.textContent())?.trim();
+    await tokenizer.focus();
+    await tokenizer.press("ArrowDown");
+    await expect(page.getByRole("listbox", { name: "Tokenizer" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("listbox", { name: "Tokenizer" })).toHaveCount(0);
+    expect((await tokenizer.textContent())?.trim()).toBe(before);
+    await capture(page, {
+      path: path.join(out, `${packaged ? "packaged" : "built"}-${skin.toLowerCase()}-settings.png`),
+    });
+  }
+  await page.evaluate(async () => {
+    const s = (await window.codelines.load()).settings;
+    await window.codelines.save({
+      ...s,
+      appearance: { ...s.appearance, skin: "Classic", accents: {} },
+    });
+  });
+  await page.reload();
+  await page.waitForFunction(() => !!window.codelines);
+  await expect(page.getByRole("heading", { name: "Dashboard", exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
   const closed = page.waitForEvent("close");
   await page.getByRole("button", { name: "Close window", exact: true }).click();
   await closed;
@@ -1107,6 +1220,7 @@ try {
           "long project-path clipping and full tooltip",
           "Chromium forced offline",
           "desktop widget from Settings: sandboxed, live data, saved view, themes, tray close",
+          "Instrument and Linework skins: saved appearance, accent, title bar, seven-page navigation",
         ],
         screenshots: out,
       },

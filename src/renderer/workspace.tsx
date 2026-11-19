@@ -15,7 +15,10 @@ import type {
   Progress,
   Settings,
 } from "../shared/contracts";
+import { flushSync } from "react-dom";
+import type { Appearance } from "../shared/appearance";
 import { errorMessage } from "./format";
+import { reveal } from "./appearance/apply";
 type Busy = { id: string; kind: OperationKind } | null;
 const operationName = (kind: OperationKind) =>
   kind === "scan" ? "Scan" : kind === "history" ? "Git history" : "AI usage";
@@ -71,20 +74,6 @@ export function useWorkspaceState() {
       offState();
     };
   }, [apply, setError]);
-  useEffect(() => {
-    const theme = draft?.theme;
-    if (!theme) return;
-    const media = matchMedia("(prefers-color-scheme: dark)"),
-      update = () => {
-        document.documentElement.dataset.theme =
-          theme === "Dark" || (theme === "System" && media.matches)
-            ? "dark"
-            : "light";
-      };
-    update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, [draft?.theme]);
   const change = useCallback(
     (fn: (s: Settings) => void) =>
       setDraft((current) => {
@@ -191,16 +180,28 @@ export function useWorkspaceState() {
       }, message),
     [act],
   );
-  /** The theme applies and persists immediately without saving other pending edits. */
-  const setTheme = useCallback(
-    async (theme: Settings["theme"]) => {
-      change((s) => {
-        s.theme = theme;
-      });
+  /**
+   * Appearance (theme, skin, accent, motion, density) applies and persists at once
+   * without saving other pending edits. With an origin the new look opens as a circle
+   * from that control.
+   */
+  const persistLook = useCallback(
+    async (
+      patch: { theme?: Settings["theme"]; appearance?: Appearance },
+      origin?: Element | null,
+    ) => {
+      // The new look is on screen before the save resolves.
+      await reveal(origin, () =>
+        flushSync(() =>
+          change((s) => {
+            Object.assign(s, patch);
+          }),
+        ),
+      );
       const saved = latest.current.state?.settings;
       if (!saved) return;
       try {
-        const next = await window.codelines.save({ ...saved, theme });
+        const next = await window.codelines.save({ ...saved, ...patch });
         setState(next);
       } catch (e) {
         setError(e);
@@ -208,7 +209,21 @@ export function useWorkspaceState() {
     },
     [change, setError],
   );
-  /** Widget options apply and persist immediately, like the theme. */
+  const setTheme = useCallback(
+    (theme: Settings["theme"], origin?: Element | null) =>
+      persistLook({ theme }, origin),
+    [persistLook],
+  );
+  const setAppearance = useCallback(
+    (patch: Partial<Appearance>, origin?: Element | null) => {
+      const current =
+        latest.current.draft?.appearance ?? latest.current.state?.settings.appearance;
+      if (!current) return Promise.resolve();
+      return persistLook({ appearance: { ...current, ...patch } }, origin);
+    },
+    [persistLook],
+  );
+  /** Widget options apply and persist immediately, like the appearance. */
   const setWidget = useCallback(
     async (patch: Partial<Settings["widget"]>) => {
       const saved = latest.current.state?.settings;
@@ -223,6 +238,26 @@ export function useWorkspaceState() {
       } catch (e) {
         change((s) => {
           s.widget = saved.widget;
+        });
+        setError(e);
+      }
+    },
+    [change, setError],
+  );
+  /** Like setWidget: the update preference lives in About, outside the save bar, and applies at once. */
+  const setUpdates = useCallback(
+    async (patch: Partial<Settings["updates"]>) => {
+      const saved = latest.current.state?.settings;
+      if (!saved) return;
+      const updates = { ...saved.updates, ...patch };
+      change((s) => {
+        s.updates = updates;
+      });
+      try {
+        setState(await window.codelines.save({ ...saved, updates }));
+      } catch (e) {
+        change((s) => {
+          s.updates = saved.updates;
         });
         setError(e);
       }
@@ -278,7 +313,9 @@ export function useWorkspaceState() {
     save,
     saveThen,
     setTheme,
+    setAppearance,
     setWidget,
+    setUpdates,
     exportData,
     cancel,
   };

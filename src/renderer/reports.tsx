@@ -30,6 +30,8 @@ import {
   type ReportBucket,
 } from "../reports/selectors";
 import { tokens } from "../ai/model";
+import { DateRangePicker } from "./ui/DateRangePicker";
+import { resolveRange, todayIn, type PresetId } from "./ui/dates";
 import { costText, currency } from "../ai/aggregate";
 import {
   Card,
@@ -67,14 +69,15 @@ const reportTabs = [
 ] as const;
 interface ReportSelection {
   tab: (typeof reportTabs)[number];
-  range: number;
+  /** A named range resolved against today, or "" for the custom since/until days. */
+  preset: PresetId | "";
   group: "agent" | "model";
   since: string;
   until: string;
 }
 const defaultSelection: ReportSelection = {
   tab: "Overview",
-  range: 0,
+  preset: "all",
   group: "agent",
   since: "",
   until: "",
@@ -467,13 +470,13 @@ export function Reports({ result }: { result: AiResult }) {
       ? selectedAgent
       : "all";
   const selection = selections[agent] ?? defaultSelection;
-  const { tab, range, group, since, until } = selection;
+  const { tab, preset, group, since, until } = selection;
   const update = (patch: Partial<ReportSelection>) =>
     setSelections((previous) => ({
       ...previous,
       [agent]: { ...(previous[agent] ?? defaultSelection), ...patch },
     }));
-  const invalidDates = Boolean(since && until && since > until);
+  const invalidDates = Boolean(!preset && since && until && since > until);
   const navigationId = useId();
   const allTime = useMemo(() => {
     const totals: Record<string, number> = { all: 0 };
@@ -490,15 +493,17 @@ export function Reports({ result }: { result: AiResult }) {
     return totals;
   }, [result]);
   const model = useMemo(() => reportModel(result, agent), [result, agent]),
+    today = todayIn(model.utc),
+    bounds = resolveRange({ preset, since, until }, today),
     view = useMemo(
       () =>
         selectReport(model, {
-          range,
-          since,
-          until,
+          range: 0,
+          since: bounds.since,
+          until: bounds.until,
           group: agent === "all" ? group : "model",
         }),
-      [model, range, since, until, group, agent],
+      [model, bounds.since, bounds.until, group, agent],
     );
   if (!result.combined)
     return (
@@ -664,24 +669,22 @@ export function Reports({ result }: { result: AiResult }) {
               </button>
             ))}
           </div>
-          <div
-            className="report-segment"
-            role="group"
-            aria-label="Report range"
-          >
-            {[0, 90, 30, 7].map((n) => (
-              <button
-                key={n}
-                aria-pressed={!since && !until && range === n}
-                onClick={() => update({ range: n, since: "", until: "" })}
-              >
-                {n ? `${n}d` : "All"}
-              </button>
-            ))}
-          </div>
+          <DateRangePicker
+            className="report-range"
+            label="Report date range"
+            startLabel="Report start date"
+            endLabel="Report end date"
+            today={today}
+            value={{ preset, since, until }}
+            onChange={update}
+            invalid={invalidDates}
+            describedBy={
+              invalidDates ? `${navigationId}-date-error` : undefined
+            }
+          />
         </div>
-        <div className="report-filters">
-          {agent === "all" && (
+        {agent === "all" && (
+          <div className="report-filters">
             <div
               className="report-segment"
               role="group"
@@ -697,43 +700,8 @@ export function Reports({ result }: { result: AiResult }) {
                 </button>
               ))}
             </div>
-          )}
-          <div className="report-date-fields">
-            <label>
-              From{" "}
-              <input
-                aria-label="Report start date"
-                aria-invalid={invalidDates}
-                aria-describedby={
-                  invalidDates ? `${navigationId}-date-error` : undefined
-                }
-                type="date"
-                value={since}
-                onChange={(e) => update({ since: e.target.value, range: 0 })}
-              />
-            </label>
-            <label>
-              To{" "}
-              <input
-                aria-label="Report end date"
-                aria-invalid={invalidDates}
-                aria-describedby={
-                  invalidDates ? `${navigationId}-date-error` : undefined
-                }
-                type="date"
-                value={until}
-                onChange={(e) => update({ until: e.target.value, range: 0 })}
-              />
-            </label>
-            {(since || until) && (
-              <button
-                onClick={() => update({ since: "", until: "", range: 0 })}
-              >
-                Clear dates
-              </button>
-            )}
           </div>
-        </div>
+        )}
         {invalidDates && (
           <p
             className="report-date-error"

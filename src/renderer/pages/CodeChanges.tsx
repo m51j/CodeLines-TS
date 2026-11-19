@@ -5,6 +5,7 @@ import { modeLabel, number, scopeLabel, signed, tileNumber } from "../format";
 import { gitTotals } from "../../domain/history";
 import { historyInputs, useWorkspace } from "../workspace";
 import { historyFileColumns, historyProjectColumns } from "./columns";
+import { Select } from "../ui/Select";
 const presets = [7, 30, 365];
 export function CodeChanges() {
   const { state, draft, busy, partial, change, execute, exportData } =
@@ -23,28 +24,24 @@ export function CodeChanges() {
     <>
       <div className="toolbar section-toolbar align-end">
         <Field label="Period">
-          <select
+          <Select
             aria-label="History period"
             disabled={!!busy}
             value={
               presets.includes(draft.gitHistory.days)
-                ? draft.gitHistory.days
+                ? String(draft.gitHistory.days)
                 : "custom"
             }
-            onChange={(e) =>
+            onChange={(v) =>
               change((s) => {
-                s.gitHistory.days =
-                  e.target.value === "custom" ? 90 : Number(e.target.value);
+                s.gitHistory.days = v === "custom" ? 90 : Number(v);
               })
             }
-          >
-            {presets.map((n) => (
-              <option value={n} key={n}>
-                {n} days
-              </option>
-            ))}
-            <option value="custom">Custom</option>
-          </select>
+            options={[
+              ...presets.map((n) => ({ value: String(n), label: `${n} days` })),
+              { value: "custom", label: "Custom" },
+            ]}
+          />
         </Field>
         {!presets.includes(draft.gitHistory.days) && (
           <Field label="Custom days (1–36500)">
@@ -67,19 +64,20 @@ export function CodeChanges() {
           </Field>
         )}
         <Field label="Mode">
-          <select
+          <Select
             aria-label="History mode"
             disabled={!!busy}
             value={draft.gitHistory.mode}
-            onChange={(e) =>
+            onChange={(v) =>
               change((s) => {
-                s.gitHistory.mode = e.target.value as "Activity" | "NetChange";
+                s.gitHistory.mode = v;
               })
             }
-          >
-            <option value="Activity">Activity</option>
-            <option value="NetChange">{modeLabel("NetChange")}</option>
-          </select>
+            options={[
+              { value: "Activity", label: "Activity" },
+              { value: "NetChange", label: modeLabel("NetChange") },
+            ]}
+          />
         </Field>
         <button
           className="primary"

@@ -1,6 +1,6 @@
 import { build } from "esbuild";
 import { build as viteBuild } from "vite";
-import { mkdir, copyFile, writeFile } from "node:fs/promises";
+import { mkdir, copyFile, readFile, writeFile } from "node:fs/promises";
 import "./licenses";
 await mkdir("dist", { recursive: true });
 await viteBuild();
@@ -29,7 +29,12 @@ await writeFile(
   report.outputFiles.find((f) => f.path.endsWith(".js"))?.text ??
     report.outputFiles[0].text,
 );
-await copyFile("src/renderer/styles.css", "dist/report.css");
+// The standalone report uses Classic's styles plus the shared dropdowns.
+await writeFile(
+  "dist/report.css",
+  (await readFile("src/renderer/styles.css", "utf8")) +
+    (await readFile("src/renderer/ui/ui.css", "utf8")),
+);
 await copyFile("assets/CodeLines.ico", "dist/CodeLines.ico");
 await copyFile("LICENSE", "dist/LICENSE");
 await copyFile("THIRD-PARTY-NOTICES.md", "dist/THIRD-PARTY-NOTICES.md");

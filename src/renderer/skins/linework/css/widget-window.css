@@ -1,0 +1,13 @@
+/* The widget's own frameless, transparent window. */
+*, *::before, *::after { box-sizing: border-box; }
+:root.widget-root, :root.widget-root body { height: 100%; margin: 0; overflow: hidden; background: transparent; user-select: none; }
+:root.widget-root body { font-family: var(--font-ui); color: var(--text); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+:root.widget-root .w-box { position: fixed; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* Reduced motion: no travel, no scale, near-instant fades. */
+:root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after {
+  animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important; transition-delay: 0ms !important;
+}
+/* The desktop is not visible to backdrop-filter in a transparent window: a denser glass instead. */
+:root.widget-root .w-box { backdrop-filter: none; background: color-mix(in oklab, var(--surface) 90%, transparent); }

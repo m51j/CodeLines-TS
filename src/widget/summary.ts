@@ -172,6 +172,7 @@ export function widgetSummary(
     aiEnabled: settings.aiUsage.enabled,
     today,
     dark,
+    appearance: settings.appearance,
     ranges,
     streak: streaks(days, today),
     days: activeDays

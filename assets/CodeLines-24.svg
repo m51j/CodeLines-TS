@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="CodeLines">
+  <!-- The 20 and 24 px version of CodeLines.svg (24 px is the Windows taskbar size): pixel-aligned lines. -->
+  <rect x=".5" y=".5" width="23" height="23" rx="5.5" fill="#181c25" stroke="#3a4250"/>
+  <path d="M6.5 1v22" stroke="#f2683c" stroke-opacity=".3"/>
+  <g fill="none" stroke-width="2">
+    <path d="M4 7h11" stroke="#f2683c"/>
+    <path d="M9 12h11" stroke="#ff8a5f"/>
+    <path d="M9 17h6" stroke="#f2683c"/>
+  </g>
+  <rect x="17" y="16" width="2" height="2" fill="#ff8a5f"/>
+</svg>

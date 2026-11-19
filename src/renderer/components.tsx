@@ -173,7 +173,23 @@ export function Table<T>({
           </thead>
           <tbody>
             {sorted.slice(current * 100, (current + 1) * 100).map((r, i) => (
-              <tr key={rowKey?.(r) ?? i} className={selected?.(r) ? "selected" : ""}>
+              <tr
+                key={rowKey?.(r) ?? i}
+                className={selected?.(r) ? "selected" : ""}
+                aria-selected={onSelect ? !!selected?.(r) : undefined}
+                onClick={
+                  onSelect
+                    ? (e) => {
+                        if (
+                          !(e.target as Element).closest(
+                            "button,input,select,textarea,label,a",
+                          )
+                        )
+                          onSelect(r);
+                      }
+                    : undefined
+                }
+              >
                 {columns.map((c, j) => (
                   <td className={columnClasses[j]} key={c.key}>
                     {onSelect && j === 0 ? (

@@ -1,8 +1,10 @@
 import { Card, Field, LinesInput } from "../components";
-import { scopeLabel } from "../format";
-import { scopes, type Settings } from "../../shared/contracts";
+import { scopeOptions, tokenizerOptions } from "../format";
+import { Select } from "../ui/Select";
 import { agentLabels } from "../../shared/agents";
 import { useWorkspace } from "../workspace";
+import { AppearanceCard } from "../skins/classic/AppearanceCard";
+import { AboutCard } from "../skins/classic/AboutCard";
 const aiOptions = [
   { label: "Show AI usage page", key: "enabled" },
   { label: "Refresh when first opened in this session", key: "autoRefreshOnOpen" },
@@ -28,6 +30,7 @@ export function SettingsPage() {
             setDraft({
               ...structuredClone(state.settings),
               theme: draft.theme,
+              appearance: draft.appearance,
               widget: draft.widget,
             })
           }
@@ -42,6 +45,7 @@ export function SettingsPage() {
           Save settings
         </button>
       </div>
+      <AppearanceCard />
       <fieldset disabled={!!busy}>
         <Card
           title="Analysis defaults"
@@ -49,36 +53,28 @@ export function SettingsPage() {
         >
           <div className="settings-grid">
             <Field label="Counting scope">
-              <select
+              <Select
+                aria-label="Counting scope"
                 value={draft.scanOptions.countingScope}
-                onChange={(e) =>
+                options={scopeOptions}
+                onChange={(v) =>
                   change((s) => {
-                    s.scanOptions.countingScope = e.target
-                      .value as Settings["scanOptions"]["countingScope"];
+                    s.scanOptions.countingScope = v;
                   })
                 }
-              >
-                {scopes.map((s) => (
-                  <option key={s} value={s}>
-                    {scopeLabel(s)}
-                  </option>
-                ))}
-              </select>
+              />
             </Field>
             <Field label="Tokenizer">
-              <select
+              <Select
+                aria-label="Tokenizer"
                 value={draft.scanOptions.tokenizerEncoding}
-                onChange={(e) =>
+                options={tokenizerOptions}
+                onChange={(v) =>
                   change((s) => {
-                    s.scanOptions.tokenizerEncoding = e.target.value as
-                      | "o200k_base"
-                      | "cl100k_base";
+                    s.scanOptions.tokenizerEncoding = v;
                   })
                 }
-              >
-                <option>o200k_base</option>
-                <option>cl100k_base</option>
-              </select>
+              />
             </Field>
             <Field label="Maximum file size (MB)" help="Larger files are skipped and listed as warnings.">
               <input
@@ -257,19 +253,16 @@ export function SettingsPage() {
                   : "Turn on the AI usage page to refresh it."
               }
             >
-              <select
+              <Select
+                aria-label="Refresh AI usage"
                 disabled={!draft.widget.enabled}
-                value={draft.widget.refreshMinutes}
-                onChange={(e) =>
-                  void setWidget({ refreshMinutes: Number(e.target.value) })
-                }
-              >
-                {refreshChoices.map((m) => (
-                  <option key={m} value={m}>
-                    Every {m} {m === 1 ? "minute" : "minutes"}
-                  </option>
-                ))}
-              </select>
+                value={String(draft.widget.refreshMinutes)}
+                onChange={(v) => void setWidget({ refreshMinutes: Number(v) })}
+                options={refreshChoices.map((m) => ({
+                  value: String(m),
+                  label: `Every ${m} ${m === 1 ? "minute" : "minutes"}`,
+                }))}
+              />
             </Field>
           </div>
           <p className="muted">
@@ -303,6 +296,7 @@ export function SettingsPage() {
           Import legacy CodeLines data
         </button>
       </Card>
+      <AboutCard />
     </>
   );
 }

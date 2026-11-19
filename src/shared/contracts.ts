@@ -1,4 +1,7 @@
 import { z } from "zod";
+import type { Appearance, AppearanceBoot } from "./appearance";
+import type { AboutLink } from "./about";
+export type { AppearanceBoot };
 export const scopes = [
   "SourceOnly",
   "SourceAndConfiguration",
@@ -55,6 +58,11 @@ export const widgetOptionsSchema = z.object({
   refreshMinutes: z.number().int().min(1).max(240),
 });
 export type WidgetOptions = z.infer<typeof widgetOptionsSchema>;
+export const updateOptionsSchema = z.object({
+  /** Check GitHub Releases at startup and every few hours. Manual checks always work. */
+  autoCheck: z.boolean(),
+});
+export type UpdateOptions = z.infer<typeof updateOptionsSchema>;
 export interface Lines {
   physicalLines: number;
   blankLines: number;
@@ -165,12 +173,15 @@ export interface Settings {
   projects: Project[];
   scanOptions: ScanOptions;
   theme: "System" | "Light" | "Dark";
+  /** Skin, accent, motion and density; the light/dark choice stays in theme. */
+  appearance: Appearance;
   lastSnapshot: Snapshot | null;
   gitHistory: HistoryOptions;
   lastGitHistory: HistorySnapshot | null;
   aiUsage: AiOptions;
   dailyLog: { refreshAiAfterScan: boolean };
   widget: WidgetOptions;
+  updates: UpdateOptions;
 }
 export interface DailyEntry extends Omit<Lines, "mixedLines"> {
   projectId: string;
@@ -385,7 +396,24 @@ export interface WindowState {
   maximized: boolean;
   focused: boolean;
 }
+/**
+ * Where the updater stands. "manual" is the portable build: it cannot replace itself, so a new
+ * version is offered as a download from the release page.
+ */
+export type UpdateState =
+  | { status: "disabled"; reason: "development" | "test" }
+  | { status: "idle"; manual: boolean }
+  | { status: "checking"; manual: boolean }
+  | { status: "upToDate"; manual: boolean; checkedAt: string }
+  | { status: "available"; manual: boolean; version: string }
+  | { status: "downloading"; manual: false; version: string; percent: number }
+  | { status: "ready"; manual: false; version: string }
+  | { status: "error"; manual: boolean; message: string };
 export interface DesktopApi {
+  /** The saved appearance at the moment the window opened, for the first paint. */
+  boot: AppearanceBoot;
+  /** The installed CodeLines version, e.g. "1.1.0". */
+  version: string;
   getWindowState(): Promise<WindowState>;
   windowAction(action: WindowAction): Promise<void>;
   onWindowState(callback: (state: WindowState) => void): () => void;
@@ -409,6 +437,14 @@ export interface DesktopApi {
     allAgents?: boolean;
   }): Promise<string | null>;
   openReport(): Promise<void>;
+  /** Opens one of the fixed About pages in the default browser. */
+  openLink(link: AboutLink): Promise<void>;
+  getUpdateState(): Promise<UpdateState>;
+  /** Checks GitHub Releases now, whatever the automatic-check setting says. */
+  checkForUpdates(): Promise<UpdateState>;
+  /** Restarts into the downloaded version, or opens the release page in the portable build. */
+  installUpdate(): Promise<void>;
+  onUpdateState(callback: (state: UpdateState) => void): () => void;
   onProgress(callback: (event: Progress) => void): () => void;
   /** State changed outside this window, e.g. by a background widget refresh. */
   onStateChanged(callback: (state: AppState) => void): () => void;
@@ -438,6 +474,8 @@ export interface WidgetData {
   /** Today's date in the clock the AI report uses. */
   today: string;
   dark: boolean;
+  /** The main window's skin and accent, so the widget matches it. */
+  appearance: Appearance;
   ranges: Record<WidgetRange, WidgetTotals>;
   streak: { current: number; best: number };
   /** Active days only, oldest first. */
@@ -460,6 +498,7 @@ export interface WidgetData {
 }
 export type WidgetMove = "drag" | "resize" | "stop";
 export interface WidgetApi {
+  boot: AppearanceBoot;
   load(): Promise<{ data: WidgetData; view: WidgetView }>;
   onData(callback: (data: WidgetData) => void): () => void;
   /** "stop" resolves true when the pointer moved, so the press was not a click. */

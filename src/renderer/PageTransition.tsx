@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { reducedMotion } from "./appearance/apply";
 
 export function PageTransition({
   page,
@@ -14,9 +15,8 @@ export function PageTransition({
     if (previousPage.current === page) return;
     previousPage.current = page;
 
-    const element = content.current,
-      reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-    if (!element || reducedMotion.matches) return;
+    const element = content.current;
+    if (!element || reducedMotion()) return;
 
     const animation = element.animate(
       [
@@ -25,14 +25,7 @@ export function PageTransition({
       ],
       { duration: 220, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
     );
-    const cancelForReducedMotion = () => {
-      if (reducedMotion.matches) animation.cancel();
-    };
-    reducedMotion.addEventListener("change", cancelForReducedMotion);
-    return () => {
-      animation.cancel();
-      reducedMotion.removeEventListener("change", cancelForReducedMotion);
-    };
+    return () => animation.cancel();
   }, [page]);
 
   return (

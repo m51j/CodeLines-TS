@@ -14,6 +14,7 @@ import { randomUUID } from "node:crypto";
 import { pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
 import { z } from "zod";
+import { autoUpdater } from "electron-updater";
 import {
   Store,
   parseSettings,
@@ -38,9 +39,13 @@ import type {
   GitProject,
   WindowState,
   WidgetOptions,
+  UpdateState,
 } from "../shared/contracts";
 import { createWidget, type WidgetController } from "./widget";
+import { createUpdater, type UpdaterController, type UpdaterLike } from "./updater";
 import { widgetSummary } from "../widget/summary";
+import { skinInfo, type AppearanceBoot } from "../shared/appearance";
+import { aboutLinks, aboutLinkKeys } from "../shared/about";
 let window: BrowserWindow;
 const windowState = (): WindowState => ({
   maximized: window.isMaximized(),
@@ -49,6 +54,7 @@ const windowState = (): WindowState => ({
 let store: Store;
 let widget: WidgetController | undefined;
 let quitting = false;
+let updater: UpdaterController | undefined;
 /** Background operations are widget refreshes; they never block settings changes. */
 const active = new Map<
   string,
@@ -72,12 +78,17 @@ const operationSchema = z.object({
   settings: z.unknown(),
 });
 const entry = path.join(__dirname, "renderer", "index.html");
+/** The page the main window may load; URL() adds the "/" a bare dev origin loads as. */
+const trustedUrl = () =>
+  process.env.CODELINES_DEV_URL
+    ? new URL(process.env.CODELINES_DEV_URL).href
+    : pathToFileURL(entry).href;
 function checkSender(event: Electron.IpcMainInvokeEvent) {
   const url = event.senderFrame?.url;
   if (
     event.sender !== window.webContents ||
     !url ||
-    url !== (process.env.CODELINES_DEV_URL ?? pathToFileURL(entry).href)
+    url !== trustedUrl()
   )
     throw new Error("Untrusted desktop request");
 }
@@ -415,6 +426,17 @@ async function standalone(): Promise<string> {
   ]);
   return reportHtml(store.ai, script, css);
 }
+/** What a window needs before its first paint; read synchronously by both preloads. */
+const boot = (): AppearanceBoot => ({
+  appearance: store.settings.appearance,
+  theme: store.settings.theme,
+});
+const isDark = () => {
+  const theme = store.settings.theme;
+  return theme === "Dark" || (theme === "System" && nativeTheme.shouldUseDarkColors);
+};
+const windowBackground = () =>
+  skinInfo[store.settings.appearance.skin].window[isDark() ? "dark" : "light"];
 async function setup() {
   store = new Store(
     process.env.CODELINES_DATA_DIR ??
@@ -424,24 +446,42 @@ async function setup() {
       ),
   );
   await store.load();
+  const feedUrl = process.env.CODELINES_UPDATE_FEED;
+  updater = createUpdater({
+    load: () => autoUpdater as unknown as UpdaterLike,
+    disabled: feedUrl
+      ? null
+      : !app.isPackaged
+        ? "development"
+        : process.env.CODELINES_TEST === "1"
+          ? "test"
+          : null,
+    // electron-builder's portable wrapper sets this; that build cannot replace itself.
+    manual: !!process.env.PORTABLE_EXECUTABLE_DIR,
+    feedUrl,
+    autoCheck: () => store.settings.updates.autoCheck,
+    onState: publishUpdate,
+    openReleases: () => void shell.openExternal(aboutLinks.releases).catch(() => undefined),
+    beforeInstall: () => {
+      quitting = true;
+    },
+  });
   widget = createWidget({
     directory: store.directory,
     icon: path.join(__dirname, "CodeLines.ico"),
     settings: () => store.settings,
-    data: () => {
-      const theme = store.settings.theme;
-      return widgetSummary(
-        store,
-        Date.now(),
-        theme === "Dark" || (theme === "System" && nativeTheme.shouldUseDarkColors),
-      );
-    },
+    data: () => widgetSummary(store, Date.now(), isDark()),
     openMain,
     refresh: refreshInBackground,
     change: (patch) =>
       changeWidget(patch).catch((e: unknown) => {
         store.warnings.push("Widget settings could not be saved: " + String(e));
       }),
+    update: {
+      state: () => updater!.state(),
+      check: () => void updater!.check(),
+      install: () => updater!.install(),
+    },
   });
   handle("windowState", windowState);
   handle("windowAction", (raw) => {
@@ -455,12 +495,23 @@ async function setup() {
       setImmediate(() => window.close());
     }
   });
+  ipcMain.on("codelines:boot", (event) => {
+    event.returnValue = boot();
+  });
+  ipcMain.on("codelines:version", (event) => {
+    event.returnValue = app.getVersion();
+  });
+  nativeTheme.on("updated", () => {
+    if (window && !window.isDestroyed()) window.setBackgroundColor(windowBackground());
+  });
   handle("load", () => store.state());
   handle("save", async (value) => {
     assertIdle();
     adoptSettings(editorSettings(value));
     await store.save();
+    window.setBackgroundColor(windowBackground());
     await widget?.apply(store.settings);
+    updater?.schedule();
     return store.state();
   });
   handle("add", async () => {
@@ -594,6 +645,13 @@ async function setup() {
     await fs.writeFile(selected.filePath, content, "utf8");
     return selected.filePath;
   });
+  handle("updateState", () => updater!.state());
+  handle("checkForUpdates", () => updater!.check());
+  handle("installUpdate", () => updater!.install());
+  // Fixed pages only, opened in the default browser: the app window itself never goes online.
+  handle("openLink", (key) =>
+    shell.openExternal(aboutLinks[z.enum(aboutLinkKeys).parse(key)]),
+  );
   handle("openReport", async () => {
     const file = path.join(store.directory, "ai-usage", "report.html");
     await fs.mkdir(path.dirname(file), { recursive: true });
@@ -627,7 +685,7 @@ async function setup() {
     minWidth: 900,
     minHeight: 620,
     frame: false,
-    backgroundColor: "#0b1120",
+    backgroundColor: windowBackground(),
     title: "CodeLines",
     show: process.env.CODELINES_TEST !== "1" && !startHidden,
     webPreferences: {
@@ -655,7 +713,7 @@ async function setup() {
   });
   window.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   const guardNavigation = (event: Electron.Event, url: string) => {
-    if (url !== (process.env.CODELINES_DEV_URL ?? pathToFileURL(entry).href))
+    if (url !== trustedUrl())
       event.preventDefault();
   };
   window.webContents.on("will-navigate", guardNavigation);
@@ -664,6 +722,14 @@ async function setup() {
     ? window.loadURL(process.env.CODELINES_DEV_URL)
     : window.loadFile(entry));
   await widget?.apply(store.settings);
+  // Update checks run in the main process through electron-updater's own session, which the
+  // request filter above does not cover; the app window itself stays offline.
+  updater.schedule();
+}
+function publishUpdate(state: UpdateState) {
+  widget?.refreshMenu();
+  if (window && !window.isDestroyed() && !window.webContents.isDestroyed())
+    window.webContents.send("codelines:updateState", state);
 }
 function openMain() {
   if (!window || window.isDestroyed()) return;
@@ -702,6 +768,7 @@ else {
   });
   app.on("before-quit", () => {
     quitting = true;
+    updater?.dispose();
     for (const o of active.values()) void o.worker.terminate();
   });
 }

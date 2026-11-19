@@ -1,0 +1,74 @@
+/* ==========================================================================
+   Linework in the app: pieces the prototype did not need (the skin picker,
+   the loading screen's drag strip) and small adaptations to real data.
+   ========================================================================== */
+
+/* Skin picker (Settings and the appearance popover) */
+.skin-picker { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 18px; }
+.skin-option {
+  display: grid; gap: 5px; align-content: start; padding: 10px; text-align: left; color: var(--text);
+  border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2);
+  transition: border-color var(--dur-2), background-color var(--dur-2), box-shadow var(--dur-2), transform var(--dur-1) var(--ease-out);
+}
+.skin-option:hover:not(:disabled) { transform: translateY(-1px); border-color: var(--line-strong); box-shadow: var(--shadow-1); }
+.skin-option:active:not(:disabled) { transform: scale(0.98); }
+.skin-option:disabled { opacity: 0.5; cursor: not-allowed; }
+.skin-option[aria-checked="true"] { border-color: var(--accent-ui); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-ui); }
+.skin-thumb { position: relative; display: block; height: 54px; overflow: hidden; border-radius: 8px; background: var(--p-bg); border: 1px solid var(--p-line); }
+.skin-thumb i { position: absolute; display: block; }
+.skin-thumb i:nth-child(1) { left: 0; top: 0; bottom: 0; width: 26%; background: var(--p-surface); border-right: 1px solid var(--p-line); }
+.skin-thumb i:nth-child(2) { left: 33%; top: 9px; width: 42%; height: 6px; border-radius: 3px; background: var(--p-ink); opacity: 0.85; }
+.skin-thumb i:nth-child(3) { left: 33%; right: 8px; top: 23px; bottom: 8px; border-radius: 5px; background: var(--p-surface); border-top: 2px solid var(--p-accent); }
+.skin-option strong { display: flex; align-items: center; gap: 6px; font-size: var(--fs-13); font-weight: 650; }
+.skin-option strong .ic { width: 14px; height: 14px; color: var(--accent-ink); stroke-width: 2.2; animation: pop 320ms var(--ease-spring); }
+.skin-option small { color: var(--muted); font-size: var(--fs-11); line-height: 1.35; }
+.skin-picker.compact { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 0; }
+.skin-picker.compact .skin-option { padding: 6px; border-radius: 10px; }
+.skin-picker.compact .skin-thumb { height: 32px; border-radius: 6px; }
+.skin-picker.compact .skin-thumb i:nth-child(2) { top: 6px; height: 4px; }
+.skin-picker.compact .skin-thumb i:nth-child(3) { top: 14px; bottom: 5px; right: 5px; }
+.skin-picker.compact strong { font-size: var(--fs-12); }
+
+/* Settings: theme / motion / density segments fill their field. */
+.set-grid .seg { align-self: start; }
+.settings-body > .sheet:first-child { margin-top: 16px; }
+
+/* The loading screen keeps a drag strip and the window controls. */
+.loader .loader-bar { position: absolute; top: 0; left: 0; right: 0; background: transparent; border-bottom: 0; }
+.loader .loader-bar::before { display: none; }
+.loader-caption .btn { margin-top: 4px; }
+.loader.out { pointer-events: none; }
+
+/* Rail: inert stations take no hover; the theme switch keeps its thumb. */
+.st-item.gone .station { pointer-events: none; }
+.rail .theme-switch { display: flex; }
+
+/* The command button stays clickable in the drag region; the dot follows the accent. */
+.accent-dot { background: var(--accent); }
+
+/* Tables: a header that is wider than its cells keeps its sort arrow visible. */
+.table-scroll th button { min-width: max-content; }
+.data-table .table-search input::-webkit-search-cancel-button { cursor: pointer; }
+
+/* Status pills for every adapter state. */
+.pill-disabled { opacity: 0.7; }
+.pill-empty { color: var(--info); background: var(--info-soft); border-color: color-mix(in oklab, var(--info) 30%, transparent); }
+
+/* The live widget preview sits on a small desktop. */
+.wp-host .w-box { position: absolute; }
+
+/* A station's shortcut hint floats over the end of the row, so it never pushes past the rail. */
+.station .st-key { position: absolute; right: 8px; top: 50%; translate: 0 -50%; margin: 0; }
+
+/* Line chart: a day with no neighbours still shows as a point. */
+.lc-pt { stroke: var(--surface); stroke-width: 1.5; animation: pop 360ms var(--ease-spring) 500ms both; transform-box: fill-box; transform-origin: center; }
+
+/* Settings · About */
+.about-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; }
+.about-block { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.about-block p { margin: 0; }
+.about-block .brand { padding: 0; }
+.about-block .bm-l { animation: none; }
+.about-label { font-size: var(--fs-11); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.about-nexte { color: var(--text); }
+.about-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }

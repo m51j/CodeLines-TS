@@ -1,0 +1,273 @@
+/* ==========================================================================
+   Linework design tokens
+   Colour, type, spacing, radius, elevation and motion. Everything in app.css
+   and widget.css reads from these custom properties.
+   Colour tokens are registered with @property so a theme or accent change
+   interpolates smoothly everywhere they are used.
+   ========================================================================== */
+
+@property --accent      { syntax: "<color>"; inherits: true; initial-value: #f2683c; }
+@property --accent-ink  { syntax: "<color>"; inherits: true; initial-value: #ff8a5f; }
+@property --accent-ui   { syntax: "<color>"; inherits: true; initial-value: #f2683c; }
+@property --accent-fill { syntax: "<color>"; inherits: true; initial-value: #f2683c; }
+@property --on-accent   { syntax: "<color>"; inherits: true; initial-value: #101218; }
+@property --bg          { syntax: "<color>"; inherits: true; initial-value: #0e1117; }
+@property --bg-2        { syntax: "<color>"; inherits: true; initial-value: #0b0d12; }
+@property --surface     { syntax: "<color>"; inherits: true; initial-value: #161a22; }
+@property --surface-2   { syntax: "<color>"; inherits: true; initial-value: #1d222c; }
+@property --surface-3   { syntax: "<color>"; inherits: true; initial-value: #262c38; }
+@property --line        { syntax: "<color>"; inherits: true; initial-value: #2a303c; }
+@property --line-strong { syntax: "<color>"; inherits: true; initial-value: #3a4250; }
+@property --text        { syntax: "<color>"; inherits: true; initial-value: #eceef3; }
+@property --text-2      { syntax: "<color>"; inherits: true; initial-value: #c3c8d3; }
+@property --muted       { syntax: "<color>"; inherits: true; initial-value: #9097a6; }
+
+:root {
+  /* ---- Type ------------------------------------------------------------ */
+  --font-ui: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-display: Bahnschrift, "DIN Alternate", "Barlow Semi Condensed", "Roboto Condensed", "Arial Narrow", var(--font-ui);
+  --font-mono: "Cascadia Mono", "Cascadia Code", "JetBrains Mono", Consolas, ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --fs-10: 10.5px;
+  --fs-11: 11.5px;
+  --fs-12: 12.5px;
+  --fs-13: 13.5px;
+  --fs-14: 14.5px;
+  --fs-16: 16px;
+  --fs-20: 20px;
+  --fs-26: 26px;
+  --fs-32: 32px;
+  --fs-40: 40px;
+  --fs-56: 56px;
+  --lh-tight: 1.1;
+  --lh: 1.45;
+  --tracking-caps: 0.08em;
+
+  /* ---- Spacing (4px base) -------------------------------------------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+  --sp-9: 56px;
+  --gutter: clamp(16px, 2.2vw, 32px);
+
+  /* ---- Radius --------------------------------------------------------- */
+  --r-xs: 4px;
+  --r-sm: 7px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+
+  /* ---- Density -------------------------------------------------------- */
+  --row-h: 38px;
+  --cell-py: 9px;
+  --cell-px: 12px;
+  --ctl-h: 34px;
+
+  /* ---- Motion --------------------------------------------------------- */
+  --dur-1: 110ms;   /* hover, press, colour */
+  --dur-2: 190ms;   /* controls, indicators, popovers */
+  --dur-3: 280ms;   /* pages, panels, drawers */
+  --dur-4: 460ms;   /* chart builds (staggered, never blocking) */
+  --dur-theme: 360ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
+
+  /* ---- Series colours (fixed, accent-independent) ---------------------- */
+  --t-in: var(--s-1);
+  --t-cw: var(--s-3);
+  --t-cr: var(--s-2);
+  --t-out: var(--s-4);
+
+  /* ---- Derived accent tints ------------------------------------------- */
+  --accent-soft: color-mix(in oklab, var(--accent) 14%, var(--surface));
+  --accent-soft-2: color-mix(in oklab, var(--accent) 24%, var(--surface));
+  --accent-line: color-mix(in oklab, var(--accent-ui) 55%, transparent);
+  --accent-glow: color-mix(in oklab, var(--accent) 38%, transparent);
+  --focus: var(--accent-ink);
+  --sel-bg: color-mix(in oklab, var(--accent) 12%, var(--surface));
+  --heat-0: var(--surface-3);
+  --heat-1: color-mix(in oklab, var(--accent) 24%, var(--heat-0));
+  --heat-2: color-mix(in oklab, var(--accent) 44%, var(--heat-0));
+  --heat-3: color-mix(in oklab, var(--accent) 66%, var(--heat-0));
+  --heat-4: var(--accent);
+  --heat-5: color-mix(in oklab, var(--accent) 50%, var(--accent-ink));
+  --heat-6: var(--accent-ink);
+
+  transition:
+    --accent var(--dur-theme) var(--ease-out),
+    --accent-ink var(--dur-theme) var(--ease-out),
+    --accent-ui var(--dur-theme) var(--ease-out),
+    --accent-fill var(--dur-theme) var(--ease-out),
+    --on-accent var(--dur-theme) var(--ease-out),
+    --bg var(--dur-theme) var(--ease-out),
+    --bg-2 var(--dur-theme) var(--ease-out),
+    --surface var(--dur-theme) var(--ease-out),
+    --surface-2 var(--dur-theme) var(--ease-out),
+    --surface-3 var(--dur-theme) var(--ease-out),
+    --line var(--dur-theme) var(--ease-out),
+    --line-strong var(--dur-theme) var(--ease-out),
+    --text var(--dur-theme) var(--ease-out),
+    --text-2 var(--dur-theme) var(--ease-out),
+    --muted var(--dur-theme) var(--ease-out);
+}
+/* While a view-transition reveal plays (the app adds .vt-reveal), colours switch instantly underneath it. */
+:root.no-color-tx, :root.vt-reveal { transition: none; }
+
+/* ==========================================================================
+   Dark — "Ink": cool blue-black neutrals, light text, glow highlights
+   ========================================================================== */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e1117;
+  --bg-2: #0b0d12;
+  --surface: #161a22;
+  --surface-2: #1d222c;
+  --surface-3: #262c38;
+  --line: #2a303c;
+  --line-strong: #3a4250;
+  --text: #eceef3;
+  --text-2: #c3c8d3;
+  --muted: #9097a6;
+  --hover: color-mix(in oklab, var(--text) 7%, transparent);
+  --press: color-mix(in oklab, var(--text) 11%, transparent);
+  --scrim: rgb(4 6 10 / 0.62);
+
+  --success: oklch(0.8 0.15 152);
+  --danger: oklch(0.74 0.16 22);
+  --warn: oklch(0.84 0.13 82);
+  --info: oklch(0.8 0.1 235);
+  --success-soft: color-mix(in oklab, var(--success) 14%, var(--surface));
+  --danger-soft: color-mix(in oklab, var(--danger) 15%, var(--surface));
+  --warn-soft: color-mix(in oklab, var(--warn) 13%, var(--surface));
+  --info-soft: color-mix(in oklab, var(--info) 12%, var(--surface));
+
+  --s-1: oklch(0.74 0.13 268);
+  --s-2: oklch(0.77 0.12 172);
+  --s-3: oklch(0.74 0.14 305);
+  --s-4: oklch(0.81 0.13 75);
+  --s-5: oklch(0.77 0.11 228);
+  --s-6: oklch(0.73 0.15 358);
+  --s-7: oklch(0.79 0.13 132);
+  --s-8: oklch(0.75 0.1 48);
+  --s-9: oklch(0.75 0.14 330);
+  --s-10: oklch(0.78 0.1 198);
+  --s-11: oklch(0.69 0.14 28);
+  --s-12: oklch(0.77 0.08 285);
+
+  --shadow-1: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-2: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 8px 24px -8px rgb(0 0 0 / 0.55);
+  --shadow-3: 0 0 0 1px rgb(255 255 255 / 0.05), 0 24px 60px -12px rgb(0 0 0 / 0.7), 0 6px 18px rgb(0 0 0 / 0.35);
+  --wall-a: #0b1020;
+  --wall-b: #1a1030;
+  --wall-c: #04070d;
+  --glass: color-mix(in oklab, var(--surface) 78%, transparent);
+  --rule: color-mix(in oklab, var(--text) 5%, transparent);
+
+  /* Dashboard footprint hero (terrain adapted from the Codex gpt-6 entry); follows the accent. */
+  --hero-start: color-mix(in oklab, var(--accent) 5%, var(--surface));
+  --hero-end: color-mix(in oklab, var(--accent) 13%, var(--surface));
+  --land: color-mix(in oklab, var(--accent) 15%, var(--surface));
+  --terrain: color-mix(in oklab, var(--accent) 86%, white);
+  --terrain-light: color-mix(in oklab, var(--accent-ink) 45%, white);
+  --plottext: color-mix(in oklab, var(--accent-ink) 55%, var(--muted));
+  --texture: rgb(255 255 255 / 0.028);
+}
+
+/* ==========================================================================
+   Light — "Paper": warm off-white sheets, ink text, soft printed shadows
+   ========================================================================== */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f1ea;
+  --bg-2: #ece8df;
+  --surface: #fffdf8;
+  --surface-2: #f7f4ed;
+  --surface-3: #ebe6dc;
+  --line: #e2ddd2;
+  --line-strong: #cbc4b5;
+  --text: #1b1e26;
+  --text-2: #3d424e;
+  --muted: #61677a;
+  --hover: color-mix(in oklab, var(--text) 5%, transparent);
+  --press: color-mix(in oklab, var(--text) 9%, transparent);
+  --scrim: rgb(40 34 24 / 0.32);
+
+  --success: oklch(0.5 0.13 152);
+  --danger: oklch(0.53 0.19 25);
+  --warn: oklch(0.55 0.12 70);
+  --info: oklch(0.5 0.12 245);
+  --success-soft: color-mix(in oklab, var(--success) 10%, var(--surface));
+  --danger-soft: color-mix(in oklab, var(--danger) 9%, var(--surface));
+  --warn-soft: color-mix(in oklab, var(--warn) 12%, var(--surface));
+  --info-soft: color-mix(in oklab, var(--info) 8%, var(--surface));
+
+  --s-1: oklch(0.56 0.16 268);
+  --s-2: oklch(0.6 0.12 172);
+  --s-3: oklch(0.55 0.17 305);
+  --s-4: oklch(0.7 0.15 72);
+  --s-5: oklch(0.6 0.12 232);
+  --s-6: oklch(0.57 0.18 358);
+  --s-7: oklch(0.62 0.15 135);
+  --s-8: oklch(0.6 0.1 48);
+  --s-9: oklch(0.58 0.17 330);
+  --s-10: oklch(0.62 0.1 200);
+  --s-11: oklch(0.55 0.16 30);
+  --s-12: oklch(0.62 0.08 285);
+
+  --heat-0: #ece7dd;
+  --shadow-1: 0 1px 0 rgb(255 255 255 / 0.8) inset, 0 1px 2px rgb(70 55 30 / 0.08);
+  --shadow-2: 0 1px 2px rgb(70 55 30 / 0.06), 0 10px 26px -12px rgb(70 55 30 / 0.22);
+  --shadow-3: 0 0 0 1px rgb(60 48 30 / 0.07), 0 28px 60px -16px rgb(60 45 20 / 0.32), 0 6px 16px rgb(60 45 20 / 0.08);
+  --wall-a: #e9dfcf;
+  --wall-b: #d9d2e6;
+  --wall-c: #f3eee4;
+  --glass: color-mix(in oklab, var(--surface) 80%, transparent);
+  --rule: color-mix(in oklab, var(--text) 6%, transparent);
+
+  --hero-start: color-mix(in oklab, var(--accent) 4%, var(--surface));
+  --hero-end: color-mix(in oklab, var(--accent) 14%, var(--surface-2));
+  --land: color-mix(in oklab, var(--accent) 13%, var(--surface-2));
+  --terrain: var(--accent-ink);
+  --terrain-light: color-mix(in oklab, var(--accent-ink) 75%, black);
+  --plottext: color-mix(in oklab, var(--accent-ink) 70%, var(--muted));
+  --texture: rgb(50 40 20 / 0.05);
+}
+
+/* ---- Shared dropdowns and date pickers (ui/ui.css) ------------------- */
+:root {
+  --ui-surface: var(--surface); --ui-hover: var(--hover); --ui-text: var(--text); --ui-muted: var(--muted);
+  --ui-border: var(--line); --ui-border-strong: var(--line-strong);
+  --ui-accent: var(--accent-fill); --ui-accent-soft: var(--accent-soft); --ui-accent-text: var(--accent-ink); --ui-on-accent: var(--on-accent);
+  --ui-focus: var(--accent-ui); --ui-danger: var(--danger);
+  --ui-radius: 9px; --ui-radius-pop: var(--r-lg); --ui-shadow: var(--shadow-3); --ui-ctl-h: var(--ctl-h);
+  --ui-pop-bg: var(--glass); --ui-pop-filter: blur(20px) saturate(1.5);
+  --ui-font-size: var(--fs-13); --ui-trigger-weight: 500; --ui-icon-stroke: 1.6;
+}
+
+/* ---- Density -------------------------------------------------------- */
+:root[data-density="compact"] {
+  --row-h: 30px;
+  --cell-py: 5px;
+  --cell-px: 10px;
+  --ctl-h: 30px;
+}
+
+/* ---- Reduced motion: no travel, no scale, near-instant fades ---------- */
+:root[data-motion="reduce"] {
+  --dur-1: 1ms;
+  --dur-2: 1ms;
+  --dur-3: 1ms;
+  --dur-4: 1ms;
+  --dur-theme: 1ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) { --dur-3: 1ms; --dur-4: 1ms; }
+}
