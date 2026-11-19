@@ -20,6 +20,8 @@ interface Peak {
 const W = 64,
   H = 34;
 const proj = (x: number, y: number, z: number): [number, number] => [38 + x * 402 + y * 94, 112 - x * 34 + y * 84 - z];
+/** Highest screen y the mesh may reach: the view box starts at -19 and a summit label needs ~22 above its dot. */
+const TOP = 4;
 const xy = (p: [number, number]) => p.map((n) => n.toFixed(1)).join(",");
 
 function landscape(projects: ProjectMetric[]) {
@@ -30,7 +32,7 @@ function landscape(projects: ProjectMetric[]) {
     p,
   }));
   const max = Math.max(1, ...peaks.map((p) => p.weight));
-  const height = (x: number, y: number) => {
+  const raw = (x: number, y: number) => {
     const wave = Math.sin(x * 24 + y * 8) * 0.02 + Math.sin(x * 45 - y * 14) * 0.01;
     return (
       peaks.reduce(
@@ -42,6 +44,16 @@ function landscape(projects: ProjectMetric[]) {
       ) * 108
     );
   };
+  // Neighbouring summits add up, so with many projects the mesh can rise past the top of the
+  // view box (and the card clips it). Scale the heights so every point, and the label above
+  // the highest summit, stays inside the frame.
+  let fit = 1;
+  for (let j = 0; j <= H; j++)
+    for (let i = 0; i <= W; i++) {
+      const z = raw(i / W, j / H);
+      if (z > 0) fit = Math.min(fit, (proj(i / W, j / H, 0)[1] - TOP) / z);
+    }
+  const height = (x: number, y: number) => raw(x, y) * fit;
   const point = (i: number, j: number) => proj(i / W, j / H, height(i / W, j / H));
   let guides = "";
   for (let k = -4; k <= 13; k++)
