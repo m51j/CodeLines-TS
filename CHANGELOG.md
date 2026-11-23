@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.3.0 — 2026-11-23
+
+Downloads are `CodeLines-Setup-1.3.0.exe`, `CodeLines-1.3.0-portable.exe`, and `SHA256SUMS.txt` under [v1.3.0](https://github.com/m51j/CodeLines-TS/releases/tag/v1.3.0). Installed copies of 1.2.0 update to this version by themselves; the portable app shows a **Download** button.
+
 ### Languages
 
 - Recognize Godot projects: GDScript (`.gd`) and Godot shaders (`.gdshader`, `.gdshaderinc`) count as source; scenes, resources and project settings (`.tscn`, `.tres`, `project.godot`, `.gdextension`) count as configuration. Godot's editor caches (`.godot/`, `.import/`) join the default exclusions, and existing settings get them once.
