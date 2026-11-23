@@ -23,6 +23,8 @@ export const defaultExclusions = [
   "out/",
   ".claude/worktrees/",
   ".kilo/worktrees/",
+  ".godot/",
+  ".import/",
 ];
 export function defaults(): Settings {
   return {
@@ -34,7 +36,7 @@ export function defaults(): Settings {
       maxFileSizeBytes: 5 * 1024 ** 2,
       maxDegreeOfParallelism: 4,
       globalExcludePatterns: [...defaultExclusions],
-      defaultExclusionsRevision: 1,
+      defaultExclusionsRevision: 2,
     },
     theme: "System",
     appearance: defaultAppearance(),
@@ -69,5 +71,10 @@ export function upgradeExclusions(settings: Settings): void {
       if (!s.globalExcludePatterns.some((x) => x.toLowerCase() === p))
         s.globalExcludePatterns.push(p);
   }
-  s.defaultExclusionsRevision = 1;
+  // Revision 2: Godot's editor caches (.godot/ in 4.x, .import/ in 3.x).
+  if (s.defaultExclusionsRevision < 2)
+    for (const p of [".godot/", ".import/"])
+      if (!s.globalExcludePatterns.some((x) => x.toLowerCase() === p))
+        s.globalExcludePatterns.push(p);
+  s.defaultExclusionsRevision = 2;
 }

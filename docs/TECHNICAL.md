@@ -80,11 +80,11 @@ Writes are serialized per file, flushed to unique temporary files, and atomicall
 
 ## Counting and exclusions
 
-Available scopes are: source only, source plus configuration, or all verified text. Physical, blank, code, comment-only, mixed, and documentation content lines retain their meanings. Mixed lines are included in code lines. A trailing newline does not create an extra physical line. The scanner supports 38 language definitions with their extensions and comment delimiters.
+Available scopes are: source only, source plus configuration, or all verified text. Physical, blank, code, comment-only, mixed, and documentation content lines retain their meanings. Mixed lines are included in code lines. A trailing newline does not create an extra physical line. The scanner supports 114 language definitions with their extensions, exact file names and comment delimiters; an exact file name (`CMakeLists.txt`, `Gemfile`) outranks its extension. Godot scripts and shaders (`.gd`, `.gdshader`) count as source, while scenes, resources and `project.godot` count as configuration. Extensions shared by unrelated languages keep one owner (`.m` is Objective-C, `.pl` is Perl) or stay unregistered (`.d`, `.inc`, `.cls`, `.pp`).
 
 Scanning handles BOMs, strict UTF-8, UTF-16, binary detection, file-size limits, bounded I/O parallelism, cancellation, and unreadable-path warnings. Symbolic links/junctions are skipped to prevent loops. Nested checkouts/worktrees are excluded. A folder named `packages` is excluded only when its contents identify a NuGet restore folder, preserving npm/pnpm workspaces.
 
-Ignore precedence is global rules → root/nested `.gitignore` → project rules. Ordered negation, directory rules, `*`, `**`, `?`, and anchoring are supported. Default-exclusion revision 1 removes the retired `packages/` default and adds AI worktree defaults once, preserving other user edits. Counting uses a lightweight string/comment state machine rather than compiler-level parsing; see the [audit notes](AUDIT.md) for implementation details.
+Ignore precedence is global rules → root/nested `.gitignore` → project rules. Ordered negation, directory rules, `*`, `**`, `?`, and anchoring are supported. Default-exclusion revision 1 removes the retired `packages/` default and adds AI worktree defaults once, preserving other user edits. Revision 2 adds Godot's editor caches (`.godot/`, `.import/`) the same way. Counting uses a lightweight string/comment state machine rather than compiler-level parsing; see the [audit notes](AUDIT.md) for implementation details.
 
 ## Git history
 

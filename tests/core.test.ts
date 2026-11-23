@@ -47,11 +47,47 @@ describe("classification and line semantics", () => {
     ["native.cpp", "C/C++"],
     ["build.kts", "Kotlin"],
     ["Dockerfile", "Build Script"],
+    ["player.gd", "GDScript"],
+    ["water.gdshader", "Godot Shader"],
+    ["blur.frag", "GLSL"],
+    ["Lit.shader", "ShaderLab"],
+    ["MainWindow.axaml", "XAML"],
+    ["sketch.ino", "C/C++"],
+    ["Main.scala", "Scala"],
+    ["lib.hs", "Haskell"],
+    ["top.sv", "Verilog"],
+    ["startup_stm32.S", "Assembly"],
+    ["main.st", "Structured Text"],
+    ["api.proto", "Protocol Buffers"],
+    ["main.tf", "Terraform"],
+    ["Gemfile", "Ruby"],
+    ["CMakeLists.txt", "CMake"],
+    ["meson.build", "Build Script"],
   ])
     it(`classifies ${file}`, () =>
       expect(classify(file, "SourceOnly")?.name).toBe(language));
+  it("keeps every extension and exact file name with a single language", () => {
+    const owners = new Map<string, string>();
+    for (const l of languages)
+      for (const key of [...l.extensions, ...l.names]) {
+        const k = key.toLowerCase();
+        expect(key.startsWith(".") ? key : k, l.name).toBe(k);
+        expect(owners.get(k), `${k} in ${l.name}`).toBeUndefined();
+        owners.set(k, l.name);
+      }
+    expect(new Set(languages.map((l) => l.name)).size).toBe(languages.length);
+  });
+  it("treats Godot scenes, resources and project files as configuration", () => {
+    for (const file of ["main.tscn", "theme.tres", "project.godot"]) {
+      expect(classify(file, "SourceOnly")).toBeNull();
+      expect(classify(file, "SourceAndConfiguration")?.name).toBe(
+        "Godot Resource",
+      );
+    }
+    expect(classify("icon.svg.import", "SourceAndConfiguration")).toBeNull();
+  });
   it("ports every registered language and all scopes", () => {
-    expect(languages).toHaveLength(38);
+    expect(languages).toHaveLength(114);
     expect(classify("settings.json", "SourceOnly")).toBeNull();
     expect(classify("settings.json", "SourceAndConfiguration")?.category).toBe(
       "Configuration",
@@ -108,6 +144,41 @@ describe("classification and line semantics", () => {
     expect(
       analyzeLines("--[[\nlocal x\n]]\nlocal y = 1 -- note\n-- line\n", lua),
     ).toMatchObject({ codeLines: 1, commentLines: 4, mixedLines: 1 });
+  });
+  it("counts GDScript comments and the block comments of the added languages", () => {
+    const lines = (file: string, source: string) =>
+      analyzeLines(source, classify(file, "SourceAndConfiguration")!);
+    expect(
+      lines(
+        "a.gd",
+        'extends Node2D\n## Doc comment\n# note\n\nvar tint = "#ff0000" # red\nfunc _ready():\n\tpass\n',
+      ),
+    ).toEqual({
+      physicalLines: 7,
+      blankLines: 1,
+      codeLines: 4,
+      commentLines: 2,
+      mixedLines: 1,
+      contentLines: 0,
+    });
+    expect(
+      lines("a.gdshader", "shader_type canvas_item;\n/* a\nb */\n// c\n"),
+    ).toMatchObject({ codeLines: 1, commentLines: 3 });
+    expect(
+      lines("main.tscn", '; header\n[node name="Main" type="Node2D"]\n'),
+    ).toMatchObject({ codeLines: 1, commentLines: 1 });
+    expect(
+      lines("a.pas", "{ header\n  more }\nx := '{'; // note\n(* tail *)\n"),
+    ).toMatchObject({ codeLines: 1, commentLines: 3, mixedLines: 1 });
+    expect(lines("a.nim", "#[ block\nstill ]#\necho 1 # note\n")).toMatchObject(
+      { codeLines: 1, commentLines: 2, mixedLines: 1 },
+    );
+    expect(
+      lines("a.hs", "{- block\n-}\nmain = pure () -- note\n"),
+    ).toMatchObject({ codeLines: 1, commentLines: 2, mixedLines: 1 });
+    expect(
+      lines("a.st", "(* block *)\nx := 1; // note\n/* c */\n"),
+    ).toMatchObject({ codeLines: 1, commentLines: 2, mixedLines: 1 });
   });
   it("handles UTF-8/UTF-16 BOMs, invalid UTF-8 and binary controls", () => {
     expect(decode(Buffer.from([239, 187, 191, 104, 105]))).toBe("hi");
@@ -306,6 +377,56 @@ describe("scanner and exclusions", () => {
     expect(tiny.fileCount).toBe(0);
     expect(tiny.warnings.some((w) => w.includes("oversized"))).toBe(true);
   });
+  it("scans a Godot project: scripts and shaders as source, scenes as configuration, caches skipped", async () => {
+    const p = await root();
+    const write = async (f: string, c: string) => {
+      await fs.mkdir(path.dirname(path.join(p, f)), { recursive: true });
+      await fs.writeFile(path.join(p, f), c);
+    };
+    await write(
+      "project.godot",
+      "; Engine configuration file.\nconfig_version=5\n",
+    );
+    await write(
+      "scenes/main.tscn",
+      '[gd_scene format=3]\n[node name="Main" type="Node2D"]\n',
+    );
+    await write(
+      "scripts/player.gd",
+      "extends CharacterBody2D\n# speed\nvar speed = 300.0\n",
+    );
+    await write("shaders/water.gdshader", "shader_type canvas_item;\n");
+    await write("icon.svg.import", '[remap]\nimporter="texture"\n');
+    await write(".godot/editor/cache.cfg", "[cache]\nvalue=1\n");
+    await write(".godot/mono/temp/Generated.cs", "class Generated {}\n");
+    const project = {
+      id: randomUUID(),
+      name: "Game",
+      rootPath: p,
+      isEnabled: true,
+      excludePatterns: [],
+    };
+    const options = defaults().scanOptions;
+    const source = await scanProject(project, options);
+    expect(source.files.map((f) => [f.relativePath, f.language])).toEqual([
+      [path.join("scripts", "player.gd"), "GDScript"],
+      [path.join("shaders", "water.gdshader"), "Godot Shader"],
+    ]);
+    expect(source.files[0].lines).toMatchObject({
+      codeLines: 2,
+      commentLines: 1,
+    });
+    const all = await scanProject(project, {
+      ...options,
+      countingScope: "SourceAndConfiguration",
+    });
+    expect(all.files.map((f) => f.relativePath)).toEqual([
+      "project.godot",
+      path.join("scenes", "main.tscn"),
+      path.join("scripts", "player.gd"),
+      path.join("shaders", "water.gdshader"),
+    ]);
+  });
 });
 describe("persistence compatibility and recovery", () => {
   it("upgrades exclusions once, retaining user removals and additions", () => {
@@ -320,11 +441,28 @@ describe("persistence compatibility and recovery", () => {
       "vendor/",
       ".claude/worktrees/",
       ".kilo/worktrees/",
+      ".godot/",
+      ".import/",
     ]);
     s.scanOptions.globalExcludePatterns.pop();
     expect(parseSettings(s).scanOptions.globalExcludePatterns).not.toContain(
-      ".kilo/worktrees/",
+      ".import/",
     );
+  });
+  it("adds the Godot cache exclusions to settings saved at revision 1", () => {
+    const s = parseSettings({
+      scanOptions: {
+        globalExcludePatterns: [".git/", "vendor/"],
+        defaultExclusionsRevision: 1,
+      },
+    });
+    expect(s.scanOptions.globalExcludePatterns).toEqual([
+      ".git/",
+      "vendor/",
+      ".godot/",
+      ".import/",
+    ]);
+    expect(s.scanOptions.defaultExclusionsRevision).toBe(2);
   });
   it("imports portable, bare-array and settings projects without duplicate paths or IDs", () => {
     const id = randomUUID(),

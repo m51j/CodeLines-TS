@@ -15,7 +15,7 @@ Implementation map for the legacy application. “Verified” refers to the chec
 | Project/language/category/file analysis and warnings | Analysis tabs and filtered tables | Core scan tests; desktop navigation |
 | CSV/JSON full analysis exports | `services/exports.ts`, native save dialog | Report/export tests, desktop JSON/CSV |
 | SourceOnly/SourceAndConfiguration/AllText | Language classifier and options | Scope fixture tests |
-| All 38 languages, extensions, exact names, comment delimiters | `domain/languages.ts` | Classifier tests + audited registry |
+| All 38 original languages plus 76 added ones (114), extensions, exact names, comment delimiters | `domain/languages.ts` | Classifier tests + audited registry |
 | Mixed/string/comment/content/newline semantics | `domain/lines.ts` | Explicit line tests |
 | UTF-8/UTF-16 BOM, binary detection and invalid text | `services/scanner.ts` decode/detection | Byte fixtures, BOM fallback cases |
 | Real offline o200k_base/cl100k_base BPE | js-tiktoken vocabularies bundled into worker | 12 Microsoft.ML.Tokenizers golden samples × both encodings; packaged scan |
