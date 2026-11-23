@@ -69,6 +69,8 @@ const active = new Map<
 >();
 /** Lane → whether a background operation holds it. */
 const reservedLanes = new Map<string, boolean>();
+/** Operations saving settings before their worker exists → whether a cancel arrived meanwhile. */
+const starting = new Map<string, boolean>();
 let mutationInProgress = false;
 const mutationChannels = new Set(["save", "add", "import", "migrate"]);
 const operationSchema = z.object({
@@ -165,7 +167,11 @@ function localNow(): string {
 }
 async function cancelOperation(id: string) {
   const op = active.get(id);
-  if (!op) return;
+  if (!op) {
+    // Keep a cancel that arrives before the worker exists; start() honours it.
+    if (starting.has(id)) starting.set(id, true);
+    return;
+  }
   op.cancelled = true;
   // Listen before signalling so a fast exit is never missed.
   const exited = new Promise<void>((resolve) => {
@@ -239,11 +245,25 @@ async function start(
   // Background refreshes run with the saved settings, so there is nothing to adopt.
   if (!background) {
     adoptSettings(settings);
+    starting.set(request.id, false);
+    let cancelled: boolean;
     try {
       await store.save();
     } catch (error) {
       reservedLanes.delete(lane);
       throw error;
+    } finally {
+      cancelled = starting.get(request.id) === true;
+      starting.delete(request.id);
+    }
+    if (cancelled) {
+      reservedLanes.delete(lane);
+      return {
+        id: request.id,
+        status: "cancelled",
+        state: store.state(),
+        partial: [],
+      };
     }
   }
   const worker = new Worker(path.join(__dirname, "worker.cjs"), {

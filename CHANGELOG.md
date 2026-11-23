@@ -14,6 +14,10 @@ Downloads are `CodeLines-Setup-1.3.0.exe`, `CodeLines-1.3.0-portable.exe`, and `
 - Match exact file names before extensions, so `CMakeLists.txt` counts as CMake instead of text.
 - Projects that contain these files report more files and lines on their next scan than in earlier Daily log entries.
 
+### Fixes
+
+- Fix **Cancel** being ignored when pressed right after starting a scan, Git history or AI refresh. A cancel that arrived while settings were still being saved, before the work began, was dropped and the operation ran to the end.
+
 ## 1.2.0 — 2026-11-19
 
 Downloads are `CodeLines-Setup-1.2.0.exe`, `CodeLines-1.2.0-portable.exe`, and `SHA256SUMS.txt` under [v1.2.0](https://github.com/m51j/CodeLines-TS/releases/tag/v1.2.0). This is the first version that updates itself; earlier versions need to install it by hand once.
