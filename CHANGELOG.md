@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 1.3.0 — 2026-11-23
+
+Downloads are `CodeLines-Setup-1.3.0.exe`, `CodeLines-1.3.0-portable.exe`, and `SHA256SUMS.txt` under [v1.3.0](https://github.com/m51j/CodeLines-TS/releases/tag/v1.3.0). Installed copies of 1.2.0 update to this version by themselves; the portable app shows a **Download** button.
+
+### Languages
+
+- Recognize Godot projects: GDScript (`.gd`) and Godot shaders (`.gdshader`, `.gdshaderinc`) count as source; scenes, resources and project settings (`.tscn`, `.tres`, `project.godot`, `.gdextension`) count as configuration. Godot's editor caches (`.godot/`, `.import/`) join the default exclusions, and existing settings get them once.
+- Add 76 languages, from 38 to 114: shaders (GLSL, HLSL, ShaderLab, WGSL, Metal), game scripting (GameMaker, Ren'Py, Haxe, Squirrel, Wren), Scala, Groovy, Perl, Haskell, OCaml, Elixir, Erlang, Clojure, Lisp, Scheme, Zig, Nim, Julia, Fortran, Pascal, Ada, COBOL, Assembly, Verilog, VHDL, Structured Text, CMake, Terraform, Protocol Buffers, GraphQL, Solidity, web templates (ERB, EJS, JSP, Jinja, Twig, Handlebars, Liquid, Pug, Astro) and more.
+- Add extensions to existing languages, including `.axaml` (XAML), `.ino` and C++ module files (C/C++), `.pyi` and `.pyx` (Python), `.csx` (C#), `.luau` (Lua), `.vbs` and `.bas` (Visual Basic), `Gemfile` and `Rakefile` (Ruby), `.cfg` and `.conf` (INI), and more MSBuild and XML files.
+- Match exact file names before extensions, so `CMakeLists.txt` counts as CMake instead of text.
+- Projects that contain these files report more files and lines on their next scan than in earlier Daily log entries.
+
+### Fixes
+
+- Fix **Cancel** being ignored when pressed right after starting a scan, Git history or AI refresh. A cancel that arrived while settings were still being saved, before the work began, was dropped and the operation ran to the end.
+
 ## 1.2.0 — 2026-11-19
 
 Downloads are `CodeLines-Setup-1.2.0.exe`, `CodeLines-1.2.0-portable.exe`, and `SHA256SUMS.txt` under [v1.2.0](https://github.com/m51j/CodeLines-TS/releases/tag/v1.2.0). This is the first version that updates itself; earlier versions need to install it by hand once.

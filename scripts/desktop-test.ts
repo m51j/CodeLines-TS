@@ -243,31 +243,35 @@ try {
     path.join(project, "large.ts"),
     'export const value = "hello world";\n'.repeat(70000),
   );
-  const cancellation = await page.evaluate(async () => {
-    const state = await window.codelines.load(),
-      id = crypto.randomUUID();
-    const pending = window.codelines.run({
-      id,
-      kind: "scan",
-      settings: state.settings,
-    });
-    const conflict = window.codelines
-      .run({
-        id: crypto.randomUUID(),
-        kind: "history",
+  // An immediate cancel arrives while settings are still being saved, before the worker
+  // exists; a delayed one usually arrives mid-scan. Both must cancel.
+  for (const delay of [0, 50]) {
+    const cancellation = await page.evaluate(async (wait) => {
+      const state = await window.codelines.load(),
+        id = crypto.randomUUID();
+      const pending = window.codelines.run({
+        id,
+        kind: "scan",
         settings: state.settings,
-      })
-      .then(
-        () => false,
-        () => true,
-      );
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    await window.codelines.cancel(id);
-    return { result: await pending, conflict: await conflict };
-  });
-  expect(cancellation.conflict).toBe(true);
-  expect(cancellation.result.status).toBe("cancelled");
-  expect(cancellation.result.state.settings.lastSnapshot?.fileCount).toBe(1);
+      });
+      const conflict = window.codelines
+        .run({
+          id: crypto.randomUUID(),
+          kind: "history",
+          settings: state.settings,
+        })
+        .then(
+          () => false,
+          () => true,
+        );
+      if (wait) await new Promise((resolve) => setTimeout(resolve, wait));
+      await window.codelines.cancel(id);
+      return { result: await pending, conflict: await conflict };
+    }, delay);
+    expect(cancellation.conflict).toBe(true);
+    expect(cancellation.result.status).toBe("cancelled");
+    expect(cancellation.result.state.settings.lastSnapshot?.fileCount).toBe(1);
+  }
   await fs.rm(path.join(project, "large.ts"));
   await page.reload();
   await expect(
